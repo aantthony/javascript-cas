@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Javascript-Cas</title>
+<link rel="stylesheet" type="text/css" href="http://aantthony.github.com/css/screen.css">
+<link rel="stylesheet" type="text/css" href="mathquill.css">
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+<script type="text/javascript" src="mathquill.js"></script>
+<script type="text/javascript" src="math.js"></script>
+</head>
+<body>
+<div class="page" style="margin-top:1em;width:700px">
+  <table>
+    <tr>
+      <td style="width:100px"><label for="input">Function: </label></td>
+      <td><span id="input" class="mathquill-editable">\log (\frac{1}{x})+\sin^2 x</span></td>
+    </tr>
+    <tr>
+      <td>Derivative: </td>
+      <td>
+        <span id="output" style="border:none" class="mathquill-editable"></span>
+      </td>
+    </tr>
+  </table>
+</div>
+<script type="text/javascript">
+function go() {
+        var latex = $(inputbox).mathquill("latex");
+        try{
+        $(output).mathquill("latex","?");
+        
+        var math=p_latex(latex);
+        var derivative=math.differentiate();
+        latex=derivative.getLatex();
+        window.z=derivative;
+        $(output).mathquill("latex",latex);
+        }catch(ex){}
+    }
+inputbox=(document.getElementById("input"));
+outputbox=(document.getElementById("output"));
+$(inputbox).bind('keydown keypress', function(){
+    setTimeout(go,0);
+
+}).focus();
+document.body.onload=function(){
+go();
+}
+</script>
+</body>
+</html>
