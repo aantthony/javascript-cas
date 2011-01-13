@@ -30,7 +30,7 @@ function go() {
         $(output).mathquill("latex","?");
         
         var math=p_latex(latex);
-        var derivative=math.differentiate();
+        var derivative=math.differentiate().simplify();
         latex=derivative.getLatex();
         window.z=derivative;
         $(output).mathquill("latex",latex);
