@@ -22,15 +22,29 @@
       </td>
     </tr>
   </table>
+  <div>
+  <label><input type="checkbox" id="bsimplify" onchange="go()" /> Simplify before differentiating</label>
+  </div>
+  <div>
+  <label><input type="checkbox" id="asimplify" onchange="go()" /> Simplify after differentiating</label>
+  </div>
 </div>
 <script type="text/javascript">
+var asimplify=document.getElementById("asimplify");
+var bsimplify=document.getElementById("bsimplify");
 function go() {
         var latex = $(inputbox).mathquill("latex");
         try{
         $(output).mathquill("latex","?");
         
         var math=p_latex(latex);
-        var derivative=math.differentiate().simplify();
+        if(bsimplify.checked){
+            math=math.simplify();
+        }
+        var derivative=math.differentiate();
+        if(asimplify.checked){
+            derivative=derivative.simplify();
+        }
         latex=derivative.getLatex();
         window.z=derivative;
         $(output).mathquill("latex",latex.toString());
