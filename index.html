@@ -33,7 +33,7 @@ function go() {
         var derivative=math.differentiate().simplify();
         latex=derivative.getLatex();
         window.z=derivative;
-        $(output).mathquill("latex",latex);
+        $(output).mathquill("latex",latex.toString());
         }catch(ex){}
     }
 inputbox=(document.getElementById("input"));
