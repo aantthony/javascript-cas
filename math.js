@@ -2240,8 +2240,11 @@ Array.prototype.getLatex=function(braces){
         }else{
             s+=",";
         }
-        s+=e.getLatex(0);
-        
+        if(e.type==eqtype.fn || e.type==eqtype.fraction || e.type==eqtype.product){
+            s+=e.getLatex(0);
+        }else{
+            s+=e.getLatex(1);
+        }
         s+=afterme;
         afterme="";
     }
