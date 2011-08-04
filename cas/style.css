@@ -8,10 +8,12 @@ body,html{
 }
 
 #header{
-	height:30px;
-	background:#eee;
-	border-top:1px solid #fcfcfc;
+	height:20px;
+	background:#0070f0;
+	border-top:1px solid #0af;
+	border-bottom:1px solid #aaa;
 	padding:4px 14px;
+	color:white;
 }
 #main{
 	position:fixed;
@@ -43,6 +45,13 @@ ul#console{
 	content:"=";
 	padding-left:8px;
 	padding-right:8px;
+}
+#console li.write .result.error{
+	background:#FFF1B5;
+	padding:4px;
+}
+#console li.write .result.error:before{
+	content:"⇒";
 }
 #console li.user{
 	-webkit-transition: opacity 0.3s linear;

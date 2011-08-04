@@ -33,9 +33,18 @@ window.$$=function getElementById(i){
 				window.d=d;
 				var result=document.createElement("div");
 				result.className="result";
-				var res = exec(d);
-				result.appendChild(document.createTextNode(res));
-				this.current.appendChild(result);
+				var res;
+				try{
+					res = exec(d);
+					result.appendChild(document.createTextNode(res));
+					this.current.appendChild(result);
+				} catch(ex){
+					res=ex;
+					result.className+=" error";
+					result.appendChild(document.createTextNode(res));
+					this.current.appendChild(result);
+					return false;
+				}
 			}
 			var mathQuill=document.createElement("div");
 			var current = this.current = this.write(mathQuill, "write user");
@@ -50,17 +59,19 @@ window.$$=function getElementById(i){
 				.bind("keydown.jscas", function(event) {
 						if(event.which == 13) {
 							var jQueryDataKey = '[[mathquill internal data]]';
-							var latex = 
-							$(this)
-								.unbind('.mathquill')
-								.unbind('.jscas')
-							 	.removeClass('mathquill-editable mathquill-textbox')
-								.find("textarea")
-									.remove()
-								.end()
-								.mathquill("latex");
-							$(current).unbind(".jscas");
-							self.execute(latex);
+							var latex = $(this).mathquill("latex");
+							if(x=self.execute(latex)){
+								$(this)
+									.unbind('.mathquill')
+									.unbind('.jscas')
+								 	.removeClass('mathquill-editable mathquill-textbox')
+									.find("textarea")
+										.remove()
+									.end()
+									.mathquill("latex");
+								
+								$(current).unbind(".jscas");
+							}
 						}
 					}
 				
@@ -68,7 +79,7 @@ window.$$=function getElementById(i){
 				$(current).bind("click.jscas",function() {
 					$(mathQuill).focus();
 				});
-						
+			return true;		
 		}
 	};
 	console.log=console.write;

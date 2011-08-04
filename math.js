@@ -41,6 +41,9 @@ var R = right = 1;
  * operator string representation(s). These are different operators, but share all properties.
  * Associativity
  * Operand count (Must be a fixed number) 
+ * (TODO??) commute group? - or should this be derived?
+ * (TODO?) associative? commutative? 
+ * (TODO?) Identity?
 */
 languages[language] = [
 	[";",L,1],			/*L / R makes no difference???!??!? */
@@ -54,6 +57,7 @@ languages[language] = [
 	[["^"]],//XOR
 	[["&"]],
 	[["==","!=","!==","==="]],
+	[["<","<=",">",">="],L],
 	[[">>","<<"]],
 	[["+","-"]],
 	[["*","/","%"]],
@@ -154,7 +158,7 @@ var p_internal = (function (language) {
 				// If there are fewer than n values on the stack
 				if(rpn_stack.length<n){
 					// (Error) The user has not input sufficient values in the expression.
-					throw("The user has not input sufficient values in the expression. The "+token.v+" operator requires exactly "+n+" operands, whereas only "+rpn_stack.length+" were supplied ("+rpn_stack+")")
+					throw("The user has not input sufficient values in the expression. The "+token.v+" operator requires exactly "+n+" operands, whereas only "+rpn_stack.length+" "+(rpn_stack.length===1?"was":"were")+" supplied ("+rpn_stack+")")
 				// Else,
 				}else{
 					// Pop the top n values from the stack.
@@ -477,9 +481,13 @@ M.latex={
 			
 		}
 		var latexexprs = {
-			"cdot":"*"
+			"cdot":"*",
+			"vee":"||",
+			"wedge":"&&",
+			"neg":"!"
 		};
 		s=s.replace(/\\([a-z]+)/g,function(u,x){return latexexprs[x]||"";});
+		s=s.replace(/\\/g,"");
 		s=s.replace(/\^/g,"**");
 		return s;
 	}
@@ -512,12 +520,31 @@ Array.prototype.setType=function(type){
 	return this;
 };
 Array.prototype.simplify=function(){
-	if(this.length===2){
+	if(this.length===1){
+		var a = this[0].simplify();
+		if(isNaN(a)){
+			return [a].setType(this.type);
+		}
+		a=Number(a);
+		switch(this.type){
+			case "!":
+				return !a;
+			case "~":
+				return ~a;
+			default:
+				throw("Operator '"+this.type+"' is not yet numerically implemented.");
+		}
+	}
+	else if(this.length===2){
 		var a = this[0].simplify();
 		var b = this[1].simplify();
 		if(!isNaN(a) && !isNaN(b)){
+			
 			a=Number(a);
 			b=Number(b);
+			
+			//BAD: the following code may destory information due to floating point error
+			// fractions should remain intact?
 			switch(this.type){
 				case "+":
 					return a+b;
@@ -529,6 +556,34 @@ Array.prototype.simplify=function(){
 					return a-b;
 				case "**":
 					return Math.pow(a,b);
+				case "===":
+					return a===b;
+				case "==":
+					return a==b;
+				case ">":
+					return a>b;
+				case "<":
+					return a<b;
+				case ">=":
+					return a>=b;
+				case "<=":
+					return a<=b;
+				case "&":
+					return a&b;
+				case "^":
+					return a^b;
+				case "||":
+					return a||b;
+				case "|":
+					return a|b;
+				case "%":
+					return a%b;
+				case "&&":
+					return a&&b;
+				
+				default:
+					throw("Operator '"+this.type+"' is not yet numerically implemented.");
+					
 			}
 		}else{
 			return [a,b].setType(this.type);
