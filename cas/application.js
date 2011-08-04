@@ -8,7 +8,7 @@ window.$$=function getElementById(i){
 	};
 	function exec(latex){
 		//Convert to javascript:
-		return M(M.latex.parse(latex));
+		return M(M.latex.parse(latex)).eval();
 	}
 	var console = {
 		"current":undefined,
@@ -47,27 +47,31 @@ window.$$=function getElementById(i){
 				.mathquill("editable")
 				//.trigger({ type: "keydown", ctrlKey: true, which: 65 })
 				.focus()
-				.bind("keydown", function(event) {
+				.bind("keydown.jscas", function(event) {
 						if(event.which == 13) {
 							var jQueryDataKey = '[[mathquill internal data]]';
 							var latex = 
 							$(this)
 								.unbind('.mathquill')
+								.unbind('.jscas')
 							 	.removeClass('mathquill-editable mathquill-textbox')
 								.find("textarea")
 									.remove()
 								.end()
 								.mathquill("latex");
+							$(current).unbind(".jscas");
 							self.execute(latex);
 						}
 					}
 				
 				);
+				$(current).bind("click.jscas",function() {
+					$(mathQuill).focus();
+				});
 						
 		}
 	};
 	console.log=console.write;
 	html.console.innerHTML="";
-	console.log("x");
 	console.execute();
 })(window);

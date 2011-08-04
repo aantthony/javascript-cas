@@ -365,10 +365,12 @@ var p_internal = (function (language) {
 				current_token=c;
 			}
 		}
+		/*
 		if(current_token.length){
 			//Unsure what should be happening here.
 			console.warn("final token: ",current_token);
 		}
+		*/
 
 
 	//Shunting yard algorithm:
@@ -474,13 +476,15 @@ M.latex={
 			s=s.join("");
 			
 		}
-		var latexexprs = {};
-		s=s.replace(/\\([a-z]+)/g,function(x){return latexexprs[x]||"";});
+		var latexexprs = {
+			"cdot":"*"
+		};
+		s=s.replace(/\\([a-z]+)/g,function(u,x){return latexexprs[x]||"";});
+		s=s.replace(/\^/g,"**");
 		return s;
 	}
 };
 M.global = {};
-console.log(M.latex.parse("x"));
 //Array prototype extensions:
 var _Array_prototype_toString=Array.prototype.toString;
 Array.prototype.toString=function(){
@@ -502,6 +506,44 @@ Array.prototype.toString=function(){
 	}
 	
 };
+
+Array.prototype.setType=function(type){
+	this.type=type;
+	return this;
+};
+Array.prototype.simplify=function(){
+	if(this.length===2){
+		var a = this[0].simplify();
+		var b = this[1].simplify();
+		if(!isNaN(a) && !isNaN(b)){
+			a=Number(a);
+			b=Number(b);
+			switch(this.type){
+				case "+":
+					return a+b;
+				case "*":
+					return a*b;
+				case "/":
+					return a/b;
+				case "-":
+					return a-b;
+				case "**":
+					return Math.pow(a,b);
+			}
+		}else{
+			return [a,b].setType(this.type);
+		}
+		
+	}
+};
+Array.prototype.eval=function(){
+	return this.simplify();
+};
+function I(){
+	return this;
+}
+String.prototype.eval=String.prototype.simplify=I;
+Number.prototype.eval=Number.prototype.simplify=I;
 Array.prototype.toString.toString=function(){
 	//Hide our hacks!
 	return "function toString() {\n    [native code]\n}";
