@@ -72,6 +72,5 @@ window.$$=function getElementById(i){
 		}
 	};
 	console.log=console.write;
-	html.console.innerHTML="";
 	console.execute();
 })(window);
