@@ -196,6 +196,10 @@ var p_internal = (function (language) {
 			// Read a token.
 			// If the token is a number, then add it to the output queue.
 			if(token.t==types.number || token.t==types.variable){
+				if(token.t==types.number){
+					token.v=Number(token.v);
+				}
+				
 				next_rpn(token);
 			}
 			// If the token is a function token, then push it onto the stack.
@@ -534,6 +538,10 @@ Array.prototype.toString=function(){
 	}
 	
 };
+function latexExprForOperator(o){
+	var os={"*":"\\cdot "};
+	return os[o]||o;
+}
 Array.prototype.toLatex=function(){
 	//Infix
 	if(this.length>=2){
@@ -555,7 +563,7 @@ Array.prototype.toLatex=function(){
 					a="("+a+")";
 				}
 				return a;
-			}).join(this.type);
+			}).join(latexExprForOperator(this.type));
 			return a+this.type+b;
 		}
 	}
@@ -576,14 +584,16 @@ Array.prototype.setType=function(type){
 	this.type=type;
 	return this;
 };
-
+Array.prototype.clone=function(){
+	return Array.prototype.slice.apply(this).setType(this.type);
+};
 
 
 //BEGIN MATH
 
 
 //n-ary operators: Good for factorising?? For converting +(1 +(2 3)) to +(1 2 3)
-function canVectorize(o){
+function associative(o){
 	var able=["*","+","="];
 	//Is this a good idea????
 	if(able.indexOf(o)!=-1){
@@ -592,14 +602,134 @@ function canVectorize(o){
 	return false;
 }
 
-
 //Commute?
+function commutative(o){
+	return ["*","+","="].indexOf(o)!=-1;
+}
+
+//Is the operator o left-distributive over operator p?
+function distributive(o, p){
+	var os={
+		"*":"+",
+		"cross-product":"+",
+		"matrix-multiplication":"+",
+		"set-union":"intersect",
+		"||":"&&",
+		"conjugtion":["disjunction", "exclusive disjunction"],
+		"max":"min",
+		"gcd":"lcm",
+		"+":["max","min"]
+	};
+	if(os[o]){
+		if(os[o]===p || (os[o].indexOf && os[o].indexOf(p)!=-1)){
+			return true;
+		}
+	}
+	return false;
+}
+
+
+
 Array.prototype.requiresParentheses=function(o){
 	return precedence(o)>precedence(this.type);
 };
 
-
-
+window.distributive=distributive;
+Array.prototype.apply=function(o, x){
+	
+	//Distributive law:
+	if(distributive(o,this.type)){
+		
+		//console.log("attempting to apply distributve to multiply "+this.toString()+" by "+x.toString());
+		for (var i = this.length - 1; i >= 0; i--){
+			
+			//console.log(" - multiply ("+o+") the "+this[i].toString()+" factor by "+x);
+			this[i]=this[i].apply(o,x);
+			//console.log(" X multiply ("+o+") the "+this[i].toString()+" factor by "+x);
+			
+		};
+		return this;
+	}
+	//DEBUG, the only logical order I can think of
+	//is linking numbers, but thats kinda crap.
+	if(!isNaN(x)){
+	
+	//Associative law:
+	if(this.type == o && associative(o)){
+		//It can apply itself to ONE and only one
+		//of the sub exprs of a.
+		var found=false;
+		//TODO Which one/order though?
+		for (var i = this.length - 1; i >= 0; i--){
+			if(!isNaN(this[i])){
+				this[i]=this[i].apply(o,x);
+				found=true;
+				break;
+			}
+		}
+		if(found){
+			return this;
+		}
+	}
+	}
+	return [this,x].setType(o);
+};
+String.prototype.apply=function(o, b, __commuted__){
+	if(!__commuted__ && commutative(o)){
+		return b.clone().apply(o, this, true);
+	}
+	return [String(this), b].setType(o);
+}
+Number.prototype.apply=function(o, b, __commuted__){
+	var a = Number(this);
+	if(!isNaN(b)){
+		switch(o){
+			case "+":
+				return a+b;
+			case "*":
+				return a*b;
+			case "/":
+				return a/b;
+			case "-":
+				return a-b;
+			case "**":
+				return Math.pow(a,b);
+			case "===":
+				return a===b;
+			case "==":
+				return a==b;
+			case ">":
+				return a>b;
+			case "<":
+				return a<b;
+			case ">=":
+				return a>=b;
+			case "<=":
+				return a<=b;
+			case "&":
+				return a&b;
+			case "^":
+				return a^b;
+			case "||":
+				return a||b;
+			case "|":
+				return a|b;
+			case "%":
+				return a%b;
+			case "&&":
+				return a&&b;
+			
+			default:
+				throw("Operator '"+this.type+"' is not yet numerically implemented.");
+				
+		}
+	}
+	if(!__commuted__ && commutative(o)){
+		return b.clone().apply(o, this, true);
+	}
+	return [this, b].setType(o);
+};
+Boolean.prototype.apply=Number.prototype.apply;
 Array.prototype.simplify=function(){
 	if(this.length===1){
 		var a = this[0].simplify();
@@ -620,7 +750,8 @@ Array.prototype.simplify=function(){
 		var a = this[0].simplify();
 		var b = this[1].simplify();
 		
-		
+		//In place?
+		return a.apply(this.type, b);
 		
 		//The NaN junk below is kind of bad. It should carry through NaNs.
 		// Ie., 1+2+3....+x + 11 + 12 + 13 + ... = 
@@ -730,6 +861,9 @@ Boolean.prototype.simplify=
 String.prototype.toLatex=
 Number.prototype.toLatex=
 Boolean.prototype.toLatex=
+Number.prototype.clone=
+Boolean.prototype.clone=
+String.prototype.clone=
 I;
 Number.prototype.requiresParentheses=
 String.prototype.requiresParentheses=
