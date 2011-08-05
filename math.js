@@ -513,16 +513,15 @@ Array.prototype.toString=function(){
 		return _Array_prototype_toString.apply(this,arguments);
 	}
 	//Infix
-	if(this.length==2){
-		var a = this[0].toString();
-		var b = this[1].toString();
-		if(this[0].requiresParentheses(this.type)){
-			a="("+a+")";
-		}
-		if(this[1].requiresParentheses(this.type)){
-			b="("+b+")";
-		}
-		return a+this.type+b;
+	if(this.length>=2){
+		var self=this;
+		return this.map(function(t){
+			var a = t.toString();
+			if(t.requiresParentheses(self.type)){
+				a="("+a+")";
+			}
+			return a;
+		}).join(this.type);
 	}
 	//Postfix
 	if(this.length==1){
@@ -537,7 +536,7 @@ Array.prototype.toString=function(){
 };
 Array.prototype.toLatex=function(){
 	//Infix
-	if(this.length==2){
+	if(this.length>=2){
 		if(this.type==="/"){
 			return "\\frac{"+this[0].toLatex()+"}{"+this[1].toLatex()+"}";
 		} else if(this.type==="**"){
@@ -548,15 +547,15 @@ Array.prototype.toLatex=function(){
 			}
 			return a+"^{"+this[1].toLatex()+"}";
 		} else {
-			var a = this[0].toLatex();
-			var b = this[1].toLatex();
-			if(this[0].requiresParentheses(this.type)){
-				a="("+a+")";
-			}
-			if(this[1].requiresParentheses(this.type)){
-				b="("+b+")";
-			}
 			
+			var self=this;
+			return this.map(function(t){
+				var a = t.toLatex();
+				if(t.requiresParentheses(self.type)){
+					a="("+a+")";
+				}
+				return a;
+			}).join(this.type);
 			return a+this.type+b;
 		}
 	}
@@ -578,6 +577,20 @@ Array.prototype.setType=function(type){
 	return this;
 };
 
+
+
+//BEGIN MATH
+
+
+//n-ary operators: Good for factorising?? For converting +(1 +(2 3)) to +(1 2 3)
+function canVectorize(o){
+	var able=["*","+","="];
+	//Is this a good idea????
+	if(able.indexOf(o)!=-1){
+		return true;
+	}
+	return false;
+}
 
 
 //Commute?
@@ -690,6 +703,10 @@ Array.prototype.simplify=function(){
 Array.prototype.eval=function(){
 	return this.simplify();
 };
+
+
+
+//END MATH
 function I(){
 	return this;
 }
