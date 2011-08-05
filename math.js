@@ -718,14 +718,25 @@ Number.prototype.apply=function(o, b, __commuted__){
 				return a%b;
 			case "&&":
 				return a&&b;
-			
+			case ",":
+				//TODO: fix this
+				if(a.type===","){
+					return a.push(b);
+				}else if(b.type === ","){
+					return b.push(a);
+				}
+				return [a,b].setType(o);
 			default:
-				throw("Operator '"+this.type+"' is not yet numerically implemented.");
+				throw("Operator '"+o+"' is not yet numerically implemented.");
 				
 		}
 	}
-	if(!__commuted__ && commutative(o)){
-		return b.clone().apply(o, this, true);
+	if(commutative(o)){
+		if(__commuted__){
+			return [b, this].setType(o);
+		}else{
+			return b.clone().apply(o, this, true);
+		}
 	}
 	return [this, b].setType(o);
 };
