@@ -619,6 +619,15 @@ Array.prototype.simplify=function(){
 	else if(this.length===2){
 		var a = this[0].simplify();
 		var b = this[1].simplify();
+		
+		
+		
+		//The NaN junk below is kind of bad. It should carry through NaNs.
+		// Ie., 1+2+3....+x + 11 + 12 + 13 + ... = 
+		//      6 + x + 11 + 12 + 13 + ... with the code below. But we want 
+		// x+ (6+11+12+13+...),
+		// and it may be better done without the intermediate step via
+		// x+(1+2+3...)+11+12+13... (which would be bringing the 1+2+3... up the expr tree) 
 		if(!isNaN(a) && !isNaN(b)){
 			
 			a=Number(a);
