@@ -69,6 +69,14 @@ languages[language] = [
 	["break",R,0],
 	["throw",R,1]
 ];
+
+var operators={};
+function precedence(v){
+	if(!operators[v]){
+		throw("Precedence of "+v+" not known!");
+	}
+	return operators[v][1];
+}
 var p_internal = (function (language) {
 	//Begin p_internal building space.
 	//This context will be accessible to p_internal()
@@ -81,7 +89,6 @@ var p_internal = (function (language) {
 	
 	//var names = ["none","num","op","paren","var"];
 
-	var operators={};
 	var op_precedence=0;
 	function op(v,assoc,arg_c){
 		//Register an operator
@@ -114,12 +121,7 @@ var p_internal = (function (language) {
 		function(e){return varcannotbe.indexOf(e)==-1;}
 	];
 
-	function precedence(v){
-		if(!operators[v]){
-			throw("Precedence of "+v+" not known!");
-		}
-		return operators[v][1];
-	}
+	
 	//p_internal:
 	return function (s){
 		//O(n)
@@ -183,6 +185,10 @@ var p_internal = (function (language) {
 				//'Keyword' search: eg. break, if. Stuff like that.
 				if (operators[token.v]) {
 					token.t = types.operator;
+				} else if(token.v==="false"){
+					token.v=false;
+				} else if(token.v==="true"){
+					token.v=true;
 				}
 			}
 			//console.log("token: ", token.v, token.t);
@@ -487,6 +493,13 @@ M.latex={
 			"neg":"!"
 		};
 		s=s.replace(/\\([a-z]+)/g,function(u,x){return latexexprs[x]||"";});
+		
+		
+		//Naughty:
+		s=s.replace(/[\[\{]/g,"(");
+		s=s.replace(/[\]\}]/g,")");
+		
+		s=s.replace(/\\:/g," ");
 		s=s.replace(/\\/g,"");
 		s=s.replace(/\^/g,"**");
 		return s;
@@ -501,7 +514,15 @@ Array.prototype.toString=function(){
 	}
 	//Infix
 	if(this.length==2){
-		return this[0].toString()+this.type+this[1].toString();
+		var a = this[0].toString();
+		var b = this[1].toString();
+		if(this[0].requiresParentheses(this.type)){
+			a="("+a+")";
+		}
+		if(this[1].requiresParentheses(this.type)){
+			b="("+b+")";
+		}
+		return a+this.type+b;
 	}
 	//Postfix
 	if(this.length==1){
@@ -514,11 +535,58 @@ Array.prototype.toString=function(){
 	}
 	
 };
+Array.prototype.toLatex=function(){
+	//Infix
+	if(this.length==2){
+		if(this.type==="/"){
+			return "\\frac{"+this[0].toLatex()+"}{"+this[1].toLatex()+"}";
+		} else if(this.type==="**"){
+			
+			var a = this[0].toLatex();
+			if(this[0].requiresParentheses(this.type)){
+				a="("+a+")";
+			}
+			return a+"^{"+this[1].toLatex()+"}";
+		} else {
+			var a = this[0].toLatex();
+			var b = this[1].toLatex();
+			if(this[0].requiresParentheses(this.type)){
+				a="("+a+")";
+			}
+			if(this[1].requiresParentheses(this.type)){
+				b="("+b+")";
+			}
+			
+			return a+this.type+b;
+		}
+	}
+	//Postfix
+	if(this.length==1){
+		return this[0].toLatex()+this.type;
+	}
+	
+	//Prefix
+	if(false && this.length==2){
+		return this[0].toLatex()+this.type+this[1].toLatex();
+	}
+	
+};
+
 
 Array.prototype.setType=function(type){
 	this.type=type;
 	return this;
 };
+
+
+
+//Commute?
+Array.prototype.requiresParentheses=function(o){
+	return precedence(o)>precedence(this.type);
+};
+
+
+
 Array.prototype.simplify=function(){
 	if(this.length===1){
 		var a = this[0].simplify();
@@ -585,6 +653,34 @@ Array.prototype.simplify=function(){
 					throw("Operator '"+this.type+"' is not yet numerically implemented.");
 					
 			}
+		}else if(!isNaN(a)) {
+			switch(this.type){
+				case "&&":
+					return a?b:false;
+				case "||":
+					return true;
+				case "^":
+					return a?!b:b;
+				default:
+					//Commute?
+					return [a,b].setType(this.type);
+					break;
+				
+			}
+		}else if(!isNaN(b)) {
+			switch(this.type){
+				case "&&":
+					return b?a:false;
+				case "||":
+					return true;
+				case "^":
+					return b?!a:a;
+				default:
+					//Commute?
+					return [a,b].setType(this.type);
+					break;
+				
+			}
 		}else{
 			return [a,b].setType(this.type);
 		}
@@ -597,8 +693,23 @@ Array.prototype.eval=function(){
 function I(){
 	return this;
 }
-String.prototype.eval=String.prototype.simplify=I;
-Number.prototype.eval=Number.prototype.simplify=I;
+function _false(){
+	return false;
+}
+Number.prototype.eval=
+Number.prototype.simplify=
+String.prototype.eval=
+String.prototype.simplify=
+Boolean.prototype.simplify=
+String.prototype.toLatex=
+Number.prototype.toLatex=
+Boolean.prototype.toLatex=
+I;
+Number.prototype.requiresParentheses=
+String.prototype.requiresParentheses=
+Boolean.prototype.requiresParentheses=
+_false;// Or should it be true for strings, parens = ", and "
+
 Array.prototype.toString.toString=function(){
 	//Hide our hacks!
 	return "function toString() {\n    [native code]\n}";

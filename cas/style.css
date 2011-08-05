@@ -9,11 +9,11 @@ body,html{
 
 #header{
 	height:20px;
-	background:#0070f0;
-	border-top:1px solid #0af;
+	background:#0070f0 url(bgrad.gif) repeat-x;
+	border-top:1px solid #33bbff;
 	border-bottom:1px solid #aaa;
 	padding:4px 14px;
-	color:white;
+	color:#d4f2ff;
 }
 #main{
 	position:fixed;
@@ -47,8 +47,10 @@ ul#console{
 	padding-right:8px;
 }
 #console li.write .result.error{
-	background:#FFF1B5;
+	background:#FFF1B5 url(wgrad.png) repeat-x;
+	border:1px solid #e8dba5;
 	padding:4px;
+	margin:4px;
 }
 #console li.write .result.error:before{
 	content:"⇒";
@@ -56,4 +58,11 @@ ul#console{
 #console li.user{
 	-webkit-transition: opacity 0.3s linear;
 	opacity:0.0;
+}
+.right{
+	float:right;
+}
+#header .right{
+	font-size:small;
+	text-shadow:0px 1px 0px black;
 }
