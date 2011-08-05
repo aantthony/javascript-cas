@@ -61,7 +61,7 @@ window.$$=function getElementById(i){
 				.trigger({ type: "keydown", ctrlKey: true, which: 65 })
 				.focus()
 				.bind("keydown.jscas", function(event) {
-						if(event.which == 13) {
+						if(event.which === 13) {
 							var jQueryDataKey = '[[mathquill internal data]]';
 							var latex = $(this).mathquill("latex");
 							if(x=self.execute(latex)){
@@ -79,7 +79,13 @@ window.$$=function getElementById(i){
 						}
 					}
 				
-				);
+				)
+				.bind("keyup.jscas", function(event){
+					//The equation may have increased in size vertically, so scroll down.
+					if(event.which === 191 || event.shiftKey && event.which === 54){
+						html.main.scrollTop=$(html.console).height();
+					}
+				});
 			$(current).bind("click.jscas",function() {
 				$(mathQuill).focus();
 			});
