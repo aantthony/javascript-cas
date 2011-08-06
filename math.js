@@ -42,7 +42,7 @@ var R = right = 1;
  * Associativity
  * Operand count (Must be a fixed number) 
  * (TODO??) commute group? - or should this be derived?
- * (TODO?) associative? commutative? 
+ * (TODO?) associative? commutative?  - Should be calculated?
  * (TODO?) Identity?
 */
 languages[language] = [
@@ -59,8 +59,10 @@ languages[language] = [
 	[["==","!=","!==","==="]],
 	[["<","<=",">",">="],L],
 	[[">>","<<"]],
+	["±",R,2],
 	[["+","-"]],
 	[["*","/","%"]],
+	["∘",R,2],
 	[["**"]],//e**x
 	[["!","~"],R,1],
 	[["++","++",".","->"],L,1],
@@ -87,7 +89,7 @@ var p_internal = (function (language) {
 		variable: 4
 	};
 	
-	//var names = ["none","num","op","paren","var"];
+	var names = ["none","num","op","paren","var"];
 
 	var op_precedence=0;
 	function op(v,assoc,arg_c){
@@ -108,7 +110,7 @@ var p_internal = (function (language) {
 	//Operator characters
 	//TODO: calculate programmatically
 	
-	var ochars=":>-.+~!^%/*<=&|?,;";
+	var ochars=":>-.+~!^%/*<=&|?,;±∘";
 	
 	//TODO: Allow 1e+2 format
 	var nummustbe="1234567890.";
@@ -160,7 +162,7 @@ var p_internal = (function (language) {
 				// If there are fewer than n values on the stack
 				if(rpn_stack.length<n){
 					// (Error) The user has not input sufficient values in the expression.
-					throw("The user has not input sufficient values in the expression. The "+token.v+" operator requires exactly "+n+" operands, whereas only "+rpn_stack.length+" "+(rpn_stack.length===1?"was":"were")+" supplied ("+rpn_stack+")")
+					throw(new SyntaxError("The "+token.v+" operator requires exactly "+n+" operands, whereas only "+rpn_stack.length+" "+(rpn_stack.length===1?"was":"were")+" supplied."));
 				// Else,
 				}else{
 					// Pop the top n values from the stack.
@@ -191,7 +193,7 @@ var p_internal = (function (language) {
 					token.v=true;
 				}
 			}
-			//console.log("token: ", token.v, token.t);
+			console.log("token: ", token.v, names[token.t]);
 			//Comments from http://en.wikipedia.org/wiki/Shunting-yard_algorithm
 			// Read a token.
 			// If the token is a number, then add it to the output queue.
@@ -206,6 +208,7 @@ var p_internal = (function (language) {
 			if(token.t===types.func){
 				stack.push(token);
 			}
+			
 			// If the token is a function argument separator (e.g., a comma):
 			if(token.t===types.comma){
 				// Until the token at the top of the stack is a left parenthesis,
@@ -311,12 +314,33 @@ var p_internal = (function (language) {
 			}
 
 		};
+		var op_last=true;
 		function next_tokens(token) {
 			token
 			.v
 			.split(token.t===types.paren?"":/[ \n\t]+/)
 			.forEach(function (t) {
 				if(t.length) {
+					//TODO: Fails on f(x+2)
+					if(token.t!=types.paren){
+						if(!op_last && token.t!=types.operator){
+							next_token({v:"∘",t:types.operator});
+							//throw("No operator before "+t);
+						}
+						if(token.t==types.operator){
+							op_last=true;
+						}else{
+							op_last=false;
+						}
+					}else{
+						if(t=="(" && (op_last==false||op_last==")")){
+							next_token({v:"∘",t:types.operator});
+							op_last=t;
+						}else if(t==")"){
+							
+							op_last=t;
+						}
+					}
 					next_token({v:t,t:token.t});
 				}
 			});
@@ -372,8 +396,9 @@ var p_internal = (function (language) {
 
 					} else {
 						//Let's assume multiplication
-
-						console.error("Operator was expected between ", current_token.s, " and ", c.s);
+						next_tokens({v:"∘",t:types.operator});
+						current_type = types.variable;
+						console.error("Operator was expected between ", current_token, " and ", c, "( ∘ assumed)");
 					}
 				}
 				current_token=c;
@@ -424,6 +449,17 @@ function p(expression, context){
 	//TODO?: Apply context?
 	return p_internal(expression);
 }
+M.Context = function(){
+	
+};
+M.Context.prototype.reset=function(){
+	for(var i in this){
+		if(this.hasOwnProperty(i)){
+			delete this[i];
+		}
+	}
+	return this;
+};
 //Like jquery noConflict
 M.noConflict = function() {
 	window.M=_M;
@@ -494,9 +530,16 @@ M.latex={
 			"cdot":"*",
 			"vee":"||",
 			"wedge":"&&",
-			"neg":"!"
+			"neg":"!",
+			"left":"",
+			"right":"",
+			"pm":"±",
+			"circ":"∘"
 		};
-		s=s.replace(/\\([a-z]+)/g,function(u,x){return latexexprs[x]||"";});
+		s=s.replace(/\\([a-z]+)/g,function(u,x){
+			var s=latexexprs[x];
+			return (s!=undefined)?s:x;
+		});
 		
 		
 		//Naughty:
@@ -539,7 +582,13 @@ Array.prototype.toString=function(){
 	
 };
 function latexExprForOperator(o){
-	var os={"*":"\\cdot "};
+	var os={
+		"*":"\\cdot ",
+		"||":"\\vee ",
+		"&&":"\\wedge ",
+		"±":"\\pm ",
+		"∘":"\\circ "
+	};
 	return os[o]||o;
 }
 Array.prototype.toLatex=function(){
@@ -594,7 +643,7 @@ Array.prototype.clone=function(){
 
 //n-ary operators: Good for factorising?? For converting +(1 +(2 3)) to +(1 2 3)
 function associative(o){
-	var able=["*","+","="];
+	var able=["*","+","=","∘"];
 	//Is this a good idea????
 	if(able.indexOf(o)!=-1){
 		return true;
@@ -628,15 +677,84 @@ function distributive(o, p){
 	return false;
 }
 
-
-
+function identity(o){
+	var os={
+		"+":0,
+		"*":1,
+		"^":0,
+		
+		"/":1, //Implied by inverse?()
+		"-":0,
+		"&&":true,
+		"||":false,
+		
+		"%":Infinity, //Bounds of real numbers
+		"**":1,
+		"matrix multiplication":I
+		
+		
+	};
+	if(os[o]!==undefined){
+		return os[o];
+	}
+	return undefined;
+}
+function inverse(o,b){
+	var os={
+		"+":"-",
+		"*":"/",
+		"^":"^",
+		
+		"&&":["||","!","&&","$0"],
+		
+		"**":["^","/"],
+		"∘":["∘","/"],//DEBUG: check this junk
+		"matrix multiplication":I
+		
+		
+	};
+	if(os[o]){
+		var c=b.clone();
+		if(typeof os[o]==="object"){
+			for (var i = os[o].length - 1; i > 0; i--){
+				c=[identity(os[o][i]),c].setType(os[o][i]);
+				if(!c.valid()){
+					return false;
+				}
+			};	
+		}
+		c=[undefined,c].setType(os[o]);
+		
+		if(!c.valid()){
+			return false;
+		}
+		
+		return c;
+		
+		
+	}
+	
+}
+Array.prototype.valid=function(){
+	if(this.type=="/" && this[1]==0){
+		return false;
+	}
+	return true;
+};
 Array.prototype.requiresParentheses=function(o){
 	return precedence(o)>precedence(this.type);
 };
 
 window.distributive=distributive;
+window.inverse=inverse;
+window.identity=identity;
 Array.prototype.apply=function(o, x){
-	
+	if(identity(o)==x){
+		return this;
+	}
+	if(inverse(o,x)===false){
+		return x;
+	}
 	//Distributive law:
 	if(distributive(o,this.type)){
 		
@@ -675,12 +793,37 @@ Array.prototype.apply=function(o, x){
 	return [this,x].setType(o);
 };
 String.prototype.apply=function(o, b, __commuted__){
+	
+	if(identity(o)==b){
+		return String(this);
+	}
+	if(inverse(o,b)===false){
+		return b;
+	}
 	if(!__commuted__ && commutative(o)){
 		return b.clone().apply(o, this, true);
 	}
 	return [String(this), b].setType(o);
 }
+var truth=[1,1].setType("=");
 Number.prototype.apply=function(o, b, __commuted__){
+	
+	
+	if(o==="∘"){
+		//∘ commutes with scalars
+		if(__commuted__){
+			return [b, Number(this)].setType("*");
+		}else{
+			return b.clone().apply("*", Number(this), true);
+		}
+	}
+	
+	//TODO Identity and inverse can be combined if the left operand is included in
+	// the calculation?
+	
+	if(identity(o)==b){
+		return Number(this);
+	}
 	var a = Number(this);
 	if(!isNaN(b)){
 		switch(o){
@@ -718,6 +861,11 @@ Number.prototype.apply=function(o, b, __commuted__){
 				return a%b;
 			case "&&":
 				return a&&b;
+			case "∘":
+				//assume multiplication
+				return a*b;
+			case "±":
+				return [a+b,a-b].setType(",");
 			case ",":
 				//TODO: fix this
 				if(a.type===","){
@@ -726,19 +874,36 @@ Number.prototype.apply=function(o, b, __commuted__){
 					return b.push(a);
 				}
 				return [a,b].setType(o);
-			default:
-				throw("Operator '"+o+"' is not yet numerically implemented.");
 				
+			case "=":
+				if(a==b){
+					return truth;
+				}
+				window.a=a;
+				window.b=b;
+				throw(new Error("The statement is always false: "+a+" ≠ "+b))
+				throw(new ReferenceError("Left side of assignment is not a reference."))
+			default:
+				throw("Operator '"+o+"' is not yet numerically implemented.");	
 		}
 	}
 	if(commutative(o)){
+		
+		if(identity(o)==Number(this)){
+			return b;
+		}
 		if(__commuted__){
-			return [b, this].setType(o);
+			return [b, Number(this)].setType(o);
 		}else{
-			return b.clone().apply(o, this, true);
+			return b.clone().apply(o, Number(this), true);
 		}
 	}
-	return [this, b].setType(o);
+	//Messy hack: null factor law:
+	if(a===0 && o=="/"){
+		return [0,["δ",b].setType("∘")].setType("±");
+		return [[b,0].setType("=="),NaN].setType("*");
+	}
+	return [Number(this), b].setType(o);
 };
 Boolean.prototype.apply=Number.prototype.apply;
 Array.prototype.simplify=function(){
@@ -763,7 +928,7 @@ Array.prototype.simplify=function(){
 		
 		//In place?
 		return a.apply(this.type, b);
-		
+		/*
 		//The NaN junk below is kind of bad. It should carry through NaNs.
 		// Ie., 1+2+3....+x + 11 + 12 + 13 + ... = 
 		//      6 + x + 11 + 12 + 13 + ... with the code below. But we want 
@@ -812,7 +977,8 @@ Array.prototype.simplify=function(){
 					return a%b;
 				case "&&":
 					return a&&b;
-				
+				case "=":
+					throw(new ReferenceError("Left side of assignment is not a reference."))
 				default:
 					throw("Operator '"+this.type+"' is not yet numerically implemented.");
 					
@@ -848,13 +1014,46 @@ Array.prototype.simplify=function(){
 		}else{
 			return [a,b].setType(this.type);
 		}
-		
+		*/
 	}
+};
+Array.prototype.impliedBy=function(context){
+	if(this===truth){
+		return true;
+	}
+	if(this.type===","){
+		for (var i = this.length - 1; i >= 0; i--){
+			if(!this[i].impliedBy(context)){
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	if(this.type==="="){
+		return false;
+	}
+	//Sub-statements? Too slow?
+	
+		for (var i = this.length - 1; i >= 0; i--){
+			if(!this[i].impliedBy(context)){
+				return false;
+			}
+		}
+		return true;
+	
 };
 Array.prototype.eval=function(){
 	return this.simplify();
 };
-
+Array.prototype.Function=function(x){
+	
+	//DANGER!!!!!!!!!!!
+	if(x===undefined){
+		return new Function("return "+this.toString());
+	}
+	return new Function(x,"return "+this.toString());
+}
 
 
 //END MATH
@@ -863,6 +1062,9 @@ function I(){
 }
 function _false(){
 	return false;
+}
+function _true(){
+	return true;
 }
 Number.prototype.eval=
 Number.prototype.simplify=
@@ -880,7 +1082,10 @@ Number.prototype.requiresParentheses=
 String.prototype.requiresParentheses=
 Boolean.prototype.requiresParentheses=
 _false;// Or should it be true for strings, parens = ", and "
-
+Number.prototype.impliedBy=
+String.prototype.impliedBy=
+Boolean.prototype.impliedBy=
+_true;
 Array.prototype.toString.toString=function(){
 	//Hide our hacks!
 	return "function toString() {\n    [native code]\n}";

@@ -42,7 +42,8 @@ ul#console{
 }
 
 #console li.write .result:before{
-	content:"=";
+	content:"⇔";
+	/*content:"=";*/
 	padding-left:8px;
 	padding-right:8px;
 }
@@ -51,6 +52,9 @@ ul#console{
 	border:1px solid #e8dba5;
 	padding:4px;
 	margin:4px;
+}
+#console li.write .result.equals:before{
+	content:"=";
 }
 #console li.write .result.error:before{
 	content:"⇒";

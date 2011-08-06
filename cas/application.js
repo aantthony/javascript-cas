@@ -1,15 +1,26 @@
 window.$$=function getElementById(i){
 	return document.getElementById(i.substring(1));
 };
-
 !(function (window, undefined) {
 	var html={
 		"console":$$("#console"),
 		"main":$$("#main")
 	};
+	var context=new M.Context();//State
+	
+	var ctrlcodes={"clear":"[H[2J"};
+	
 	function exec(latex){
 		//Convert to javascript:
-		return M(M.latex.parse(latex)).eval();
+		var expr=M(M.latex.parse(latex)).eval();
+		if(!expr.impliedBy(context)){
+			throw(new Error("That statement may not be true."));
+		}
+		if(ctrlcodes[expr] !== undefined){
+			return ctrlcodes[expr];
+		}
+		
+		return expr;
 	}
 	var console = {
 		"current":undefined,
@@ -37,9 +48,18 @@ window.$$=function getElementById(i){
 				result.className="result";
 				try{
 					res = exec(d).toLatex();
-					result.appendChild(document.createTextNode(res));
-					this.current.appendChild(result);
-					$(result).mathquill();
+					if(res==ctrlcodes.clear){
+						//
+						$(html.console).children().remove();
+						res="";
+					}else{
+						
+						
+						result.appendChild(document.createTextNode(res));
+						this.current.appendChild(result);
+						$(this.current).find(".error").remove();
+						$(result).mathquill();
+					}
 				} catch(ex){
 					res=ex;
 					result.className+=" error";
