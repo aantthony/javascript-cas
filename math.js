@@ -45,6 +45,8 @@ var R = right = 1;
  * (TODO?) associative? commutative?  - Should be calculated?
  * (TODO?) Identity?
 */
+
+
 languages[language] = [
 	[";",L,1],			/*L / R makes no difference???!??!? */
 	[","],
@@ -69,7 +71,8 @@ languages[language] = [
 	[["::"]],
 	["var",R,1],
 	["break",R,0],
-	["throw",R,1]
+	["throw",R,1],
+	["'",L,1]
 ];
 
 var operators={};
@@ -110,11 +113,11 @@ var p_internal = (function (language) {
 	//Operator characters
 	//TODO: calculate programmatically
 	
-	var ochars=":>-.+~!^%/*<=&|?,;±∘";
+	var ochars=":>-.+~!^%/*<=&|?,;±∘'";
 	
 	//TODO: Allow 1e+2 format
 	var nummustbe="1234567890.";
-	var parenmustbe="([{}'\"])";
+	var parenmustbe="([{}\"])";
 	var varcannotbe=ochars+parenmustbe+nummustbe;
 	var regex=[0,
 		function(e){return nummustbe.indexOf(e)!==-1;},
@@ -123,6 +126,25 @@ var p_internal = (function (language) {
 		function(e){return varcannotbe.indexOf(e)==-1;}
 	];
 
+	
+	function split_operators(t){
+		if(operators[t]){
+			return [t];
+		}
+		for (var i = t.length - 1; i > 0; i--){
+			var a = t.substring(0,i);
+			if(operators[a]){
+				
+				return [a].concat(split_operators(t.substring(i)));
+			}
+		}
+		throw("Expression '"+t+"' did not contain any operator prefix codes.");
+	}
+	function postfix(o){
+		var op=operators[o];
+		return op[0]==0 && op[2]==1;
+	}
+	window.operators=operators;
 	
 	//p_internal:
 	return function (s){
@@ -162,6 +184,7 @@ var p_internal = (function (language) {
 				// If there are fewer than n values on the stack
 				if(rpn_stack.length<n){
 					// (Error) The user has not input sufficient values in the expression.
+					
 					throw(new SyntaxError("The "+token.v+" operator requires exactly "+n+" operands, whereas only "+rpn_stack.length+" "+(rpn_stack.length===1?"was":"were")+" supplied."));
 				// Else,
 				}else{
@@ -191,6 +214,8 @@ var p_internal = (function (language) {
 					token.v=false;
 				} else if(token.v==="true"){
 					token.v=true;
+				} else if(token.v==="Infinity"){
+					token.v=Infinity;
 				}
 			}
 			console.log("token: ", token.v, names[token.t]);
@@ -315,10 +340,22 @@ var p_internal = (function (language) {
 
 		};
 		var op_last=true;
+		
 		function next_tokens(token) {
-			token
-			.v
-			.split(token.t===types.paren?"":/[ \n\t]+/)
+			var tokens=[],
+				_tokens=
+			token.v
+			.split(token.t===types.paren?"":/[ \n\t]+/);
+			if(token.t===types.operator){
+				_tokens
+				.forEach(function(t) {
+					tokens=tokens.concat(split_operators(t));
+				});
+			}else{
+				tokens=_tokens;
+			}
+			
+			tokens
 			.forEach(function (t) {
 				if(t.length) {
 					//TODO: Fails on f(x+2)
@@ -327,7 +364,8 @@ var p_internal = (function (language) {
 							next_token({v:"∘",t:types.operator});
 							//throw("No operator before "+t);
 						}
-						if(token.t==types.operator){
+						if(token.t==types.operator && !postfix(t)){
+							
 							op_last=true;
 						}else{
 							op_last=false;
@@ -398,7 +436,7 @@ var p_internal = (function (language) {
 						//Let's assume multiplication
 						next_tokens({v:"∘",t:types.operator});
 						current_type = types.variable;
-						console.error("Operator was expected between ", current_token, " and ", c, "( ∘ assumed)");
+						//console.warn("Operator was expected between ", current_token, " and ", c, "( ∘ assumed)");
 					}
 				}
 				current_token=c;
@@ -431,7 +469,7 @@ var p_internal = (function (language) {
 
 		}
 		if(rpn_stack.length!==1){
-			console.warn("Stack not the right size! "+ rpn_stack);
+			console.warn("Stack not the right size! ", rpn_stack);
 			//who gives?
 			
 			return rpn_stack;
@@ -534,7 +572,8 @@ M.latex={
 			"left":"",
 			"right":"",
 			"pm":"±",
-			"circ":"∘"
+			"circ":"∘",
+			"infty":"Infinity"
 		};
 		s=s.replace(/\\([a-z]+)/g,function(u,x){
 			var s=latexexprs[x];
@@ -556,6 +595,7 @@ M.global = {};
 //Array prototype extensions:
 var _Array_prototype_toString=Array.prototype.toString;
 Array.prototype.toString=function(){
+	console.error("Inefficency",this);
 	if(!this.type){
 		return _Array_prototype_toString.apply(this,arguments);
 	}
@@ -581,6 +621,7 @@ Array.prototype.toString=function(){
 	}
 	
 };
+Array.prototype.toString=null;
 function latexExprForOperator(o){
 	var os={
 		"*":"\\cdot ",
@@ -591,25 +632,34 @@ function latexExprForOperator(o){
 	};
 	return os[o]||o;
 }
+var latexFuncs="log|exp|asinh|acosh|atanh|sinh|sech|cosh|coth|tanh|sin|cos|tan|cot|sec|exp|log".split("|");
 Array.prototype.toLatex=function(){
 	//Infix
 	if(this.length>=2){
 		if(this.type==="/"){
+			
 			return "\\frac{"+this[0].toLatex()+"}{"+this[1].toLatex()+"}";
 		} else if(this.type==="**"){
 			
 			var a = this[0].toLatex();
 			if(this[0].requiresParentheses(this.type)){
-				a="("+a+")";
+				a="\\left("+a+"\\right)";
 			}
 			return a+"^{"+this[1].toLatex()+"}";
+		} else if(this.type==="∘"){
+			var a = this[0].toLatex();
+			if(latexFuncs.indexOf(a)!==-1){
+				a="\\"+a;
+			}else if(this[0].requiresParentheses(this.type)){
+				a="\\left("+a+"\\right)";
+			}
+			return a+"\\left("+this[1].toLatex()+"\\right)";
 		} else {
-			
 			var self=this;
 			return this.map(function(t){
 				var a = t.toLatex();
 				if(t.requiresParentheses(self.type)){
-					a="("+a+")";
+					a="\\left("+a+"\\right)";
 				}
 				return a;
 			}).join(latexExprForOperator(this.type));
@@ -627,7 +677,12 @@ Array.prototype.toLatex=function(){
 	}
 	
 };
-
+Number.prototype.toLatex=function(){
+	if(Number(this)===Infinity){
+		return "\\infty";
+	}
+	return this.toString();
+};
 
 Array.prototype.setType=function(type){
 	this.type=type;
@@ -736,7 +791,7 @@ function inverse(o,b){
 	
 }
 Array.prototype.valid=function(){
-	if(this.type=="/" && this[1]==0){
+	if(this.type==="/" && this[1]===0){
 		return false;
 	}
 	return true;
@@ -749,7 +804,7 @@ window.distributive=distributive;
 window.inverse=inverse;
 window.identity=identity;
 Array.prototype.apply=function(o, x){
-	if(identity(o)==x){
+	if(identity(o)===x){
 		return this;
 	}
 	if(inverse(o,x)===false){
@@ -770,7 +825,7 @@ Array.prototype.apply=function(o, x){
 	}
 	//DEBUG, the only logical order I can think of
 	//is linking numbers, but thats kinda crap.
-	if(!isNaN(x)){
+	if(typeof x==="number" || typeof x==="boolean"){ //!isNaN(x))
 	
 	//Associative law:
 	if(this.type == o && associative(o)){
@@ -794,7 +849,7 @@ Array.prototype.apply=function(o, x){
 };
 String.prototype.apply=function(o, b, __commuted__){
 	
-	if(identity(o)==b){
+	if(identity(o)===b){
 		return String(this);
 	}
 	if(inverse(o,b)===false){
@@ -821,11 +876,11 @@ Number.prototype.apply=function(o, b, __commuted__){
 	//TODO Identity and inverse can be combined if the left operand is included in
 	// the calculation?
 	
-	if(identity(o)==b){
+	if(identity(o)===b){
 		return Number(this);
 	}
 	var a = Number(this);
-	if(!isNaN(b)){
+	if(typeof b==="number" || typeof b==="boolean"){ // !isNaN(b)
 		switch(o){
 			case "+":
 				return a+b;
@@ -1072,7 +1127,6 @@ String.prototype.eval=
 String.prototype.simplify=
 Boolean.prototype.simplify=
 String.prototype.toLatex=
-Number.prototype.toLatex=
 Boolean.prototype.toLatex=
 Number.prototype.clone=
 Boolean.prototype.clone=
@@ -1086,10 +1140,13 @@ Number.prototype.impliedBy=
 String.prototype.impliedBy=
 Boolean.prototype.impliedBy=
 _true;
-Array.prototype.toString.toString=function(){
-	//Hide our hacks!
-	return "function toString() {\n    [native code]\n}";
-};
+
+if(Array.prototype.toString){
+	Array.prototype.toString.toString=function(){
+		//Hide our hacks!
+		return "function toString() {\n    [native code]\n}";
+	};
+}
 
 return M;
 })();

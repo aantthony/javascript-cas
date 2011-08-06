@@ -13,10 +13,12 @@ window.$$=function getElementById(i){
 	function exec(latex){
 		//Convert to javascript:
 		var expr=M(M.latex.parse(latex)).eval();
+		
 		if(!expr.impliedBy(context)){
 			throw(new Error("That statement may not be true."));
 		}
-		if(ctrlcodes[expr] !== undefined){
+		
+		if(typeof expr==="string" && ctrlcodes[expr] !== undefined){
 			return ctrlcodes[expr];
 		}
 		
@@ -46,8 +48,11 @@ window.$$=function getElementById(i){
 				window.d=d;
 				var result=document.createElement("div");
 				result.className="result";
-				try{
-					res = exec(d).toLatex();
+				//try{
+					d=exec(d);
+					
+					res=d.toLatex();
+					//res = exec(d).toLatex();
 					if(res==ctrlcodes.clear){
 						//
 						$(html.console).children().remove();
@@ -60,7 +65,7 @@ window.$$=function getElementById(i){
 						$(this.current).find(".error").remove();
 						$(result).mathquill();
 					}
-				} catch(ex){
+				/*} catch(ex){
 					res=ex;
 					result.className+=" error";
 					result.appendChild(document.createTextNode(res));
@@ -68,7 +73,7 @@ window.$$=function getElementById(i){
 					
 					html.main.scrollTop=$(html.console).height();
 					return false;
-				}
+				}*/
 			}
 			var mathQuill=document.createElement("div");
 			var current = this.current = this.write(mathQuill, "write user");
