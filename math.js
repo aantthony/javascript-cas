@@ -26,8 +26,8 @@ I becomes buggy
 
 (function (window, undefined) {
 	"use strict";
-var navigator = window.navigator,
-	document = window.document,
+var /*navigator = window.navigator,
+	document = window.document,*/
 	_M = window.M;
 var M = (function (){
 
@@ -182,11 +182,11 @@ var p_internal = (function (language) {
 			// While there are input tokens left
 
 			// Read the next token from input.
-			console.log("rpn: ",token);
+			//console.log("rpn: ",token);
 			// If the token is a value
 			if(token.t===types.number || token.t===types.variable){
 				// Push it onto the stack.
-				console.log("push: ",token.v, " onto: rpn_stack = ",rpn_stack.clone());
+				//console.log("push: ",token.v, " onto: rpn_stack = ",rpn_stack.clone());
 				rpn_stack.push(token.v);
 			}
 			// Otherwise, 
@@ -207,7 +207,7 @@ var p_internal = (function (language) {
 					//var evaled=("("+values[0]+token.v+values[1]+")");
 					values.type=token.v;
 					// Push the returned results, if any, back onto the stack.
-					console.log("values: ",values.clone());
+					//console.log("values: ",values.clone());
 					rpn_stack.push(values);
 				}
 			}
@@ -614,8 +614,7 @@ M.latex={
 M.global = {};
 //Array prototype extensions:
 var _Array_prototype_toString=Array.prototype.toString;
-Array.prototype.toString=function(){
-	console.error("Inefficency",this);
+Array.prototype.toStrings=function(){
 	if(!this.type){
 		return _Array_prototype_toString.apply(this,arguments);
 	}
@@ -623,7 +622,7 @@ Array.prototype.toString=function(){
 	if(this.length>=2){
 		var self=this;
 		return this.map(function(t){
-			var a = t.toString();
+			var a = t.toStrings();
 			if(t.requiresParentheses(self.type)){
 				a="("+a+")";
 			}
@@ -632,15 +631,18 @@ Array.prototype.toString=function(){
 	}
 	//Postfix
 	if(this.length==1){
-		return this[0].toString()+this.type;
+		return this[0].toStrings()+this.type;
 	}
 	
 	//Prefix
 	if(false && this.length==2){
-		return this[0].toString()+this.type+this[1].toString();
+		return this[0].toStrings()+this.type+this[1].toStrings();
 	}
 	
 };
+Number.prototype.toStrings=Number.prototype.toString;
+Boolean.prototype.toStrings=Boolean.prototype.toString;
+String.prototype.toStrings=String.prototype.toString;
 Array.prototype.toString=null;
 function latexExprForOperator(o){
 	var os={
@@ -746,6 +748,7 @@ function distributive(o, p){
 	var os={
 		"*":["+","-",/*,"||" messy*/],
 		"/":["+","-"],
+		"**":["*"],
 		"cross-product":"+",
 		"matrix-multiplication":"+",
 		"set-union":"intersect",
@@ -756,6 +759,7 @@ function distributive(o, p){
 		"+":["max","min",","]
 	};
 	//TODO: (if better/faster): use fact (?) that (* distributes over '+' (which distributes over ',')) => (* distributes over ',')
+	// This doesn't hold for the binomial theorem.
 	if(os[o]){
 		if(os[o]===p || (os[o].indexOf && os[o].indexOf(p)!=-1)){
 			return true;
@@ -835,11 +839,12 @@ Array.prototype.requiresParentheses=function(o){
 window.distributive=distributive;
 window.inverse=inverse;
 window.identity=identity;
-Array.prototype.apply=function(o, x){
-	if(identity(o)===x){
+Array.prototype.apply=function(o, x, __commuted__){
+	console.log("Apply ",o,x," to ",this);
+	if(x!==undefined && identity(o)===x){
 		return this;
 	}
-	if(inverse(o,x)===false){
+	if(x!==undefined && inverse(o,x)===false){
 		return x;
 	}
 	//Distributive law:
@@ -857,7 +862,7 @@ Array.prototype.apply=function(o, x){
 	}
 	//DEBUG, the only logical order I can think of
 	//is linking numbers, but thats kinda crap.
-	if(typeof x==="number" || typeof x==="boolean"){ //!isNaN(x))
+	if(x!==undefined && typeof x==="number" || typeof x==="boolean"){ //!isNaN(x))
 	
 	//Associative law:
 	if(this.type == o && associative(o)){
@@ -865,6 +870,7 @@ Array.prototype.apply=function(o, x){
 		//of the sub exprs of a.
 		var found=false;
 		//TODO Which one/order though?
+		//TODO: this.length??? OLD CODE??? It should only be 2 except for vectors
 		for (var i = this.length - 1; i >= 0; i--){
 			if(!isNaN(this[i])){
 				this[i]=this[i].apply(o,x);
@@ -877,10 +883,34 @@ Array.prototype.apply=function(o, x){
 		}
 	}
 	}
+	if(this.type==="/") {
+		if(o==="/") {
+			//TODO: frac mult works for some reason. I guess thats a good thing,
+			// but it seems hacky.
+			// Yeah, it's crap, because \frac{1}{x} (\frac{1}{y}) doesn't
+			// simplify. To do so it will need a _deep_ factor search.
+			// This factor search is like the zeroth? level of that.
+			
+			//Fatal: simplify ∘ simplify ≠ simpify
+			return [this[0],this[1].apply("*",x)].setType(this.type);
+		} else if(o==="*") {
+			return [this[0].apply("*",x),this[1]].setType(this.type);
+		}
+	}
+	if(!__commuted__ && this.type==="*") {
+		if(o==="/" && x.type === "/"){
+			return x.reverse().apply("*",this);
+		}
+	}
+	if(x===undefined){
+		return [this].setType(o);
+	}
 	return [this,x].setType(o);
 };
 String.prototype.apply=function(o, b, __commuted__){
-	
+	if(operators[o][2]==1){
+		return [String(this)].setType(o);
+	}
 	if(identity(o)===b){
 		return String(this);
 	}
@@ -904,6 +934,7 @@ Number.prototype.apply=function(o, b, __commuted__){
 			return b.clone().apply("*", Number(this), true);
 		}
 	}
+	
 	
 	//TODO Identity and inverse can be combined if the left operand is included in
 	// the calculation?
@@ -984,6 +1015,15 @@ Number.prototype.apply=function(o, b, __commuted__){
 				throw("Operator '"+o+"' is not yet numerically implemented.");	
 		}
 	}
+	if(b!==undefined && b.type=="/"){
+		//TODO: getting a bit messy/hacky here:
+		// idea: use a special commutative property, which
+		// would be very useful for relations like
+		// a x b =  b x a * -1
+		// x / y = (y/x) ^-1
+		// and commutators?, like this in QM
+		return b.reverse().apply("*", a, true);
+	}
 	if(commutative(o)){
 		
 		if(identity(o)==Number(this)){
@@ -997,22 +1037,27 @@ Number.prototype.apply=function(o, b, __commuted__){
 	}
 	//Messy hack: null factor law:
 	if(a===0 && o=="/"){
-		return [0,["δ",b].setType("∘")].setType("±");
+		return [["δ",b].setType("∘")].setType("@±");
 		return [[b,0].setType("=="),NaN].setType("*");
 	}
 	return [Number(this), b].setType(o);
 };
 Boolean.prototype.apply=Number.prototype.apply;
 Array.prototype.simplify=function(){
+	
+	//Rules:
+	// simplify ∘ simplify ≠ simpify
+	
+	// Algorithm:
+	// O(2^n???)
 	if(this.length===1){
 		var a = this[0].simplify();
 		
 		return a.apply(this.type);
-	}
-	else if(this.length===2){
+	} else if(this.length===2){
 		var a = this[0].simplify();
 		var b = this[1].simplify();
-		
+		console.log("will apply");
 		//In place?
 		return a.apply(this.type, b);
 		/*
@@ -1192,7 +1237,6 @@ M.toString.toString=function(){
 };
 
 M.toString.toString.toString=M.toString.toString;
-
 window.M = M;
 
 /*
@@ -1209,5 +1253,55 @@ for(; i<len; i++){
 	}
 }
 */
+if(window.onM && typeof window.onM==="function"){
+	onM();
+	onM=null;
+}
+})(
+	function(){
+		if(typeof window === 'undefined'){
+			function con(){
+				global.console.log=function(){};
+				function color(str){
+					return '\x1b[1m' + (str || "") + '\x1b[22m';
+				}
+				var stdin = process.openStdin(),
+					stdio = process.binding("stdio"),
+					stderr= process.stderr,
+					stdout= process.stdout;
 
-})(window);
+				var line = "";
+				stderr.write("Javascript-cas (http://aantthony.github.com/javascript-cas/)\n");
+				stderr.write(">> ");
+				stdin.on("data", function (c) {
+					c = c + ""
+					line+=c;
+					switch (line[line.length-1]) {
+						case "\n": case "\r": case "\u0004":
+						line=line.trim();
+						if(line=="exit"){
+							stdout.write("\n");
+							process.exit()
+						}else if(line==="clear"){
+							stdout.write("\x1b[H\x1b[2J");
+						}else if(line){
+							try{
+								stdout.write(M(line).simplify().toStrings()+"\n");
+							}catch(ex){
+								stderr.write(color(ex)+"\n");
+							}
+						}	
+						stderr.write(">> ");
+						line="";
+						break;
+					default:
+						break
+					}
+				});
+			}
+			global.onM=con;
+			return global;
+		}
+		return window;;
+	}()
+);
