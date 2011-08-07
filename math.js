@@ -18,6 +18,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/*
+TODO: x*0 = 0
+I becomes buggy
+
+*/
+
 (function (window, undefined) {
 	"use strict";
 var navigator = window.navigator,
@@ -63,6 +69,7 @@ languages[language] = [
 	[[">>","<<"]],
 	["±",R,2],
 	[["+","-"]],
+	[["@+","@-","@±"],R,1], //unary plus/minus
 	[["*","/","%"]],
 	["∘",R,2],
 	[["**"]],//e**x
@@ -134,7 +141,6 @@ var p_internal = (function (language) {
 		for (var i = t.length - 1; i > 0; i--){
 			var a = t.substring(0,i);
 			if(operators[a]){
-				
 				return [a].concat(split_operators(t.substring(i)));
 			}
 		}
@@ -143,6 +149,12 @@ var p_internal = (function (language) {
 	function postfix(o){
 		var op=operators[o];
 		return op[0]==0 && op[2]==1;
+	}
+	
+	//TODO: this should be secondary_unary
+	function unary(o){
+		var unary_secondarys=["+","-","±"];
+		return (unary_secondarys.indexOf(o)!=-1)?("@"+o):false;
 	}
 	window.operators=operators;
 	
@@ -170,10 +182,11 @@ var p_internal = (function (language) {
 			// While there are input tokens left
 
 			// Read the next token from input.
-
+			console.log("rpn: ",token);
 			// If the token is a value
 			if(token.t===types.number || token.t===types.variable){
 				// Push it onto the stack.
+				console.log("push: ",token.v, " onto: rpn_stack = ",rpn_stack.clone());
 				rpn_stack.push(token.v);
 			}
 			// Otherwise, 
@@ -194,6 +207,7 @@ var p_internal = (function (language) {
 					//var evaled=("("+values[0]+token.v+values[1]+")");
 					values.type=token.v;
 					// Push the returned results, if any, back onto the stack.
+					console.log("values: ",values.clone());
 					rpn_stack.push(values);
 				}
 			}
@@ -218,7 +232,7 @@ var p_internal = (function (language) {
 					token.v=Infinity;
 				}
 			}
-			console.log("token: ", token.v, names[token.t]);
+			//console.log("token: ", token.v, names[token.t]);
 			//Comments from http://en.wikipedia.org/wiki/Shunting-yard_algorithm
 			// Read a token.
 			// If the token is a number, then add it to the output queue.
@@ -342,6 +356,7 @@ var p_internal = (function (language) {
 		var op_last=true;
 		
 		function next_tokens(token) {
+			
 			var tokens=[],
 				_tokens=
 			token.v
@@ -349,7 +364,9 @@ var p_internal = (function (language) {
 			if(token.t===types.operator){
 				_tokens
 				.forEach(function(t) {
-					tokens=tokens.concat(split_operators(t));
+					if(t.length){
+						tokens=tokens.concat(split_operators(t));
+					}
 				});
 			}else{
 				tokens=_tokens;
@@ -358,14 +375,15 @@ var p_internal = (function (language) {
 			tokens
 			.forEach(function (t) {
 				if(t.length) {
-					//TODO: Fails on f(x+2)
 					if(token.t!=types.paren){
 						if(!op_last && token.t!=types.operator){
 							next_token({v:"∘",t:types.operator});
 							//throw("No operator before "+t);
 						}
 						if(token.t==types.operator && !postfix(t)){
-							
+							if(op_last && op_last!=")" && unary(t)){
+								t=unary(t);
+							}
 							op_last=true;
 						}else{
 							op_last=false;
@@ -373,6 +391,8 @@ var p_internal = (function (language) {
 					}else{
 						if(t=="(" && (op_last==false||op_last==")")){
 							next_token({v:"∘",t:types.operator});
+							op_last=t;
+						}else if(t=="("){
 							op_last=t;
 						}else if(t==")"){
 							
@@ -648,11 +668,13 @@ Array.prototype.toLatex=function(){
 			return a+"^{"+this[1].toLatex()+"}";
 		} else if(this.type==="∘"){
 			var a = this[0].toLatex();
+			
 			if(latexFuncs.indexOf(a)!==-1){
 				a="\\"+a;
 			}else if(this[0].requiresParentheses(this.type)){
 				a="\\left("+a+"\\right)";
 			}
+			
 			return a+"\\left("+this[1].toLatex()+"\\right)";
 		} else {
 			var self=this;
@@ -666,9 +688,17 @@ Array.prototype.toLatex=function(){
 			return a+this.type+b;
 		}
 	}
-	//Postfix
+	//Postfix/Prefix Unary operators
 	if(this.length==1){
-		return this[0].toLatex()+this.type;
+		var a = this[0].toLatex();
+		if(this[0].requiresParentheses(this.type)){
+			a="\\left("+a+"\\right)";
+		}
+		if(this.type[0]=="@"){
+			//Prefix
+			return this.type.substring(1)+a;
+		}
+		return a+this.type;
 	}
 	
 	//Prefix
@@ -714,7 +744,8 @@ function commutative(o){
 //Is the operator o left-distributive over operator p?
 function distributive(o, p){
 	var os={
-		"*":"+",
+		"*":["+","-",/*,"||" messy*/],
+		"/":["+","-"],
 		"cross-product":"+",
 		"matrix-multiplication":"+",
 		"set-union":"intersect",
@@ -722,8 +753,9 @@ function distributive(o, p){
 		"conjugtion":["disjunction", "exclusive disjunction"],
 		"max":"min",
 		"gcd":"lcm",
-		"+":["max","min"]
+		"+":["max","min",","]
 	};
+	//TODO: (if better/faster): use fact (?) that (* distributes over '+' (which distributes over ',')) => (* distributes over ',')
 	if(os[o]){
 		if(os[o]===p || (os[o].indexOf && os[o].indexOf(p)!=-1)){
 			return true;
@@ -813,7 +845,7 @@ Array.prototype.apply=function(o, x){
 	//Distributive law:
 	if(distributive(o,this.type)){
 		
-		//console.log("attempting to apply distributve to multiply "+this.toString()+" by "+x.toString());
+		console.log("attempting to apply distributve to multiply "+this.toLatex()+" by "+x.toLatex());
 		for (var i = this.length - 1; i >= 0; i--){
 			
 			//console.log(" - multiply ("+o+") the "+this[i].toString()+" factor by "+x);
@@ -876,14 +908,18 @@ Number.prototype.apply=function(o, b, __commuted__){
 	//TODO Identity and inverse can be combined if the left operand is included in
 	// the calculation?
 	
-	if(identity(o)===b){
+	if(b&& identity(o)===b){
 		return Number(this);
 	}
 	var a = Number(this);
-	if(typeof b==="number" || typeof b==="boolean"){ // !isNaN(b)
+	if(b===undefined || (typeof b==="number" || typeof b==="boolean")){ // !isNaN(b)
 		switch(o){
 			case "+":
 				return a+b;
+			case "@+":
+				return a;
+			case "@-":
+				return -a;
 			case "*":
 				return a*b;
 			case "/":
@@ -919,8 +955,14 @@ Number.prototype.apply=function(o, b, __commuted__){
 			case "∘":
 				//assume multiplication
 				return a*b;
+			case "!":
+				return !a;
+			case "~":
+				return ~a;
 			case "±":
 				return [a+b,a-b].setType(",");
+			case "@±":
+				return [a,-a].setType(",");
 			case ",":
 				//TODO: fix this
 				if(a.type===","){
@@ -964,18 +1006,8 @@ Boolean.prototype.apply=Number.prototype.apply;
 Array.prototype.simplify=function(){
 	if(this.length===1){
 		var a = this[0].simplify();
-		if(isNaN(a)){
-			return [a].setType(this.type);
-		}
-		a=Number(a);
-		switch(this.type){
-			case "!":
-				return !a;
-			case "~":
-				return ~a;
-			default:
-				throw("Operator '"+this.type+"' is not yet numerically implemented.");
-		}
+		
+		return a.apply(this.type);
 	}
 	else if(this.length===2){
 		var a = this[0].simplify();
@@ -1112,7 +1144,7 @@ Array.prototype.Function=function(x){
 
 //END MATH
 function I(){
-	return this;
+	return this.constructor(this);
 }
 function _false(){
 	return false;
