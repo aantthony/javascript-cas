@@ -48,7 +48,7 @@ window.$$=function getElementById(i){
 				window.d=d;
 				var result=document.createElement("div");
 				result.className="result";
-				//try{
+				try{
 					d=exec(d);
 					
 					res=d.toLatex();
@@ -65,7 +65,7 @@ window.$$=function getElementById(i){
 						$(this.current).find(".error").remove();
 						$(result).mathquill();
 					}
-				/*} catch(ex){
+				} catch(ex){
 					res=ex;
 					result.className+=" error";
 					result.appendChild(document.createTextNode(res));
@@ -73,7 +73,7 @@ window.$$=function getElementById(i){
 					
 					html.main.scrollTop=$(html.console).height();
 					return false;
-				}*/
+				}
 			}
 			var mathQuill=document.createElement("div");
 			var current = this.current = this.write(mathQuill, "write user");

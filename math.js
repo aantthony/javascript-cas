@@ -742,11 +742,11 @@ function associative(o){
 function commutative(o){
 	return ["*","+","="].indexOf(o)!=-1;
 }
-
+window.commutative=commutative;
 //Is the operator o left-distributive over operator p?
 function distributive(o, p){
 	var os={
-		"*":["+","-",/*,"||" messy*/],
+		"*":["+","-",",",/*,"||" messy*/],
 		"/":["+","-"],
 		"**":["*"],
 		"cross-product":"+",
@@ -841,6 +841,9 @@ window.inverse=inverse;
 window.identity=identity;
 Array.prototype.apply=function(o, x, __commuted__){
 	console.log("Apply ",o,x," to ",this);
+	if(o === "," && this.type === ","){
+		return this.concat(x).setType(this.type);
+	}
 	if(x!==undefined && identity(o)===x){
 		return this;
 	}
@@ -848,7 +851,21 @@ Array.prototype.apply=function(o, x, __commuted__){
 		return x;
 	}
 	//Distributive law:
-	if(distributive(o,this.type)){
+	if(this.type === "," && x.type === ","){
+		// Vector-Vector operations:
+		if(o === "*" || o === "+" || o === "-"){
+			for (var i = x.length - 1; i >= 0; i--){
+				this[i]=this[i].apply(o,x[i]);
+			}
+		}
+		if(o === "*"){
+			var sum=0;
+			for (var i = this.length - 1; i >= 0; i--){
+				sum=sum.apply("+",this[i]);
+			}
+			return sum;
+		}
+	}else if(distributive(o,this.type)){
 		
 		console.log("attempting to apply distributve to multiply "+this.toLatex()+" by "+x.toLatex());
 		for (var i = this.length - 1; i >= 0; i--){
@@ -857,7 +874,7 @@ Array.prototype.apply=function(o, x, __commuted__){
 			this[i]=this[i].apply(o,x);
 			//console.log(" X multiply ("+o+") the "+this[i].toString()+" factor by "+x);
 			
-		};
+		}
 		return this;
 	}
 	//DEBUG, the only logical order I can think of
