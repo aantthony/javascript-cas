@@ -72,9 +72,10 @@ languages[language] = [
 	[["∫","∑"],R,1],
 	[["@+","@-","@±"],R,1], //unary plus/minus
 	[["*","/","%"]],
+	[["¬"],L,1],
 	["∘",R,2],
 	[["**"]],//e**x
-	[["!","~"],R,1],
+	[["~"],R,1], //bitwise negation
 	[["++","++",".","->"],L,1],
 	[["::"]],
 	["var",R,1],
@@ -91,6 +92,12 @@ function precedence(v){
 	}
 	return operators[v][1];
 }
+
+function postfix(o){
+	var op=operators[o];
+	return op[0]==0 && op[2]==1;
+}
+window.postfix=postfix;
 var p_internal = (function (language) {
 	//Begin p_internal building space.
 	//This context will be accessible to p_internal()
@@ -122,7 +129,7 @@ var p_internal = (function (language) {
 	//Operator characters
 	//TODO: calculate programmatically
 	
-	var ochars=":>-.+~!^%/*<=&|?,;±∘'∫∑∫√";
+	var ochars=":>-.+~!^%/*<=&|?,;±∘'∫∑∫√¬";
 	
 	//TODO: Allow 1e+2 format
 	var nummustbe="1234567890.";
@@ -147,10 +154,6 @@ var p_internal = (function (language) {
 			}
 		}
 		throw("Expression '"+t+"' did not contain any operator prefix codes.");
-	}
-	function postfix(o){
-		var op=operators[o];
-		return op[0]==0 && op[2]==1;
 	}
 	
 	//TODO: this should be secondary_unary
@@ -619,7 +622,7 @@ M.latex={
 			"cdot":"*",
 			"vee":"||",
 			"wedge":"&&",
-			"neg":"!",
+			"neg":"¬",
 			"left":"",
 			"right":"",
 			"pm":"±",
@@ -754,7 +757,10 @@ Array.prototype.toLatex=function(__matrix__){
 		} else if(this.type==="√"){
 			return "\\sqrt{"+this[0].toLatex()+"}";
 		}
-		return a+this.type;
+		if(postfix(this.type)){
+			return a+this.type;
+		}
+		return this.type+a;
 	}
 	
 	//Prefix
@@ -770,6 +776,14 @@ Number.prototype.toLatex=function(){
 	return this.toString().replace(/e([\+\-])([\d\.]+)/,"\\cdot 10^{$2}");
 };
 
+var latexVars="Gamma|Delta|Theta|Lambda|Xi|Pi|Sigma|Phi|Psi|Omega".split("|");
+String.prototype.toLatex=function(){
+	var s = String(this);
+	if(latexVars.indexOf(s)!=-1){
+		return "\\"+s;
+	}
+	return s;
+};
 Number.prototype.toStrings=function(){
 	return this.toString().replace(/e([\+\-])([\d\.]+)/,"\\cdot 10^{$2}");
 };
@@ -853,7 +867,7 @@ function inverse(o,b){
 		"*":"/",
 		"^":"^",
 		
-		"&&":["||","!","&&","$0"],
+		"&&":["||","¬","&&","$0"],
 		
 		"**":["^","/"],
 		"∘":["∘","/"],//DEBUG: check this junk
@@ -1063,7 +1077,7 @@ Number.prototype.apply=function(o, b, __commuted__){
 			case "∘":
 				//assume multiplication
 				return a*b;
-			case "!":
+			case "¬":
 				return !a;
 			case "~":
 				return ~a;
@@ -1279,7 +1293,6 @@ Number.prototype.simplify=
 String.prototype.eval=
 String.prototype.simplify=
 Boolean.prototype.simplify=
-String.prototype.toLatex=
 Boolean.prototype.toLatex=
 Number.prototype.clone=
 Boolean.prototype.clone=

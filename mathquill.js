@@ -10,7 +10,9 @@
 var $ = jQuery,
   undefined,
   _, //temp variable of prototypes
-  jQueryDataKey = '[[mathquill internal data]]';
+  jQueryDataKey = '[[mathquill internal data]]',
+  min = Math.min,
+  max = Math.max;
 
 /*************************************************
  * Abstract base classes of blocks and commands.
@@ -255,7 +257,7 @@ function MathFragment(parent, prev, next) {
   self.jQinit(self.fold($(), function(jQ, child){ return child.jQ.add(jQ); }));
 }
 _ = MathFragment.prototype;
-_.remove= MathCommand.prototype.remove;
+_.remove = MathCommand.prototype.remove;
 _.jQinit = function(children) {
   this.jQ = children;
 };
@@ -507,11 +509,8 @@ function createRoot(jQ, root, textbox, editable) {
     var text = textarea.val();
     if (text) {
       textarea.val('');
-      // textarea can contain more than one character
-      // when typing quickly on slower platforms;
-      // so process each character separately
-      for (var i=0; i<text.length; i++) {
-          cursor.parent.textInput(text.charAt(i));
+      for (var i = 0; i < text.length; i += 1) {
+        cursor.parent.textInput(text.charAt(i));
       }
     }
     else {
@@ -560,7 +559,7 @@ _.keydown = function(e)
 
     var parent = this.cursor.parent;
     if (e.shiftKey) { //shift+Tab = go one block left if it exists, else escape left.
-      if (parent === this) //cursor is in root editable, continue default
+      if (parent === this.cursor.root) //cursor is in root editable, continue default
         return this.skipTextInput = true;
       else if (parent.prev) //go one block left
         this.cursor.appendTo(parent.prev);
@@ -568,7 +567,7 @@ _.keydown = function(e)
         this.cursor.insertBefore(parent.parent);
     }
     else { //plain Tab = go one block right if it exists, else escape right.
-      if (parent === this) //cursor is in root editable, continue default
+      if (parent === this.cursor.root) //cursor is in root editable, continue default
         return this.skipTextInput = true;
       else if (parent.next) //go one block right
         this.cursor.prependTo(parent.next);
@@ -774,16 +773,16 @@ var scale, // = function(jQ, x, y) { ... }
 
   div = document.createElement('div'),
   div_style = div.style,
-  styleTransformPropNames = {
+  transformPropNames = {
+    transform:1,
     WebkitTransform:1,
     MozTransform:1,
-    msTransform:1,
     OTransform:1,
-    transform:1
+    msTransform:1
   },
   transformPropName;
 
-for (var prop in styleTransformPropNames) {
+for (var prop in transformPropNames) {
   if (prop in div_style) {
     transformPropName = prop;
     break;
@@ -878,7 +877,7 @@ _.respace = function() {
       thisWidth = this.jQ.outerWidth();
     this.jQ.css({
       left: (this.limit && this.cmd === '_' ? -.25 : 0) - prevWidth/fontSize + 'em',
-      marginRight: .1 - Math.min(thisWidth, prevWidth)/fontSize + 'em'
+      marginRight: .1 - min(thisWidth, prevWidth)/fontSize + 'em'
         //1px extra so it doesn't wrap in retarded browsers (Firefox 2, I think)
     });
   }
@@ -955,7 +954,7 @@ _.placeCursor = function(cursor) { //TODO: better architecture so this can be do
   cursor.appendTo(this.lastChild);
 };
 
-CharCmds['/'] = LiveFraction;
+LatexCmds.over = CharCmds['/'] = LiveFraction;
 
 function SquareRoot(replacedFragment) {
   this.init('\\sqrt', undefined, undefined, replacedFragment);
@@ -1015,7 +1014,7 @@ _.latex = function() {
 };
 _.redraw = function() {
   var height = this.blockjQ.outerHeight()/+this.blockjQ.css('fontSize').slice(0,-2);
-  scale(this.bracketjQs, 1 + .2*(height - 1), 1.05*height);
+  scale(this.bracketjQs, min(1 + .2*(height - 1), 1.2), 1.05*height);
 };
 
 LatexCmds.lbrace = CharCmds['{'] = proto(Bracket, function(replacedFragment) {
@@ -1765,7 +1764,7 @@ LatexCmds.H = LatexCmds.Hamiltonian = LatexCmds.quaternions = LatexCmds.Quaterni
 //spacing
 LatexCmds.quad = LatexCmds.emsp = bind(VanillaSymbol,'\\quad ','    ');
 LatexCmds.qquad = bind(VanillaSymbol,'\\qquad ','        ');
-/* spacing special characters, gonna have to implement this in LatexCommandInput.prototype.textInput somehow
+/* spacing special characters, gonna have to implement this in LatexCommandInput::textInput somehow
 case ',':
   return new VanillaSymbol('\\, ',' ');
 case ':':
@@ -2470,6 +2469,8 @@ _.selectLeft = function() {
     else //end of a block
       if (this.parent !== this.root)
         this.insertBefore(this.parent.parent);
+      else
+        return;
 
     this.hide().selection = new Selection(this.parent, this.prev, this.next.next);
   }
@@ -2500,6 +2501,8 @@ _.selectRight = function() {
     else //end of a block
       if (this.parent !== this.root)
         this.insertAfter(this.parent.parent);
+      else
+        return;
 
     this.hide().selection = new Selection(this.parent, this.prev.prev, this.next);
   }
@@ -2528,7 +2531,7 @@ function Selection(parent, prev, next) {
   MathFragment.apply(this, arguments);
 }
 _ = Selection.prototype = new MathFragment;
-_.jQinit= function(children) {
+_.jQinit = function(children) {
   this.jQ = children.wrapAll('<span class="selection"></span>').parent();
     //can't do wrapAll(this.jQ = $(...)) because wrapAll will clone it
 };

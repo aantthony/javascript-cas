@@ -2,6 +2,99 @@ window.$$=function getElementById(i){
 	return document.getElementById(i.substring(1));
 };
 !(function (window, undefined) {
+	var $overlay=$("#overlay");
+	function Overlay(x,y){
+		this.bind(x,y);
+	}
+	Overlay.prototype.show=Overlay.prototype.hide=function(){};
+	Overlay.prototype.bind=function(x,y){
+		if(typeof x==="string"){
+			this[x]=y;
+			return this;
+		}
+		var i;
+		for(i in x){
+			if(x.hasOwnProperty(i)){
+				this[i]=x[i];
+			}
+		}
+		return this;
+	};
+	var overlay={
+		"loading":new Overlay({
+			"show":function($page, message){
+				var spinner=$page.find("img")[0];
+				var deg=0;
+				this.running=true;
+				var timestep=200;
+				var self=this;
+				function animLoop(){
+					spinner.style.webkitTransform="rotate(-"+deg+"deg)";
+					//-moz-transform: rotate(-90deg);
+					deg+=timestep/4;
+					if(self.running){
+						setTimeout(animLoop, timestep);
+					}
+				}
+				$page.find("p").text(message);
+				setTimeout(animLoop, 0);
+			},
+			"hide":function(){
+				this.running=false;
+			}
+		}),
+		"show": function (id, args){
+			if(overlay.current){
+				overlay.hide();
+			}
+			$page=$overlay.find("#"+id);
+			$overlay.css({"display":"block"});
+			if(overlay[id]){
+				overlay[id].show.apply(overlay[id],[$page].concat(args));
+			}
+			overlay.current=id;
+		},
+		"hide":function(){
+			overlay[overlay.current].hide();
+			overlay.current=false;
+			$overlay.css({"display":"none"});
+		}
+	};
+	
+	
+	
+	
+	//overlay.show("loading", "Connecting to Server...");
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	//pre set interface elements:
+	$("#header")
+		.find("input[value='+']")
+			.bind("click", function(){
+				window.open("/#new");
+			})
+		.end();
+	
+	
+	
+	
+	
+	
+	
+	
 	var html={
 		"console":$$("#console"),
 		"main":$$("#main")
@@ -24,12 +117,30 @@ window.$$=function getElementById(i){
 		
 		return expr;
 	}
+	function delEvent(e){
+		var $target=$(e.target);
+		var $elem=$target.parent();
+		var code = $elem.attr("id");
+		code = /^page-(\d+)-eqn-(\d+)$/.exec(code).slice(1);
+		$target.remove();
+		$(e.ta)
+		$elem.hide(200);
+	}
+	var lastID=1;
+	var page=0;
 	var console = {
 		"current":undefined,
 		"write" :function(data, className){
 			var elem = document.createElement("li");
+			elem.id="page-"+page+"-eqn-"+lastID++;
 			elem.className=className;
+			elem.tabIndex=0;
+			elem.draggable=true;
 			elem.appendChild(typeof data === "string" ? document.createTextNode(data) : data);
+			var del=document.createElement("div");
+			$(del).bind("click.jscas", delEvent);
+			del.className="del";
+			elem.appendChild(del);
 			html.console.appendChild(elem);
 			return elem;
 		},
@@ -71,7 +182,7 @@ window.$$=function getElementById(i){
 					result.appendChild(document.createTextNode(res));
 					this.current.appendChild(result);
 					
-					html.main.scrollTop=$(html.console).height();
+					document.body.scrollTop = $(document.body).height()
 					return false;
 				}
 			}
@@ -108,17 +219,87 @@ window.$$=function getElementById(i){
 				.bind("keyup.jscas", function(event){
 					//The equation may have increased in size vertically, so scroll down.
 					if(event.which === 191 || event.shiftKey && event.which === 54){
-						html.main.scrollTop=$(html.console).height();
+						document.body.scrollTop = $(document.body).height();
 					}
 				});
 			$(current).bind("click.jscas",function() {
 				$(mathQuill).focus();
 			});
 			
-			html.main.scrollTop=$(html.console).height();
+			document.body.scrollTop = $(document.body).height();
 			return true;
 		}
 	};
 	console.log=console.write;
-	console.execute();
+	
+	
+	
+	var jsCAS_application_data = "jsCAS_application_data";
+	var c = (function(){
+	
+	var state={};
+	
+	function pull(){
+		if(!state.server){
+			throw("No server to pull from.");
+		}
+		$.get({
+			url: state.server,
+			success: function(){
+				alert();
+			}
+		});
+	}
+	
+	var c = {
+		
+		
+		"new":function(){
+		},
+		"load":function(l){
+			l=JSON.parse(l);
+			console.log("Loading state");
+			if(l.server){
+				state.server=String(l.server);
+				pull();
+			}
+			l.pages && l.pages.forEach(function (p){
+				var page = {
+					"title":String(p.title),
+					"items":[],
+					"created_at":Number(p.created_at),
+					"updated_at":Number(p.updated_at),
+					"public":Boolean(p.public),
+					"id":Number(p.id)
+				};
+				p.items.forEach(function (i){
+					page.items.push(String(i));
+				});
+				
+			});
+		},
+		"export":function(){
+			return JSON.stringify(state);
+		}
+		
+	};
+		
+	return c;	
+	}());
+	///Boot:
+	
+	if(window.localStorage){
+		var state;
+		
+		if(state=localStorage.getItem(jsCAS_application_data)){
+			c.load(state);
+		}else{
+			c.new();
+			localStorage.setItem(jsCAS_application_data,c.export());
+		}
+		console.execute();
+	}else{
+		alert("Your browser does not support localStorage. Get Safari, Chrome, Firefox or Opera.");
+	}
+	
 })(window);
