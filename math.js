@@ -54,7 +54,7 @@ var R = right = 1;
 
 
 languages[language] = [
-	[";",L,1],			/*L / R makes no difference???!??!? */
+	[";"],			/*L / R makes no difference???!??!? */
 	[","],
 	["function",R,2],	/*anonymous function*/
 	[["=","+=","-=","*=","/=","%=","&=","^=","|="],R],
@@ -69,6 +69,7 @@ languages[language] = [
 	[[">>","<<"]],
 	["±",R,2],
 	[["+","-"]],
+	[["∫","∑"],R,1],
 	[["@+","@-","@±"],R,1], //unary plus/minus
 	[["*","/","%"]],
 	["∘",R,2],
@@ -79,7 +80,8 @@ languages[language] = [
 	["var",R,1],
 	["break",R,0],
 	["throw",R,1],
-	["'",L,1]
+	["'",L,1],
+	["√",R,1],
 ];
 
 var operators={};
@@ -120,7 +122,7 @@ var p_internal = (function (language) {
 	//Operator characters
 	//TODO: calculate programmatically
 	
-	var ochars=":>-.+~!^%/*<=&|?,;±∘'";
+	var ochars=":>-.+~!^%/*<=&|?,;±∘'∫∑∫√";
 	
 	//TODO: Allow 1e+2 format
 	var nummustbe="1234567890.";
@@ -531,11 +533,40 @@ M.latex={
 		//Currently only parses \frac
 		var i,l=s.length
 		//indexOf is BAD!!! It is fine only when we only have one type of \expr
-		
+		var debug=0;
+		while(!debug && (i = s.indexOf("\\begin"))!=-1){
+			debug=1;
+			var n = s.indexOf("}", i+7);
+			
+			var type=s.substring(i+7,n);
+			
+			var end_string="\\end{"+type+"}";
+			
+			var b = s.indexOf(end_string, n);
+			var x = s.substring(n+1,b);
+			switch(type){
+			case "matrix":
+				
+				x=x.replace(/\\\:/g, ",").replace(/\\\\/g, ";");
+				s=s.split("");
+				
+				//s.splice(b,b+end_string.length);
+				
+				s[i]="[";
+				s.splice(b, end_string.length-1);
+				s[b]="]";
+				s.splice(n+1,b-n-1,x);
+				s.splice(i+1,n+1-i-1);
+				s=s.join("");
+				break;
+			default:
+				throw(new SyntaxError("Latex \\begin{"+type+"} block not understood."))
+			}
+		}
 		while((i = s.indexOf("\\frac"))!=-1){
 			var n,good=false;
 			var deep=0;
-			for(n = i+5;n<l ;n++){
+			for(n = i+5;n<l;n++){
 				if(s[n]=="{"){
 					deep++;
 				} else if(s[n]=="}"){	
@@ -552,7 +583,7 @@ M.latex={
 			good=false;
 			
 			if(s[n+1]!="{"){
-				throw(new SyntaxError("Unexpected '"+s[n+1]+"' between \\frac operands"))
+				throw(new SyntaxError("Unexpected '"+s[n+1]+"' between \\frac operands"));
 			}
 			
 			var i2=n+1;
@@ -593,7 +624,10 @@ M.latex={
 			"right":"",
 			"pm":"±",
 			"circ":"∘",
-			"infty":"Infinity"
+			"infty":"Infinity",
+			"int":"∫",
+			"sum":"∑",
+			"sqrt":"√"
 		};
 		s=s.replace(/\\([a-z]+)/g,function(u,x){
 			var s=latexexprs[x];
@@ -640,7 +674,6 @@ Array.prototype.toStrings=function(){
 	}
 	
 };
-Number.prototype.toStrings=Number.prototype.toString;
 Boolean.prototype.toStrings=Boolean.prototype.toString;
 String.prototype.toStrings=String.prototype.toString;
 Array.prototype.toString=null;
@@ -655,7 +688,7 @@ function latexExprForOperator(o){
 	return os[o]||o;
 }
 var latexFuncs="log|exp|asinh|acosh|atanh|sinh|sech|cosh|coth|tanh|sin|cos|tan|cot|sec|exp|log".split("|");
-Array.prototype.toLatex=function(){
+Array.prototype.toLatex=function(__matrix__){
 	//Infix
 	if(this.length>=2){
 		if(this.type==="/"){
@@ -678,6 +711,26 @@ Array.prototype.toLatex=function(){
 			}
 			
 			return a+"\\left("+this[1].toLatex()+"\\right)";
+		} else if(this.type==="," && __matrix__){
+			var self=this;
+			return this.map(function(t){
+				var a = t.toLatex();
+				if(t.requiresParentheses(self.type)){
+					a="\\left("+a+"\\right)";
+				}
+				return a;
+			}).join(latexExprForOperator("\\:"));
+		} else if(this.type===";"){
+			
+			var self=this;
+			return "\\begin{matrix}"+this.map(function(t){
+				var a = t.toLatex(true);
+				if(t.requiresParentheses(self.type)){
+					a="\\left("+a+"\\right)";
+				}
+				return a;
+			}).join("\\\\")+"\\end{matrix}";
+			
 		} else {
 			var self=this;
 			return this.map(function(t){
@@ -687,7 +740,6 @@ Array.prototype.toLatex=function(){
 				}
 				return a;
 			}).join(latexExprForOperator(this.type));
-			return a+this.type+b;
 		}
 	}
 	//Postfix/Prefix Unary operators
@@ -699,6 +751,8 @@ Array.prototype.toLatex=function(){
 		if(this.type[0]=="@"){
 			//Prefix
 			return this.type.substring(1)+a;
+		} else if(this.type==="√"){
+			return "\\sqrt{"+this[0].toLatex()+"}";
 		}
 		return a+this.type;
 	}
@@ -713,9 +767,12 @@ Number.prototype.toLatex=function(){
 	if(Number(this)===Infinity){
 		return "\\infty";
 	}
-	return this.toString();
+	return this.toString().replace(/e([\+\-])([\d\.]+)/,"\\cdot 10^{$2}");
 };
 
+Number.prototype.toStrings=function(){
+	return this.toString().replace(/e([\+\-])([\d\.]+)/,"\\cdot 10^{$2}");
+};
 Array.prototype.setType=function(type){
 	this.type=type;
 	return this;
@@ -842,7 +899,9 @@ window.identity=identity;
 Array.prototype.apply=function(o, x, __commuted__){
 	console.log("Apply ",o,x," to ",this);
 	if(o === "," && this.type === ","){
-		return this.concat(x).setType(this.type);
+		return this.concat([x]).setType(this.type);
+	} else if(o === ";" && this.type === ";"){
+		return this.concat([x]).setType(this.type);
 	}
 	if(x!==undefined && identity(o)===x){
 		return this;
@@ -865,6 +924,7 @@ Array.prototype.apply=function(o, x, __commuted__){
 			}
 			return sum;
 		}
+		return this;
 	}else if(distributive(o,this.type)){
 		
 		console.log("attempting to apply distributve to multiply "+this.toLatex()+" by "+x.toLatex());
@@ -1279,3 +1339,8 @@ for(; i<len; i++){
 		return window;
 	}()
 );
+
+
+var latex="2*\\begin{matrix}1\\:3\\\\2\\:3\\\\3\\:4\\\\3\\:5\\end{matrix}+9";
+var normal=M.latex.parse(latex);
+var x=M(normal);
