@@ -65,6 +65,27 @@ Array.prototype.differentiate=function(x, n){
 						)
 					)
 				);
+			case "!":
+				return this[0]
+				.differentiate(x,n)
+				.apply("*",
+					"Gamma"
+					.apply("∘",
+						this[0]
+						.apply("+",
+							1
+						)
+					)
+				)
+				.apply("*",
+					"digamma"
+					.apply("∘",
+						this[0]
+						.apply("+",
+							1
+						)
+					)
+				);
 			case "@-":
 			case "@+":
 			case "@±":

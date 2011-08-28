@@ -32,7 +32,11 @@ var parse = (function (language) {
 			return nummustbe.indexOf(e)!==-1;
 		},
 		function(e){
-			return ochars.indexOf(e)!==-1;
+			if(operators[e]){
+				return true;
+			}
+			return false;
+			//return ochars.indexOf(e)!==-1;
 		},
 		function(e){
 			return parenmustbe.indexOf(e)!=-1;
@@ -46,7 +50,7 @@ var parse = (function (language) {
 			return (e.length === 1) && (varcannotbe.indexOf(e)==-1);
 		}
 	];
-
+	window.match = match;
 	//TODO: rewrite this in a way that can split variables also
 	function split_operators(t){
 		if(operators[t]){
@@ -88,7 +92,7 @@ var parse = (function (language) {
 			// While there are input tokens left
 
 			// Read the next token from input.
-			//console.log("rpn: ",token);
+			console.log("rpn: ",token);
 			// If the token is a value
 			if(token.t===types.number || token.t===types.variable){
 				// Push it onto the stack.
@@ -103,7 +107,7 @@ var parse = (function (language) {
 				// If there are fewer than n values on the stack
 				if(rpn_stack.length<n){
 					// (Error) The user has not input sufficient values in the expression.
-					
+					console.log("trhwo?");
 					throw(new SyntaxError("The "+token.v+" operator requires exactly "+n+" operands, whereas only "+rpn_stack.length+" "+(rpn_stack.length===1?"was":"were")+" supplied."));
 				// Else,
 				}else{
@@ -146,7 +150,7 @@ var parse = (function (language) {
 				if(token.t==types.number){
 					token.v=Number(token.v);
 				}
-				
+				console.log("call next_rpn ( 1 )");
 				next_rpn(token);
 			}
 			// If the token is a function token, then push it onto the stack.
@@ -165,6 +169,7 @@ var parse = (function (language) {
 						throw("either the separator was misplaced or parentheses were mismatched.")
 					}
 					// pop operators off the stack onto the output queue.
+					console.log("call next rpn (5)");
 					next_rpn(stack.pop());
 				}
 
@@ -222,6 +227,7 @@ var parse = (function (language) {
 
 				){
 					// pop o2 off the stack, onto the output queue;
+					console.log("call next_rpn pop o2");
 					next_rpn(stack.pop());
 				}
 
@@ -244,6 +250,7 @@ var parse = (function (language) {
 						throw(new SyntaxError(msg.parenMismatch));
 					}
 					// pop operators off the stack onto the output queue.
+					console.log("call next_rpn pop ops off");
 					next_rpn(stack.pop());
 				}
 
@@ -254,6 +261,7 @@ var parse = (function (language) {
 
 				// If the token at the top of the stack is a function token, pop it onto the output queue.
 				if(stack.length && stack[stack.length-1].t===types.func){
+					console.log("call next_rpn top is a function token");
 					next_rpn(stack.pop);
 				}
 			}
@@ -372,6 +380,7 @@ var parse = (function (language) {
 				current_token=c;
 			}
 		}
+		console.log("thats all of them!");
 		/*
 		if(current_token.length){
 			//Unsure what should be happening here.
@@ -395,6 +404,7 @@ var parse = (function (language) {
 
 			}
 			//Pop the operator onto the output queue.
+			console.log("call next_rpn");
 			next_rpn(the_operator);
 
 		}
@@ -420,27 +430,6 @@ function p(expression, context){
 M.Context = function(){
 	
 };
-
-M.Context.prototype=Math;
-M.Context.prototype.D=function(x, wrt){
-	wrt=wrt||"x";
-	return x.differentiate(wrt,1);
-};
-M.Context.prototype.reset=function(){
-	for(var i in this){
-		if(this.hasOwnProperty(i)){
-			delete this[i];
-		}
-	}
-	return this;
-};
-//Like jquery noConflict
-M.noConflict = function() {
-	window.M=_M;
-	return M;
-};
-
-M.global = new M.Context();
 
 
 

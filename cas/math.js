@@ -17,17 +17,17 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
+/*
 
 (function (window, undefined) {
+*/
 	window.f = {};
 	function O(n, v){
 		f[v]=f[v]?f[v]+1:1;
 	}
 	"use strict";
-var /*navigator = window.navigator,
-	document = window.document,*/
 	_M = window.M;
+
 	Array.prototype.toString=null; // Trigger errors for debugging.
 
 Array.prototype.setType=function(type){
@@ -107,6 +107,7 @@ languages[language] = [
 	["∘",R,2],
 	[["/"]],
 	[["**"]],//e**x
+	["!",L,1],
 	[["~"],R,1], //bitwise negation
 	[["++","++",".","->"],L,1],
 	[["::"]],
@@ -309,7 +310,11 @@ var parse = (function (language) {
 			return nummustbe.indexOf(e)!==-1;
 		},
 		function(e){
-			return ochars.indexOf(e)!==-1;
+			if(operators[e]){
+				return true;
+			}
+			return false;
+			//return ochars.indexOf(e)!==-1;
 		},
 		function(e){
 			return parenmustbe.indexOf(e)!=-1;
@@ -323,7 +328,7 @@ var parse = (function (language) {
 			return (e.length === 1) && (varcannotbe.indexOf(e)==-1);
 		}
 	];
-
+	window.match = match;
 	//TODO: rewrite this in a way that can split variables also
 	function split_operators(t){
 		if(operators[t]){
@@ -365,7 +370,7 @@ var parse = (function (language) {
 			// While there are input tokens left
 
 			// Read the next token from input.
-			//console.log("rpn: ",token);
+			console.log("rpn: ",token);
 			// If the token is a value
 			if(token.t===types.number || token.t===types.variable){
 				// Push it onto the stack.
@@ -380,7 +385,7 @@ var parse = (function (language) {
 				// If there are fewer than n values on the stack
 				if(rpn_stack.length<n){
 					// (Error) The user has not input sufficient values in the expression.
-					
+					console.log("trhwo?");
 					throw(new SyntaxError("The "+token.v+" operator requires exactly "+n+" operands, whereas only "+rpn_stack.length+" "+(rpn_stack.length===1?"was":"were")+" supplied."));
 				// Else,
 				}else{
@@ -423,7 +428,7 @@ var parse = (function (language) {
 				if(token.t==types.number){
 					token.v=Number(token.v);
 				}
-				
+				console.log("call next_rpn ( 1 )");
 				next_rpn(token);
 			}
 			// If the token is a function token, then push it onto the stack.
@@ -442,6 +447,7 @@ var parse = (function (language) {
 						throw("either the separator was misplaced or parentheses were mismatched.")
 					}
 					// pop operators off the stack onto the output queue.
+					console.log("call next rpn (5)");
 					next_rpn(stack.pop());
 				}
 
@@ -499,6 +505,7 @@ var parse = (function (language) {
 
 				){
 					// pop o2 off the stack, onto the output queue;
+					console.log("call next_rpn pop o2");
 					next_rpn(stack.pop());
 				}
 
@@ -521,6 +528,7 @@ var parse = (function (language) {
 						throw(new SyntaxError(msg.parenMismatch));
 					}
 					// pop operators off the stack onto the output queue.
+					console.log("call next_rpn pop ops off");
 					next_rpn(stack.pop());
 				}
 
@@ -531,6 +539,7 @@ var parse = (function (language) {
 
 				// If the token at the top of the stack is a function token, pop it onto the output queue.
 				if(stack.length && stack[stack.length-1].t===types.func){
+					console.log("call next_rpn top is a function token");
 					next_rpn(stack.pop);
 				}
 			}
@@ -649,6 +658,7 @@ var parse = (function (language) {
 				current_token=c;
 			}
 		}
+		console.log("thats all of them!");
 		/*
 		if(current_token.length){
 			//Unsure what should be happening here.
@@ -672,6 +682,7 @@ var parse = (function (language) {
 
 			}
 			//Pop the operator onto the output queue.
+			console.log("call next_rpn");
 			next_rpn(the_operator);
 
 		}
@@ -697,27 +708,6 @@ function p(expression, context){
 M.Context = function(){
 	
 };
-
-M.Context.prototype=Math;
-M.Context.prototype.D=function(x, wrt){
-	wrt=wrt||"x";
-	return x.differentiate(wrt,1);
-};
-M.Context.prototype.reset=function(){
-	for(var i in this){
-		if(this.hasOwnProperty(i)){
-			delete this[i];
-		}
-	}
-	return this;
-};
-//Like jquery noConflict
-M.noConflict = function() {
-	window.M=_M;
-	return M;
-};
-
-M.global = new M.Context();
 
 
 
@@ -784,6 +774,102 @@ M.toString.toString=function(){
 
 M.toString.toString.toString=M.toString.toString;
 window.M = M;
+
+M.Context.prototype=Math;
+M.Context.prototype.D=function(x, wrt){
+	wrt=wrt||"x";
+	return x.differentiate(wrt,1);
+};
+M.Context.prototype.reset=function(){
+	for(var i in this){
+		if(this.hasOwnProperty(i)){
+			delete this[i];
+		}
+	}
+	return this;
+};
+
+var exp = Math.exp,
+	log = Math.log;
+
+//Riemann zeta function
+function zeta(x) {
+    if (x === 0) {
+        return -0.5;
+    } else if (x == 1) {
+        return Infinity;
+    } else if (x == 2) {
+        return pi * pi / 6;
+    } else if (x == 4) {
+        return pi * pi * pi * pi / 90;
+    } else if (x < 1) {
+        return Infinity;
+    }
+    var sum = 4.4 * pow(x, -5.1);
+    for (var npw = 1; npw < 10; npw++) {
+        sum += pow(npw, -x);
+    }
+    return sum;
+}
+
+function gammln(xx) {
+    var j;
+    var x,tmp,y,ser;
+    var cof=[57.1562356658629235,-59.5979603554754912,14.1360979747417471,-0.491913816097620199,0.339946499848118887e-4,0.465236289270485756e-4,-0.983744753048795646e-4,0.158088703224912494e-3,-0.210264441724104883e-3,0.217439618115212643e-3,-0.164318106536763890e-3,0.844182239838527433e-4,-0.261908384015814087e-4,0.368991826595316234e-5];
+    if (xx <= 0){
+        throw("bad arg in gammln");
+    }
+    y=x=xx;
+    tmp = x+5.24218750000000000;
+    tmp = (x+0.5)*log(tmp)-tmp;
+    ser = 0.999999999999997092;
+    for (j=0;j<14;j++){
+        ser += cof[j]/++y;
+    }
+    return tmp+log(2.5066282746310005*ser/x);
+}
+function Gamma(x){
+    if(x==0){
+        return Infinity;
+    }
+    if(x<0){
+        return -pi/(x*sin(pi*x)*Gamma(-x));
+    }
+    return exp(gammln(x));
+}
+
+
+
+M.Context.prototype.Gamma = function(x){
+	return Gamma(x);
+}
+
+
+function factorial(ff) {
+    if (ff === 0 || ff == 1) {
+        return 1;
+    } else if (ff > 0 && ff == ~~ff && ff < 15) {
+        var s = 1;
+        for (var nns = 1; nns <= ff; nns++) {
+            s *= nns;
+        }
+        return~~s;
+    } else if (ff != (~~ff) || ff < 0) {
+        return Gamma(ff + 1);
+    }
+}
+
+
+M.Context.prototype.factorial = function(x){
+	return factorial(x);
+};
+//Like jquery noConflict
+M.noConflict = function() {
+	window.M=_M;
+	return M;
+};
+
+M.global = new M.Context();
 
 //TODO: this is a bit messy. Maybe make it in the global, 
 // and that way if it can be determined if it was/is consistent.
@@ -1093,6 +1179,27 @@ Array.prototype.differentiate=function(x, n){
 						)
 					)
 				);
+			case "!":
+				return this[0]
+				.differentiate(x,n)
+				.apply("*",
+					"Gamma"
+					.apply("∘",
+						this[0]
+						.apply("+",
+							1
+						)
+					)
+				)
+				.apply("*",
+					"digamma"
+					.apply("∘",
+						this[0]
+						.apply("+",
+							1
+						)
+					)
+				);
 			case "@-":
 			case "@+":
 			case "@±":
@@ -1159,7 +1266,7 @@ Array.prototype.simplify=function(){
 	}
 };
 Array.prototype.apply=function(o, x, __commuted__){
-	console.log("Apply ",o,x,x.type," to ",this,this.type);
+	console.log("Apply ",o,x," to ",this,this.type);
 	if(o==="∘" && this.type==="_"){
 		return M.global[this[0]](x, this[1]);
 	}
@@ -1375,6 +1482,8 @@ Number.prototype.apply=function(o, b, __commuted__){
 					return b.push(a);
 				}
 				return [a,b].setType(o);
+			case "!":
+				return M.Context.prototype.factorial(a);
 			case "=":
 				if(a==b){
 					return truth;
@@ -1562,6 +1671,7 @@ Array.prototype.toStrings=function(){
 Boolean.prototype.toStrings=Boolean.prototype.toString;
 String.prototype.toStrings=String.prototype.toString;
 
+/*
 })(
 	function(){
 		if(typeof window === 'undefined'){
@@ -1570,3 +1680,5 @@ String.prototype.toStrings=String.prototype.toString;
 		return window;
 	}()
 );
+
+*/

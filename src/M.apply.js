@@ -1,6 +1,6 @@
 
 Array.prototype.apply=function(o, x, __commuted__){
-	console.log("Apply ",o,x,x.type," to ",this,this.type);
+	console.log("Apply ",o,x," to ",this,this.type);
 	if(o==="∘" && this.type==="_"){
 		return M.global[this[0]](x, this[1]);
 	}
@@ -216,6 +216,8 @@ Number.prototype.apply=function(o, b, __commuted__){
 					return b.push(a);
 				}
 				return [a,b].setType(o);
+			case "!":
+				return M.Context.prototype.factorial(a);
 			case "=":
 				if(a==b){
 					return truth;

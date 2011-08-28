@@ -9,6 +9,7 @@ cat \
 	src/language.js \
 	src/operators.js \
 	src/M.js \
+	src/M.global.js \
 	src/M.assume.js \
 	src/M.latex.js \
 	src/M.differentiate.js \
