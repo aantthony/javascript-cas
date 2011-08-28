@@ -25,6 +25,10 @@ I becomes buggy
 */
 
 (function (window, undefined) {
+	window.f = {};
+	function O(n, v){
+		f[v]=f[v]?f[v]+1:1;
+	}
 	"use strict";
 var /*navigator = window.navigator,
 	document = window.document,*/
@@ -98,10 +102,16 @@ function postfix(o){
 	var op=operators[o];
 	return op[0]==0 && op[2]==1;
 }
-window.postfix=postfix;
-var p_internal = (function (language) {
-	//Begin p_internal building space.
-	//This context will be accessible to p_internal()
+function unary(o){
+	var unary_secondarys=["+","-","±"];
+	return (unary_secondarys.indexOf(o)!=-1)?("@"+o):false;
+}
+
+
+var parse = (function (language) {
+	O(1, "parse - build");
+	//Begin parse building space.
+	//This context will be accessible to parse()
 	var types = {
 		number: 1,
 		operator: 2,
@@ -136,14 +146,27 @@ var p_internal = (function (language) {
 	var nummustbe="1234567890.";
 	var parenmustbe="([{}\"])";
 	var varcannotbe=ochars+parenmustbe+nummustbe;
-	var regex=[0,
-		function(e){return nummustbe.indexOf(e)!==-1;},
-		function(e){return ochars.indexOf(e)!==-1;},
-		function(e){return parenmustbe.indexOf(e)!=-1;},
-		function(e){return varcannotbe.indexOf(e)==-1;}
+	var match=[0,
+		function(e){
+			return nummustbe.indexOf(e)!==-1;
+		},
+		function(e){
+			return ochars.indexOf(e)!==-1;
+		},
+		function(e){
+			return parenmustbe.indexOf(e)!=-1;
+		},
+		function(e){
+			//Assumtions: It will only be ONE character ahead of a valid var.
+			if(M.global[e]!==undefined){
+				return true;
+			}
+			
+			return (e.length === 1) && (varcannotbe.indexOf(e)==-1);
+		}
 	];
 
-	
+	//TODO: rewrite this in a way that can split variables also
 	function split_operators(t){
 		if(operators[t]){
 			return [t];
@@ -158,21 +181,16 @@ var p_internal = (function (language) {
 	}
 	
 	//TODO: this should be secondary_unary
-	function unary(o){
-		var unary_secondarys=["+","-","±"];
-		return (unary_secondarys.indexOf(o)!=-1)?("@"+o):false;
-	}
-	window.operators=operators;
 	
-	//p_internal:
+	//parse:
 	return function (s){
-		//O(n)
+		O(1, "parse");
 		var current_type=0;
 		var i=0,len=s.length;
 		var current_token=s[0];
 		current_type=4;
 		for(var t=1;t<4;t++){
-			if(regex[t](current_token)){
+			if(match[t](current_token)){
 				current_type=t;
 				break;
 			}
@@ -185,10 +203,11 @@ var p_internal = (function (language) {
 		
 		//The evelauation part of the shunting yard algorithm inside out.
 		function next_rpn(token){
+			O(1, "next_rpn");
 			// While there are input tokens left
 
 			// Read the next token from input.
-			console.log("rpn: ",token);
+			//console.log("rpn: ",token);
 			// If the token is a value
 			if(token.t===types.number || token.t===types.variable){
 				// Push it onto the stack.
@@ -365,12 +384,12 @@ var p_internal = (function (language) {
 			console.log("lot: ", token.v);
 			var tokens=[];
 			var v=token.v;
-			if(token.t===types.paren||token.t===types.variable){
+			if(token.t===types.paren){
 				v=v.replace(/[ \n\t]+/, "");
 			}
 			var _tokens=
 			v
-			.split((token.t===types.paren||token.t===types.variable)?"":/[ \n\t]+/);
+			.split((token.t===types.paren)?"":/[ \n\t]+/);
 			if(token.t===types.operator){
 				_tokens
 				.forEach(function(t) {
@@ -413,7 +432,7 @@ var p_internal = (function (language) {
 				}
 			});
 		}
-		
+		window.match=match;
 		//Tokenize:
 		while(i<len) {
 			i++;
@@ -427,7 +446,7 @@ var p_internal = (function (language) {
 				//whitespace is not removed yet.
 				//(It is required for some tokens, e.g. strings, and seperator string tokens)
 				current_token += c;
-			} else if (regex[current_type](c)) {
+			} else if (match[current_type](current_token + c)) {
 				//The next character fits onto the current_token
 				current_token += c;
 			}else{
@@ -444,7 +463,7 @@ var p_internal = (function (language) {
 					//send operator: Wait no, don't send it.
 					current_type = 4;
 					for(var t = 1; t < 4; t++){
-						if(regex[t](c)){
+						if(match[t](c)){
 							current_type=t;
 							break;
 						}
@@ -453,13 +472,13 @@ var p_internal = (function (language) {
 
 
 				} else {
-					if (regex[types.operator](c)) {
+					if (match[types.operator](c)) {
 					//We've got an operator!
 
 						current_type = types.operator;
 						//DO NOT SEND OPERATOR TOKEN YET.
 
-					}else if (regex[types.paren](c)) {
+					}else if (match[types.paren](c)) {
 						current_type = types.paren;
 
 					} else {
@@ -515,10 +534,16 @@ var M = function (expression, context) {
 };
 function p(expression, context){
 	//TODO?: Apply context?
-	return p_internal(expression);
+	return parse(expression);
 }
 M.Context = function(){
 	
+};
+
+M.Context.prototype=Math;
+M.Context.prototype.D=function(x, wrt){
+	wrt=wrt||"x";
+	return x.differentiate(wrt,1);
 };
 M.Context.prototype.reset=function(){
 	for(var i in this){
@@ -534,6 +559,7 @@ M.noConflict = function() {
 	return M;
 };
 
+M.global = new M.Context();
 
 //TODO: this is a bit messy. Maybe make it in the global, 
 // and that way if it can be determined if it was/is consistent.
@@ -552,6 +578,7 @@ function assume(x){
 M.latex={
 	"stringify":function(){},
 	"parse":function(s){
+		O(1, "Latex.parse");
 		// O(n * k), n=string length, k = amount of '\frac's
 		//Currently only parses \frac
 		var i,l=s.length
@@ -662,28 +689,28 @@ M.latex={
 			"sech":"sech",
 			"csch":"csch",
 			"cosech":"cosech",
-			"sin":"sin:",
-			"cos":"cos:",
-			"tan":"tan:",
+			"sin":"sin",
+			"cos":"cos",
+			"tan":"tan",
 			"times":"*",
-			"sec":"sec:",
-			"cosec":"cosec:",
-			"csc":"csc:",
-			"cotan":"cotan:",
-			"cot":"cot:",
-			"ln":"ln:",
-			"lg":"log:",
-			"log":"log:",
-			"det":"det:",
-			"dim":"dim:",
-			"max":"max:",
-			"min":"min:",
-			"mod":"mod:",
-			"lcm":"lcm:",
-			"gcd":"gcd:",
-			"gcf":"gcf:",
-			"hcf":"hcf:",
-			"lim":"lim:",
+			"sec":"sec",
+			"cosec":"cosec",
+			"csc":"csc",
+			"cotan":"cotan",
+			"cot":"cot",
+			"ln":"ln",
+			"lg":"log",
+			"log":"log",
+			"det":"det",
+			"dim":"dim",
+			"max":"max",
+			"min":"min",
+			"mod":"mod",
+			"lcm":"lcm",
+			"gcd":"gcd",
+			"gcf":"gcf",
+			"hcf":"hcf",
+			"lim":"lim",
 			":":"",
 			"left(":"(",
 			"right)":")",
@@ -778,15 +805,7 @@ M.latex={
 		return s;
 	}
 };
-function Context(){
-	
-}
-Context.prototype.D=function(x, wrt){
-	wrt=wrt||"x";
-	return x.differentiate(wrt,1);
-};
 
-M.global = new Context();
 //Array prototype extensions:
 var _Array_prototype_toString=Array.prototype.toString;
 Array.prototype.toStrings=function(){
@@ -813,7 +832,6 @@ Array.prototype.toStrings=function(){
 	if(false && this.length==2){
 		return this[0].toStrings()+this.type+this[1].toStrings();
 	}
-	
 };
 Boolean.prototype.toStrings=Boolean.prototype.toString;
 String.prototype.toStrings=String.prototype.toString;
@@ -829,6 +847,7 @@ function latexExprForOperator(o){
 	return os[o]||o;
 }
 var latexFuncs="log|exp|asinh|acosh|atanh|sinh|sech|cosh|coth|tanh|sin|cos|tan|cot|sec|exp|log".split("|");
+
 Array.prototype.toLatex=function(__matrix__){
 	//Infix
 	if(this.length>=2){
@@ -861,7 +880,7 @@ Array.prototype.toLatex=function(__matrix__){
 				}
 				return a;
 			}).join(latexExprForOperator("\\:"));
-		} else if(this.type===";"){
+		} else if(this.type===";" && false){
 			
 			var self=this;
 			return "\\begin{matrix}"+this.map(function(t){
@@ -1053,7 +1072,7 @@ window.distributive=distributive;
 window.inverse=inverse;
 window.identity=identity;
 Array.prototype.apply=function(o, x, __commuted__){
-	console.log("Apply ",o,x," to ",this);
+	console.log("Apply ",o,x,x.type," to ",this,this.type);
 	if(o==="∘" && this.type==="_"){
 		return M.global[this[0]](x, this[1]);
 	}
@@ -1061,13 +1080,20 @@ Array.prototype.apply=function(o, x, __commuted__){
 		return this.concat([x]).setType(this.type);
 	} else if(o === ";" && this.type === ";"){
 		return this.concat([x]).setType(this.type);
+	} else if(o === ";" && this.type === ","){
+		
+		//TODO: BUG, assumes ; only has two operands.
+		return [this,x].setType(";");
 	}
 	if(x!==undefined && identity(o)===x){
+		console.log("identity");
 		return this;
 	}
 	if(x!==undefined && inverse(o,x)===false){
+		console.log("identity - inverse");
 		return x;
 	}
+	console.log(5);
 	//Distributive law:
 	if(this.type === "," && x.type === ","){
 		// Vector-Vector operations:
@@ -1075,6 +1101,8 @@ Array.prototype.apply=function(o, x, __commuted__){
 			for (var i = x.length - 1; i >= 0; i--){
 				this[i]=this[i].apply(o,x[i]);
 			}
+		}else{
+			throw("Vector-vector operator: "+ o + "not understood");
 		}
 		if(o === "*"){
 			var sum=0;
@@ -1420,6 +1448,7 @@ Array.prototype.simplify=function(){
 	
 	// Algorithm:
 	// O(2^n???)
+	O("?", "simplify");
 	if(this.length===1){
 		var a = this[0].simplify();
 		
@@ -1427,7 +1456,6 @@ Array.prototype.simplify=function(){
 	} else if(this.length===2){
 		var a = this[0].simplify();
 		var b = this[1].simplify();
-		console.log("will apply");
 		//In place?
 		return a.apply(this.type, b);
 	}
@@ -1544,8 +1572,3 @@ for(; i<len; i++){
 		return window;
 	}()
 );
-
-
-var latex="2*\\begin{matrix}1\\:3\\\\2\\:3\\\\3\\:4\\\\3\\:5\\end{matrix}+9";
-var normal=M.latex.parse(latex);
-var x=M(normal);

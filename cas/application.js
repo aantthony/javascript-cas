@@ -214,7 +214,7 @@ window.$$=function getElementById(i){
 						if(event.which === 13) {
 							var jQueryDataKey = '[[mathquill internal data]]';
 							var latex = $(this).mathquill("latex");
-							if(x=self.execute(latex)){
+							if(self.execute(latex)){
 								$(this)
 									.unbind('.mathquill')
 									.unbind('.jscas')
