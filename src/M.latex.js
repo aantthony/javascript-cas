@@ -101,6 +101,7 @@ M.latex={
 			"pm":"±",
 			"circ":"∘",
 			"sqrt":"√",
+			"div":"/",
 			
 			'gt':">",
 			"left|":"abs:(",

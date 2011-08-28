@@ -29,7 +29,7 @@ var parse = (function (language) {
 	var varcannotbe=ochars+parenmustbe+nummustbe;
 	var match=[0,
 		function(e){
-			return nummustbe.indexOf(e)!==-1;
+			return !isNaN(e);
 		},
 		function(e){
 			if(operators[e]){
@@ -39,7 +39,7 @@ var parse = (function (language) {
 			//return ochars.indexOf(e)!==-1;
 		},
 		function(e){
-			return parenmustbe.indexOf(e)!=-1;
+			return e.length === 1 && parenmustbe.indexOf(e)!=-1;
 		},
 		function(e){
 			//Assumtions: It will only be ONE character ahead of a valid var.
@@ -264,7 +264,7 @@ var parse = (function (language) {
 		var op_last=true;
 		
 		function next_tokens(token) {
-			//console.log("lot: ", token.v);
+			console.log("lot: ", token.v);
 			var tokens=[];
 			var v=token.v;
 			if(token.t===types.paren){
