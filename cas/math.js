@@ -101,8 +101,8 @@ languages[language] = [
 	["±",R,2],
 	[["+","-"]],
 	[["∫","∑"],R,1],
-	[["@+","@-","@±"],R,1], //unary plus/minus
 	[["*","%"]],
+	[["@+","@-","@±"],R,1], //unary plus/minus
 	[["¬"],L,1],
 	["∘",R,2],
 	[["/"]],
@@ -370,7 +370,7 @@ var parse = (function (language) {
 			// While there are input tokens left
 
 			// Read the next token from input.
-			console.log("rpn: ",token);
+			//console.log("rpn: ",token);
 			// If the token is a value
 			if(token.t===types.number || token.t===types.variable){
 				// Push it onto the stack.
@@ -385,7 +385,6 @@ var parse = (function (language) {
 				// If there are fewer than n values on the stack
 				if(rpn_stack.length<n){
 					// (Error) The user has not input sufficient values in the expression.
-					console.log("trhwo?");
 					throw(new SyntaxError("The "+token.v+" operator requires exactly "+n+" operands, whereas only "+rpn_stack.length+" "+(rpn_stack.length===1?"was":"were")+" supplied."));
 				// Else,
 				}else{
@@ -428,7 +427,6 @@ var parse = (function (language) {
 				if(token.t==types.number){
 					token.v=Number(token.v);
 				}
-				console.log("call next_rpn ( 1 )");
 				next_rpn(token);
 			}
 			// If the token is a function token, then push it onto the stack.
@@ -447,7 +445,6 @@ var parse = (function (language) {
 						throw("either the separator was misplaced or parentheses were mismatched.")
 					}
 					// pop operators off the stack onto the output queue.
-					console.log("call next rpn (5)");
 					next_rpn(stack.pop());
 				}
 
@@ -505,7 +502,6 @@ var parse = (function (language) {
 
 				){
 					// pop o2 off the stack, onto the output queue;
-					console.log("call next_rpn pop o2");
 					next_rpn(stack.pop());
 				}
 
@@ -528,7 +524,6 @@ var parse = (function (language) {
 						throw(new SyntaxError(msg.parenMismatch));
 					}
 					// pop operators off the stack onto the output queue.
-					console.log("call next_rpn pop ops off");
 					next_rpn(stack.pop());
 				}
 
@@ -539,7 +534,6 @@ var parse = (function (language) {
 
 				// If the token at the top of the stack is a function token, pop it onto the output queue.
 				if(stack.length && stack[stack.length-1].t===types.func){
-					console.log("call next_rpn top is a function token");
 					next_rpn(stack.pop);
 				}
 			}
@@ -548,7 +542,7 @@ var parse = (function (language) {
 		var op_last=true;
 		
 		function next_tokens(token) {
-			console.log("lot: ", token.v);
+			//console.log("lot: ", token.v);
 			var tokens=[];
 			var v=token.v;
 			if(token.t===types.paren){
@@ -658,7 +652,6 @@ var parse = (function (language) {
 				current_token=c;
 			}
 		}
-		console.log("thats all of them!");
 		/*
 		if(current_token.length){
 			//Unsure what should be happening here.
@@ -682,7 +675,6 @@ var parse = (function (language) {
 
 			}
 			//Pop the operator onto the output queue.
-			console.log("call next_rpn");
 			next_rpn(the_operator);
 
 		}
@@ -838,13 +830,6 @@ function Gamma(x){
     return exp(gammln(x));
 }
 
-
-
-M.Context.prototype.Gamma = function(x){
-	return Gamma(x);
-}
-
-
 function factorial(ff) {
     if (ff === 0 || ff == 1) {
         return 1;
@@ -863,11 +848,25 @@ function factorial(ff) {
 M.Context.prototype.factorial = function(x){
 	return factorial(x);
 };
+M.Context.prototype.factorial.numerical = true;
+
+
+M.Context.prototype.Gamma = function(x){
+	return Gamma(x);
+}
+M.Context.prototype.Gamma.numerical = true;
+
 //Like jquery noConflict
 M.noConflict = function() {
 	window.M=_M;
 	return M;
 };
+
+M.Context.prototype.Infinity=Infinity;
+
+M.Context.prototype.NaN=NaN;
+
+
 
 M.global = new M.Context();
 
@@ -1388,7 +1387,6 @@ String.prototype.apply=function(o, b, __commuted__){
 
 Number.prototype.apply=function(o, b, __commuted__){
 	
-	
 	if(o==="∘"){
 		//∘ commutes with scalars
 		if(__commuted__){
@@ -1496,15 +1494,7 @@ Number.prototype.apply=function(o, b, __commuted__){
 				throw("Operator '"+o+"' is not yet numerically implemented.");	
 		}
 	}
-	if(b!==undefined && b.type=="/"){
-		//TODO: getting a bit messy/hacky here:
-		// idea: use a special commutative property, which
-		// would be very useful for relations like
-		// a x b =  b x a * -1
-		// x / y = (y/x) ^-1
-		// and commutators?, like this in QM
-		return b.reverse().apply("*", a, true);
-	}
+	
 	if(commutative(o)){
 		
 		if(identity(o)==Number(this)){

@@ -29,6 +29,10 @@ ul#console{
 	background:red;
 }
 
+#console li.new{
+	background:#eeeeff;
+}
+
 #console li.warn{
 	background:yellow;
 }

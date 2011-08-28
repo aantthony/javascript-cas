@@ -109,7 +109,8 @@ window.$$=function getElementById(i){
 		//Convert to javascript:
 		var expr=M(M.latex.parse(latex)).eval();
 		if(!expr.impliedBy(context)){
-			throw(new Error("That statement may not be true."));
+			//throw(new Error("That statement may not be true."));
+			expr.className = "new";
 		}
 		
 		if(typeof expr==="string" && ctrlcodes[expr] !== undefined){
@@ -161,6 +162,9 @@ window.$$=function getElementById(i){
 				//try{
 					d=exec(d);
 					
+					if(d.className){
+						this.current.className+=" "+d.className;
+					}
 					var assumptions=M.getAssumptions();
 					res=d.toLatex();
 					//res = exec(d).toLatex();

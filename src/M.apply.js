@@ -122,7 +122,6 @@ String.prototype.apply=function(o, b, __commuted__){
 
 Number.prototype.apply=function(o, b, __commuted__){
 	
-	
 	if(o==="∘"){
 		//∘ commutes with scalars
 		if(__commuted__){
@@ -230,15 +229,7 @@ Number.prototype.apply=function(o, b, __commuted__){
 				throw("Operator '"+o+"' is not yet numerically implemented.");	
 		}
 	}
-	if(b!==undefined && b.type=="/"){
-		//TODO: getting a bit messy/hacky here:
-		// idea: use a special commutative property, which
-		// would be very useful for relations like
-		// a x b =  b x a * -1
-		// x / y = (y/x) ^-1
-		// and commutators?, like this in QM
-		return b.reverse().apply("*", a, true);
-	}
+	
 	if(commutative(o)){
 		
 		if(identity(o)==Number(this)){
