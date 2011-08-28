@@ -1,3 +1,11 @@
+/*
+TODO:
+ fix:
+	' sin(x)' => ∘s∘i∘n∘(x)
+
+
+*/
+
 var msg={
 	"latexParse":"Unable to parse LaTeX string",
 	"parenMismatch":"There are mismatched parentheses"
