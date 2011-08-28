@@ -158,7 +158,7 @@ window.$$=function getElementById(i){
 			if(this.current){
 				var result=document.createElement("div");
 				result.className="result";
-				try{
+				//try{
 					d=exec(d);
 					
 					var assumptions=M.getAssumptions();
@@ -187,7 +187,7 @@ window.$$=function getElementById(i){
 						$(this.current).find(".error").remove();
 						$(result).mathquill();
 					}
-				} catch(ex){
+				/*} catch(ex){
 					res=ex;
 					result.className+=" error";
 					result.appendChild(document.createTextNode(res));
@@ -196,6 +196,7 @@ window.$$=function getElementById(i){
 					document.body.scrollTop = $(document.body).height()
 					return false;
 				}
+				*/
 				this.current.draggable=true;
 			}
 			var mathQuill=document.createElement("div");
