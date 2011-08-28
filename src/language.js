@@ -18,7 +18,6 @@ var R = right = 1;
 languages[language] = [
 	[";"],			/*L / R makes no difference???!??!? */
 	[","],
-	["function",R,2],	/*anonymous function*/
 	[["=","+=","-=","*=","/=","%=","&=","^=","|="],R],
 	[["?",":"],R,2],
 	[["∨"]],
@@ -48,5 +47,6 @@ languages[language] = [
 	["throw",R,1],
 	["'",L,1],
 	["√",R,1],
+	["#",R,1],	/*anonymous function*/
 ];
 

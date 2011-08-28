@@ -1,8 +1,35 @@
+Array.prototype.sub=function(a,b){
+	var c=[].setType(this.type);
+	if(this.type==="#" && this[1]!=a){
+		//TODO: checl this
+		return this.clone();
+	}else{
+		var i,l=this.length;
+		for(i=0;i<l;i++){
+			c.push(this[i].sub(a,b));
+		}
+	}
+	//TODO: WARNING - DOES NOT SIMPLIFY.
+	return c;
+};
+String.prototype.sub=function(a,b){
+	var t = String(this);
+	if(t===a){
+		return b;
+	}
+	return t;
+};
+Number.prototype.sub=I;
 
 Array.prototype.apply=function(o, x, __commuted__){
 	console.log("Apply ",o,x," to ",this,this.type);
 	if(o==="∘" && this.type==="_"){
+		//TODO: check if it is symbolic.
 		return M.global[this[0]](x, this[1]);
+	}
+	if(o==="∘" && this.type==="#"){
+		return this[0]
+		.sub("x", x)
 	}
 	if(o === "," && this.type === ","){
 		return this.concat([x]).setType(this.type);
@@ -90,31 +117,37 @@ Array.prototype.apply=function(o, x, __commuted__){
 	return [this,x].setType(o);
 };
 String.prototype.apply=function(o, b, __commuted__){
-	if(operators[o][2]==1){
-		return [String(this)].setType(o);
-	}
 	
+	var t=String(this);
+	if(operators[o][2]==1){
+		return [t].setType(o);
+	}
 	
 	/*hack for without doing string conversion*/
 	var ident=identity(o);
 	if(ident===b){
-		return String(this);
+		return t;
 	}else if(ident===true && typeof b==="number" && b){
-		return String(this);
+		return t;
 	}else if(ident===false && typeof b==="number" && !b){
-		return String(this);
+		return t;
 	}
 	
 	if(inverse(o,b)===false){
 		return b;
 	}
 	if(!__commuted__ && commutative(o)){
-		return b.clone().apply(o, this, true);
+		return b.clone().apply(o, t, true);
 	}
 	//Global functions:
-	var t=String(this);
 	if(o==="∘" && M.global[t]){
-		return M.global[t](b);
+		if(M.global[t].symbolic){
+			return M.global[t](b);
+		}
+		if(typeof b === "number" || typeof b === "boolean"){
+			return M.global[t](b);
+		}
+		
 	}
 	return [t, b].setType(o);
 }
@@ -226,6 +259,11 @@ Number.prototype.apply=function(o, b, __commuted__){
 				throw(new Error("The statement is always false: "+a+" ≠ "+b))
 				throw(new ReferenceError("Left side of assignment is not a reference."))
 			default:
+				if(b===undefined){
+					return [a].setType(o);
+				}
+				return [a,b].setType(o);
+				//TODO: maybe this should be thrown
 				throw("Operator '"+o+"' is not yet numerically implemented.");	
 		}
 	}

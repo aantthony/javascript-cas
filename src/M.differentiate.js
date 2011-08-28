@@ -86,6 +86,16 @@ Array.prototype.differentiate=function(x, n){
 						)
 					)
 				);
+			case "√":
+				return this[0]
+				.differentiate(x,n)
+				.apply("/",
+					this[0]
+					.apply("√")
+					.apply("*",
+						2
+					)
+				);
 			case "@-":
 			case "@+":
 			case "@±":
@@ -96,7 +106,8 @@ Array.prototype.differentiate=function(x, n){
 				.apply("*",
 					//this[0]
 					//.differentiate(x,n)/*TODO: function by name*/
-					"cos"
+					[this[0]].setType("#").differentiate()
+					//"cos"
 					.apply("∘",
 						this[1]
 					)
@@ -109,11 +120,12 @@ Array.prototype.differentiate=function(x, n){
 		}
 	}
 };
+
 String.prototype.differentiate=function(x,n){
 	if(n<=-1){
 		return this.integrate(x, -n);
 	}else if(n==0){
-		return this;
+		return String(this);
 	}
 	if(String(this)==x){
 		return (n==1)?1:0;
@@ -124,7 +136,7 @@ Number.prototype.differentiate=function(x,n){
 	if(n<=-1){
 		return this.integrate(x, -n);
 	}else if(n==0){
-		return this;
+		return Number(this);
 	}
 	
 	if(this==Infinity || this==-Infinity){

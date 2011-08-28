@@ -21,7 +21,7 @@ var parse = (function (language) {
 	//Operator characters
 	//TODO: calculate programmatically
 	
-	var ochars=":>-.+~!^%/*<=&|?,;±∘'∫∑∫√¬_";
+	var ochars=":>-.+~!^%/*<=&|?,;±∘'∫∑∫√¬_$";
 	
 	//TODO: Allow 1e+2 format
 	var nummustbe="1234567890.";

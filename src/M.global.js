@@ -4,6 +4,8 @@ M.Context.prototype.D=function(x, wrt){
 	wrt=wrt||"x";
 	return x.differentiate(wrt,1);
 };
+M.Context.prototype.D.symbolic=true;
+
 M.Context.prototype.reset=function(){
 	for(var i in this){
 		if(this.hasOwnProperty(i)){
@@ -80,13 +82,13 @@ function factorial(ff) {
 M.Context.prototype.factorial = function(x){
 	return factorial(x);
 };
-M.Context.prototype.factorial.numerical = true;
+//M.Context.prototype.factorial.symbolic = true;
 
 
 M.Context.prototype.Gamma = function(x){
 	return Gamma(x);
 }
-M.Context.prototype.Gamma.numerical = true;
+//M.Context.prototype.Gamma.symbolic = true;
 
 //Like jquery noConflict
 M.noConflict = function() {
