@@ -35,7 +35,6 @@ var msg={
 	"latexParse":"Unable to parse LaTeX string",
 	"parenMismatch":"There are mismatched parentheses"
 };
-
 //Information for the shunting parser to use:
 var languages = {};	
 var language = "javascript+math";
@@ -59,25 +58,27 @@ languages[language] = [
 	["function",R,2],	/*anonymous function*/
 	[["=","+=","-=","*=","/=","%=","&=","^=","|="],R],
 	[["?",":"],R,2],
-	[["||"]],
+	[["∨"]],
 	[["&&"]],
 	[["|"]],
 	[["^"]],//XOR
 	[["&"]],
-	[["==","!=","!==","==="]],
+	[["==","≠","!==","==="]],
 	[["<","<=",">",">="],L],
 	[[">>","<<"]],
 	["±",R,2],
 	[["+","-"]],
 	[["∫","∑"],R,1],
 	[["@+","@-","@±"],R,1], //unary plus/minus
-	[["*","/","%"]],
+	[["*","%"]],
 	[["¬"],L,1],
 	["∘",R,2],
+	[["/"]],
 	[["**"]],//e**x
 	[["~"],R,1], //bitwise negation
 	[["++","++",".","->"],L,1],
 	[["::"]],
+	[["_"],L,2],
 	["var",R,1],
 	["break",R,0],
 	["throw",R,1],
@@ -129,7 +130,7 @@ var p_internal = (function (language) {
 	//Operator characters
 	//TODO: calculate programmatically
 	
-	var ochars=":>-.+~!^%/*<=&|?,;±∘'∫∑∫√¬";
+	var ochars=":>-.+~!^%/*<=&|?,;±∘'∫∑∫√¬_";
 	
 	//TODO: Allow 1e+2 format
 	var nummustbe="1234567890.";
@@ -187,7 +188,7 @@ var p_internal = (function (language) {
 			// While there are input tokens left
 
 			// Read the next token from input.
-			//console.log("rpn: ",token);
+			console.log("rpn: ",token);
 			// If the token is a value
 			if(token.t===types.number || token.t===types.variable){
 				// Push it onto the stack.
@@ -237,7 +238,7 @@ var p_internal = (function (language) {
 					token.v=Infinity;
 				}
 			}
-			//console.log("token: ", token.v, names[token.t]);
+			console.log("token: ", token.v, names[token.t]);
 			//Comments from http://en.wikipedia.org/wiki/Shunting-yard_algorithm
 			// Read a token.
 			// If the token is a number, then add it to the output queue.
@@ -361,11 +362,15 @@ var p_internal = (function (language) {
 		var op_last=true;
 		
 		function next_tokens(token) {
-			
-			var tokens=[],
-				_tokens=
-			token.v
-			.split(token.t===types.paren?"":/[ \n\t]+/);
+			console.log("lot: ", token.v);
+			var tokens=[];
+			var v=token.v;
+			if(token.t===types.paren||token.t===types.variable){
+				v=v.replace(/[ \n\t]+/, "");
+			}
+			var _tokens=
+			v
+			.split((token.t===types.paren||token.t===types.variable)?"":/[ \n\t]+/);
 			if(token.t===types.operator){
 				_tokens
 				.forEach(function(t) {
@@ -528,6 +533,21 @@ M.noConflict = function() {
 	window.M=_M;
 	return M;
 };
+
+
+//TODO: this is a bit messy. Maybe make it in the global, 
+// and that way if it can be determined if it was/is consistent.
+M.assumptions=true;
+M.getAssumptions=function(){
+	var x=M.assumptions;
+	M.assumptions=true;
+	return x;
+	
+};
+
+function assume(x){
+	M.assumptions=M.assumptions.apply("&&", x);
+};
 //Latex parser -> javascript+math
 M.latex={
 	"stringify":function(){},
@@ -608,11 +628,14 @@ M.latex={
 			if(!good){
 				throw(new SyntaxError(msg.latexParse));
 			}
+			console.log(s);
 			s=s.split("");
-			s[i+5]="(";
+			
+			//TODO: bad idea. maybe fix requiresParen...
+			s[i+5]="((";
 			s[n]=")";
 			s[i2]="(";
-			s[n2]=")";
+			s[n2]="))";
 			s.splice(i2,0,"/");
 			s.splice(i,5);
 			s=s.join("");
@@ -620,21 +643,128 @@ M.latex={
 		}
 		var latexexprs = {
 			"cdot":"*",
-			"vee":"||",
+			"vee":"∨",
 			"wedge":"&&",
 			"neg":"¬",
 			"left":"",
 			"right":"",
 			"pm":"±",
 			"circ":"∘",
-			"infty":"Infinity",
-			"int":"∫",
+			"sqrt":"√",
+			
+			'gt':">",
+			"left|":"abs:(",
+			"right|":")",
+			"cosh":"cosh",
+			"sinh":"sinh",
+			"tanh":"tanh",
+			"coth":"coth",
+			"sech":"sech",
+			"csch":"csch",
+			"cosech":"cosech",
+			"sin":"sin:",
+			"cos":"cos:",
+			"tan":"tan:",
+			"times":"*",
+			"sec":"sec:",
+			"cosec":"cosec:",
+			"csc":"csc:",
+			"cotan":"cotan:",
+			"cot":"cot:",
+			"ln":"ln:",
+			"lg":"log:",
+			"log":"log:",
+			"det":"det:",
+			"dim":"dim:",
+			"max":"max:",
+			"min":"min:",
+			"mod":"mod:",
+			"lcm":"lcm:",
+			"gcd":"gcd:",
+			"gcf":"gcf:",
+			"hcf":"hcf:",
+			"lim":"lim:",
+			":":"",
+			"left(":"(",
+			"right)":")",
+			"left[":"[",
+			"right]":"]",
+			'ge':">=",
+			'lt':"<",
+			'le':"<=",
+			"infty":"∞",
+			"text":"",
+			"frac":"",
+			"backslash":"\\",
+			"alpha":"α",
+			"beta":"β",
+			'gamma':"γ",
+			'delta':"δ",
+			'zeta':"ζ",
+			'eta':"η",
+			'theta':"θ",
+			'iota':"ι",
+			'kappa':"κ",
+			'mu':"μ",
+			'nu':"ν",
+			'xi':"ξ",
+			'omicron':"ο",
+			'rho':"ρ",
+			'sigma':"σ",
+			'tau':"τ",
+			'upsilon':"υ",
+			'chi':"χ",
+			'psi':"ψ",
+			'omega':"ω",
+			'phi':"ϕ",
+			"phiv":"φ",
+			"varphi":"φ",
+			"epsilon":"ϵ",
+			"epsiv":"ε",
+			"varepsilon":"ε",
+			"sigmaf":"ς",
+			"sigmav":"ς",
+			"gammad":"ϝ",
+			"Gammad":"ϝ",
+			"digamma":"ϝ",
+			"kappav":"ϰ",
+			"varkappa":"ϰ",
+			"piv":"ϖ",
+			"varpi":"ϖ",
+			"rhov":"ϱ",
+			"varrho":"ϱ",
+			"thetav":"ϑ",
+			"vartheta":"ϑ",
+			"pi":"π",
+			"lambda":"λ",
+			'Gamma':"Γ",
+			'Delta':"Δ",
+			'Theta':"Θ",
+			'Lambda':"Λ",
+			'Xi':"Ξ",
+			'Pi':"Π",
+			'Sigma':"Σ",
+			'Upsilon':"Υ",
+			'Phi':"Φ",
+			'Psi':"Ψ",
+			'Omega':"Ω",
+			"perp":"⊥",
+			",":" ",
+			"nabla":"∇",
+			"forall":"∀",
 			"sum":"∑",
-			"sqrt":"√"
+			"summation":"∑",
+			"prod":"∏",
+			"product":"∏",
+			"coprod":"∐",
+			"coproduct":"∐",
+			"int":"∫",
+			"integral":"∫"
+			
 		};
 		s=s.replace(/\\([a-z]+)/g,function(u,x){
 			var s=latexexprs[x];
-			return (s!=undefined)?s:x;
+			return " "+ ((s!=undefined)?s:x);
 		});
 		
 		
@@ -648,7 +778,15 @@ M.latex={
 		return s;
 	}
 };
-M.global = {};
+function Context(){
+	
+}
+Context.prototype.D=function(x, wrt){
+	wrt=wrt||"x";
+	return x.differentiate(wrt,1);
+};
+
+M.global = new Context();
 //Array prototype extensions:
 var _Array_prototype_toString=Array.prototype.toString;
 Array.prototype.toStrings=function(){
@@ -683,7 +821,7 @@ Array.prototype.toString=null;
 function latexExprForOperator(o){
 	var os={
 		"*":"\\cdot ",
-		"||":"\\vee ",
+		"∨":"\\vee ",
 		"&&":"\\wedge ",
 		"±":"\\pm ",
 		"∘":"\\circ "
@@ -776,7 +914,7 @@ Number.prototype.toLatex=function(){
 	return this.toString().replace(/e([\+\-])([\d\.]+)/,"\\cdot 10^{$2}");
 };
 
-var latexVars="Gamma|Delta|Theta|Lambda|Xi|Pi|Sigma|Phi|Psi|Omega".split("|");
+var latexVars="Gamma|Delta|Theta|Lambda|Xi|Pi|Sigma|Phi|Psi|Omega|lLambda|lambda|delta|sigma|sum".split("|");
 String.prototype.toLatex=function(){
 	var s = String(this);
 	if(latexVars.indexOf(s)!=-1){
@@ -817,18 +955,21 @@ window.commutative=commutative;
 //Is the operator o left-distributive over operator p?
 function distributive(o, p){
 	var os={
-		"*":["+","-",",",/*,"||" messy*/],
+		"*":["+","-",",",/*,"∨" messy*/],
 		"/":["+","-"],
 		"**":["*"],
 		"cross-product":"+",
 		"matrix-multiplication":"+",
 		"set-union":"intersect",
-		"||":"&&",
+		"∨":"&&",
 		"conjugtion":["disjunction", "exclusive disjunction"],
 		"max":"min",
 		"gcd":"lcm",
+		"D":["+","-",","],
 		"+":["max","min",","]
 	};
+	
+	
 	//TODO: (if better/faster): use fact (?) that (* distributes over '+' (which distributes over ',')) => (* distributes over ',')
 	// This doesn't hold for the binomial theorem.
 	if(os[o]){
@@ -848,7 +989,7 @@ function identity(o){
 		"/":1, //Implied by inverse?()
 		"-":0,
 		"&&":true,
-		"||":false,
+		"∨":false,
 		
 		"%":Infinity, //Bounds of real numbers
 		"**":1,
@@ -867,7 +1008,7 @@ function inverse(o,b){
 		"*":"/",
 		"^":"^",
 		
-		"&&":["||","¬","&&","$0"],
+		"&&":["∨","¬","&&","$0"],
 		
 		"**":["^","/"],
 		"∘":["∘","/"],//DEBUG: check this junk
@@ -904,7 +1045,8 @@ Array.prototype.valid=function(){
 	return true;
 };
 Array.prototype.requiresParentheses=function(o){
-	return precedence(o)>precedence(this.type);
+	return precedence(o)>precedence(this.type) || 
+	(o=="**" && this.type==="**");
 };
 
 window.distributive=distributive;
@@ -912,6 +1054,9 @@ window.inverse=inverse;
 window.identity=identity;
 Array.prototype.apply=function(o, x, __commuted__){
 	console.log("Apply ",o,x," to ",this);
+	if(o==="∘" && this.type==="_"){
+		return M.global[this[0]](x, this[1]);
+	}
 	if(o === "," && this.type === ","){
 		return this.concat([x]).setType(this.type);
 	} else if(o === ";" && this.type === ";"){
@@ -963,7 +1108,7 @@ Array.prototype.apply=function(o, x, __commuted__){
 		//TODO Which one/order though?
 		//TODO: this.length??? OLD CODE??? It should only be 2 except for vectors
 		for (var i = this.length - 1; i >= 0; i--){
-			if(!isNaN(this[i])){
+			if(typeof this[i] == "number" || typeof this[i]=="boolean"){
 				this[i]=this[i].apply(o,x);
 				found=true;
 				break;
@@ -974,20 +1119,9 @@ Array.prototype.apply=function(o, x, __commuted__){
 		}
 	}
 	}
-	if(this.type==="/") {
-		if(o==="/") {
-			//TODO: frac mult works for some reason. I guess thats a good thing,
-			// but it seems hacky.
-			// Yeah, it's crap, because \frac{1}{x} (\frac{1}{y}) doesn't
-			// simplify. To do so it will need a _deep_ factor search.
-			// This factor search is like the zeroth? level of that.
-			
-			//Fatal: simplify ∘ simplify ≠ simpify
-			return [this[0],this[1].apply("*",x)].setType(this.type);
-		} else if(o==="*") {
-			return [this[0].apply("*",x),this[1]].setType(this.type);
-		}
-	}
+	
+	
+	//Somtimes commuting will be useless. It is also annoying!
 	if(!__commuted__ && this.type==="*") {
 		if(o==="/" && x.type === "/"){
 			return x.reverse().apply("*",this);
@@ -1002,16 +1136,30 @@ String.prototype.apply=function(o, b, __commuted__){
 	if(operators[o][2]==1){
 		return [String(this)].setType(o);
 	}
-	if(identity(o)===b){
+	
+	
+	/*hack for without doing string conversion*/
+	var ident=identity(o);
+	if(ident===b){
+		return String(this);
+	}else if(ident===true && typeof b==="number" && b){
+		return String(this);
+	}else if(ident===false && typeof b==="number" && !b){
 		return String(this);
 	}
+	
 	if(inverse(o,b)===false){
 		return b;
 	}
 	if(!__commuted__ && commutative(o)){
 		return b.clone().apply(o, this, true);
 	}
-	return [String(this), b].setType(o);
+	//Global functions:
+	var t=String(this);
+	if(o==="∘" && M.global[t]){
+		return M.global[t](b);
+	}
+	return [t, b].setType(o);
 }
 var truth=[1,1].setType("=");
 Number.prototype.apply=function(o, b, __commuted__){
@@ -1027,13 +1175,20 @@ Number.prototype.apply=function(o, b, __commuted__){
 	}
 	
 	
+	var a = Number(this);
 	//TODO Identity and inverse can be combined if the left operand is included in
 	// the calculation?
-	
-	if(b&& identity(o)===b){
-		return Number(this);
+	if(b){
+		var ident=identity(o);
+		if(ident===b){
+			return a;
+		}else if(ident===true && this){
+			return b;
+		}else if(ident===false && !this){
+			return b;
+		}
 	}
-	var a = Number(this);
+	
 	if(b===undefined || (typeof b==="number" || typeof b==="boolean")){ // !isNaN(b)
 		switch(o){
 			case "+":
@@ -1045,15 +1200,26 @@ Number.prototype.apply=function(o, b, __commuted__){
 			case "*":
 				return a*b;
 			case "/":
+				if(b===0){
+					throw("Division by zero is not defined.");
+				}
 				return a/b;
 			case "-":
 				return a-b;
+			case "√":
+				//TODO: make sure ^(1/2) and this are equiv.
+				if(a<0){
+					return Math.pow(-a,0.5).apply("*","i");
+				}
+				return Math.pow(a, 0.5);
 			case "**":
 				return Math.pow(a,b);
 			case "===":
 				return a===b;
 			case "==":
 				return a==b;
+			case "≠":
+				return a!=b;
 			case ">":
 				return a>b;
 			case "<":
@@ -1066,7 +1232,7 @@ Number.prototype.apply=function(o, b, __commuted__){
 				return a&b;
 			case "^":
 				return a^b;
-			case "||":
+			case "∨":
 				return a||b;
 			case "|":
 				return a|b;
@@ -1085,15 +1251,13 @@ Number.prototype.apply=function(o, b, __commuted__){
 				return [a+b,a-b].setType(",");
 			case "@±":
 				return [a,-a].setType(",");
+			case ";":
 			case ",":
 				//TODO: fix this
-				if(a.type===","){
-					return a.push(b);
-				}else if(b.type === ","){
+				if(b.type === o){
 					return b.push(a);
 				}
 				return [a,b].setType(o);
-				
 			case "=":
 				if(a==b){
 					return truth;
@@ -1128,12 +1292,127 @@ Number.prototype.apply=function(o, b, __commuted__){
 	}
 	//Messy hack: null factor law:
 	if(a===0 && o=="/"){
+		assume([b,0].setType("≠"));
+		return 0;
 		return [["δ",b].setType("∘")].setType("@±");
-		return [[b,0].setType("=="),NaN].setType("*");
 	}
 	return [Number(this), b].setType(o);
 };
+
 Boolean.prototype.apply=Number.prototype.apply;
+
+//Differentiate a simplified function:
+//TODO: make this differentiate any function. At the moment it will only work for simplified ones, due to the fact that
+// the "," is still binary, but simplify()s to n-ary.
+Array.prototype.differentiate=function(x, n){
+	//Nth deriviative with respect to x
+	if(n<=-1){
+		return this.integrate(x, -n);
+	}else if(n==0){
+		return this;
+	}
+	if(n>1){
+		return this.differentiate(x, n-1).differentiate(x, n);
+	}else{
+		if(distributive("D", this.type)){
+			return this.map(function(t){
+				return t.differentiate(x, n);
+			}).setType(this.type).simplify();
+		}
+		switch(this.type){
+			case "*":
+				var da=this[0].differentiate(x,n);
+				var db=this[1].differentiate(x,n);
+				return this[0]
+				.apply("*", db)
+				.apply("+",
+					this[1]
+					.apply("*", da)
+				);
+			case "/":
+				var da=this[0].differentiate(x,n);
+				var db=this[1].differentiate(x,n);
+				return this[1]
+				.apply("*", da)
+				.apply("-",
+					this[0]
+					.apply("*", db)
+				)
+				.apply("/",
+					this[1]
+					.apply("**",2)
+				)
+			case "**":
+				var da=this[0].differentiate(x,n);
+				var db=this[1].differentiate(x,n);
+				return this[0]
+				.apply("**",
+					this[1].apply("-",1)
+				)
+				.apply("*",
+					this[1]
+					.apply("*",
+						da
+					)
+					.apply("+",
+						this[0]
+						.apply("*",
+							"log"
+							.apply("∘",
+								this[0]
+							)
+						)
+						.apply("*",
+							db
+						)
+					)
+				);
+			case "@-":
+			case "@+":
+			case "@±":
+				return this[0].differentiate(x,n).apply(this.type);
+			case "∘":
+				return this[1]
+				.differentiate(x,n)
+				.apply("*",
+					//this[0]
+					//.differentiate(x,n)/*TODO: function by name*/
+					"cos"
+					.apply("∘",
+						this[1]
+					)
+				);
+			default:
+				return ["D",this].setType("∘");
+				throw("Cannot differeniate expressions using the '"+this.type+"' operator");
+				break;
+			
+		}
+	}
+};
+String.prototype.differentiate=function(x,n){
+	if(n<=-1){
+		return this.integrate(x, -n);
+	}else if(n==0){
+		return this;
+	}
+	if(String(this)==x){
+		return (n==1)?1:0;
+	}
+	return 0;
+};
+Number.prototype.differentiate=function(x,n){
+	if(n<=-1){
+		return this.integrate(x, -n);
+	}else if(n==0){
+		return this;
+	}
+	
+	if(this==Infinity || this==-Infinity){
+		return undefined;
+	}
+	return 0;
+}
 Array.prototype.simplify=function(){
 	
 	//Rules:
@@ -1151,93 +1430,6 @@ Array.prototype.simplify=function(){
 		console.log("will apply");
 		//In place?
 		return a.apply(this.type, b);
-		/*
-		//The NaN junk below is kind of bad. It should carry through NaNs.
-		// Ie., 1+2+3....+x + 11 + 12 + 13 + ... = 
-		//      6 + x + 11 + 12 + 13 + ... with the code below. But we want 
-		// x+ (6+11+12+13+...),
-		// and it may be better done without the intermediate step via
-		// x+(1+2+3...)+11+12+13... (which would be bringing the 1+2+3... up the expr tree) 
-		if(!isNaN(a) && !isNaN(b)){
-			
-			a=Number(a);
-			b=Number(b);
-			
-			//BAD: the following code may destory information due to floating point error
-			// fractions should remain intact?
-			switch(this.type){
-				case "+":
-					return a+b;
-				case "*":
-					return a*b;
-				case "/":
-					return a/b;
-				case "-":
-					return a-b;
-				case "**":
-					return Math.pow(a,b);
-				case "===":
-					return a===b;
-				case "==":
-					return a==b;
-				case ">":
-					return a>b;
-				case "<":
-					return a<b;
-				case ">=":
-					return a>=b;
-				case "<=":
-					return a<=b;
-				case "&":
-					return a&b;
-				case "^":
-					return a^b;
-				case "||":
-					return a||b;
-				case "|":
-					return a|b;
-				case "%":
-					return a%b;
-				case "&&":
-					return a&&b;
-				case "=":
-					throw(new ReferenceError("Left side of assignment is not a reference."))
-				default:
-					throw("Operator '"+this.type+"' is not yet numerically implemented.");
-					
-			}
-		}else if(!isNaN(a)) {
-			switch(this.type){
-				case "&&":
-					return a?b:false;
-				case "||":
-					return true;
-				case "^":
-					return a?!b:b;
-				default:
-					//Commute?
-					return [a,b].setType(this.type);
-					break;
-				
-			}
-		}else if(!isNaN(b)) {
-			switch(this.type){
-				case "&&":
-					return b?a:false;
-				case "||":
-					return true;
-				case "^":
-					return b?!a:a;
-				default:
-					//Commute?
-					return [a,b].setType(this.type);
-					break;
-				
-			}
-		}else{
-			return [a,b].setType(this.type);
-		}
-		*/
 	}
 };
 Array.prototype.impliedBy=function(context){

@@ -2,6 +2,8 @@ window.$$=function getElementById(i){
 	return document.getElementById(i.substring(1));
 };
 !(function (window, undefined) {
+	"use strict";
+	var webkit=/WebKit/.test(navigator.userAgent);
 	var $overlay=$("#overlay");
 	function Overlay(x,y){
 		this.bind(x,y);
@@ -106,7 +108,6 @@ window.$$=function getElementById(i){
 	function exec(latex){
 		//Convert to javascript:
 		var expr=M(M.latex.parse(latex)).eval();
-		
 		if(!expr.impliedBy(context)){
 			throw(new Error("That statement may not be true."));
 		}
@@ -135,7 +136,6 @@ window.$$=function getElementById(i){
 			elem.id="page-"+page+"-eqn-"+lastID++;
 			elem.className=className;
 			elem.tabIndex=0;
-			elem.draggable=true;
 			elem.appendChild(typeof data === "string" ? document.createTextNode(data) : data);
 			var del=document.createElement("div");
 			$(del).bind("click.jscas", delEvent);
@@ -156,12 +156,12 @@ window.$$=function getElementById(i){
 		"execute":function(d){
 			var res;
 			if(this.current){
-				window.d=d;
 				var result=document.createElement("div");
 				result.className="result";
 				try{
 					d=exec(d);
 					
+					var assumptions=M.getAssumptions();
 					res=d.toLatex();
 					//res = exec(d).toLatex();
 					if(res==ctrlcodes.clear){
@@ -172,7 +172,18 @@ window.$$=function getElementById(i){
 						
 						
 						result.appendChild(document.createTextNode(res));
+						
 						this.current.appendChild(result);
+						if(assumptions.length){
+							
+							var ass_m = document.createElement("span");
+							ass_m.appendChild(document.createTextNode(assumptions.toLatex()));
+							var ass = document.createElement("span");
+							ass.appendChild(document.createTextNode(", "));
+							ass.appendChild(ass_m);
+							this.current.appendChild(ass);
+							$(ass_m).mathquill();
+						}
 						$(this.current).find(".error").remove();
 						$(result).mathquill();
 					}
@@ -185,9 +196,12 @@ window.$$=function getElementById(i){
 					document.body.scrollTop = $(document.body).height()
 					return false;
 				}
+				this.current.draggable=true;
 			}
 			var mathQuill=document.createElement("div");
+			
 			var current = this.current = this.write(mathQuill, "write user");
+			
 			setTimeout(function(){current.style.opacity=1.0;},1);
 			mathQuill.appendChild(document.createTextNode(res||""));
 			
@@ -258,7 +272,6 @@ window.$$=function getElementById(i){
 		},
 		"load":function(l){
 			l=JSON.parse(l);
-			console.log("Loading state");
 			if(l.server){
 				state.server=String(l.server);
 				pull();
@@ -300,6 +313,14 @@ window.$$=function getElementById(i){
 		console.execute();
 	}else{
 		alert("Your browser does not support localStorage. Get Safari, Chrome, Firefox or Opera.");
+	}
+	if(webkit){
+		window.console.group("jSCAS Booted! Examples:");
+		window.console.info("M.global.x=3");
+		window.console.info("M.global.f=function(x){return x*x}");
+		window.console.info('M("f(x)").differentiate()');
+		
+		window.console.groupEnd();
 	}
 	
 })(window);
