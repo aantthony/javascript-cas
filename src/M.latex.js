@@ -104,37 +104,9 @@ M.latex={
 			"div":"/",
 			
 			'gt':">",
-			"left|":"abs:(",
+			"left|":"\\abs(",
 			"right|":")",
-			"cosh":"cosh",
-			"sinh":"sinh",
-			"tanh":"tanh",
-			"coth":"coth",
-			"sech":"sech",
-			"csch":"csch",
-			"cosech":"cosech",
-			"sin":"sin",
-			"cos":"cos",
-			"tan":"tan",
 			"times":"*",
-			"sec":"sec",
-			"cosec":"cosec",
-			"csc":"csc",
-			"cotan":"cotan",
-			"cot":"cot",
-			"ln":"ln",
-			"lg":"log",
-			"log":"log",
-			"det":"det",
-			"dim":"dim",
-			"max":"max",
-			"min":"min",
-			"mod":"mod",
-			"lcm":"lcm",
-			"gcd":"gcd",
-			"gcf":"gcf",
-			"hcf":"hcf",
-			"lim":"lim",
 			":":"",
 			"left(":"(",
 			"right)":")",
@@ -215,7 +187,7 @@ M.latex={
 		};
 		s=s.replace(/\\([a-z]+)/g,function(u,x){
 			var s=latexexprs[x];
-			return " "+ ((s!=undefined)?s:x);
+			return " "+ ((s!=undefined)?s:("\\"+x));
 		});
 		
 		
@@ -223,9 +195,6 @@ M.latex={
 		s=s.replace(/[\[\{]/g,"(");
 		s=s.replace(/[\]\}]/g,")");
 		
-		s=s.replace(/\\:/g," ");
-		s=s.replace(/\\/g,"");
-		s=s.replace(/\^/g,"**");
 		return s;
 	}
 };

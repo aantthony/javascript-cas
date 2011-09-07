@@ -46,7 +46,7 @@ function inverse(o,b){
 		
 		"&&":["∨","¬","&&","$0"],
 		
-		"**":["^","/"],
+		"^":["^","/"],
 		"∘":["∘","/"],//DEBUG: check this junk
 		"matrix multiplication":I
 		
@@ -89,7 +89,7 @@ function identity(o){
 		"∨":false,
 		
 		"%":Infinity, //Bounds of real numbers
-		"**":1,
+		"^":1,
 		"matrix multiplication":I
 		
 		
@@ -112,7 +112,7 @@ function distributive(o, p){
 	var os={
 		"*":["+","-",",",/*,"∨" messy*/],
 		"/":["+","-"],
-		"**":["*"],
+		"^":["*"],
 		"cross-product":"+",
 		"matrix-multiplication":"+",
 		"set-union":"intersect",
@@ -153,10 +153,10 @@ function associative(o){
 
 Array.prototype.requiresParentheses=function(o){
 	return precedence(o)>precedence(this.type) || 
-	(o=="**" && this.type==="**");
+	(o=="^" && this.type==="^");
 };
 Number.prototype.requiresParentheses=function(o){
-	if(o==="**" && Number(this)<0){
+	if(o==="^" && Number(this)<0){
 		return true;
 	}
 	return false;

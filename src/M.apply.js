@@ -202,7 +202,7 @@ Number.prototype.apply=function(o, b, __commuted__){
 					return Math.pow(-a,0.5).apply("*","i");
 				}
 				return Math.pow(a, 0.5);
-			case "**":
+			case "^":
 				return Math.pow(a,b);
 			case "===":
 				return a===b;

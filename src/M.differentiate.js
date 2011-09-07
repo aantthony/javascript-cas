@@ -38,13 +38,13 @@ Array.prototype.differentiate=function(x, n){
 				)
 				.apply("/",
 					this[1]
-					.apply("**",2)
+					.apply("^",2)
 				)
-			case "**":
+			case "^":
 				var da=this[0].differentiate(x,n);
 				var db=this[1].differentiate(x,n);
 				return this[0]
-				.apply("**",
+				.apply("^",
 					this[1].apply("-",1)
 				)
 				.apply("*",
