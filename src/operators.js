@@ -155,3 +155,12 @@ Array.prototype.requiresParentheses=function(o){
 	return precedence(o)>precedence(this.type) || 
 	(o=="**" && this.type==="**");
 };
+Number.prototype.requiresParentheses=function(o){
+	if(o==="**" && Number(this)<0){
+		return true;
+	}
+	return false;
+};
+String.prototype.requiresParentheses=
+Boolean.prototype.requiresParentheses=
+_false;// Or should it be true for strings, parens = ", and "

@@ -1518,10 +1518,8 @@ Number.prototype.clone=
 Boolean.prototype.clone=
 String.prototype.clone=
 I;
-Number.prototype.requiresParentheses=
-String.prototype.requiresParentheses=
-Boolean.prototype.requiresParentheses=
-_false;// Or should it be true for strings, parens = ", and "
+
+
 Number.prototype.impliedBy=
 String.prototype.impliedBy=
 Boolean.prototype.impliedBy=
