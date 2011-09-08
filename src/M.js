@@ -159,7 +159,7 @@ var parse = (function (language) {
 					token.v=Infinity;
 				}
 			}
-			console.log("token: ", token.v, names[token.t]);
+			//console.log("token: ", token.v, names[token.t]);
 			//Comments from http://en.wikipedia.org/wiki/Shunting-yard_algorithm
 			// Read a token.
 			// If the token is a number, then add it to the output queue.
@@ -282,7 +282,7 @@ var parse = (function (language) {
 		var op_last=true;
 		
 		function next_tokens(token) {
-			console.log("lot: ", token.v);
+			//console.log("lot: ", token.v);
 			var tokens=[];
 			var v=token.v;
 			if(token.t===types.paren){

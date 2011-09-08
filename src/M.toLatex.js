@@ -22,13 +22,13 @@ Array.prototype.toLatex=function(__matrix__){
 		if(this.type==="/"){
 			
 			return "\\frac{"+this[0].toLatex()+"}{"+this[1].toLatex()+"}";
-		} else if(this.type==="^"){
+		} else if(this.type==="^" || this.type ==="_"){
 			
 			var a = this[0].toLatex();
 			if(this[0].requiresParentheses(this.type)){
 				a="\\left("+a+"\\right)";
 			}
-			return a+"^{"+this[1].toLatex()+"}";
+			return a+this.type+"{"+this[1].toLatex()+"}";
 		} else if(this.type==="∘"){
 			var a = this[0].toLatex();
 			
