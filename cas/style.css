@@ -1,6 +1,7 @@
 *{
 	padding:0;
 	margin:0;
+	-webkit-user-select:none;
 }
 body,html{
 	background:white;
@@ -121,4 +122,16 @@ ul#console{
 #overlay #loading img{
 	-webkit-transition: -webkit-transform 0.2s linear;
 	margin-bottom:8px;
+}
+
+
+/* Overrides default mathquill css */
+.mathquill-rendered-math:not(.mathquill-editable) .selection *{
+	background: none !important;
+}
+.mathquill-editable, .mathquill-embedded-latex .mathquill-editable{
+	border: none !important;
+}
+.mathquill-editable.hasCursor, .mathquill-editable .hasCursor{
+	/*-webkit-box-shadow: none !important; */
 }

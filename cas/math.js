@@ -87,7 +87,6 @@ var R = right = 1;
 languages[language] = [
 	[";"],			/*L / R makes no difference???!??!? */
 	[","],
-	["function",R,2],	/*anonymous function*/
 	[["=","+=","-=","*=","/=","%=","&=","^=","|="],R],
 	[["?",":"],R,2],
 	[["∨"]],
@@ -99,14 +98,14 @@ languages[language] = [
 	[["<","<=",">",">="],L],
 	[[">>","<<"]],
 	["±",R,2],
-	[["+","-"]],
+	[["+"]],
 	[["∫","∑"],R,1],
 	[["*","%"]],
 	[["@+","@-","@±"],R,1], //unary plus/minus
 	[["¬"],L,1],
 	["∘",R,2],
 	[["/"]],
-	[["**"]],//e**x
+	[["^"]],//e**x
 	["!",L,1],
 	[["~"],R,1], //bitwise negation
 	[["++","++",".","->"],L,1],
@@ -117,6 +116,7 @@ languages[language] = [
 	["throw",R,1],
 	["'",L,1],
 	["√",R,1],
+	["#",R,1],	/*anonymous function*/
 ];
 
 
@@ -167,7 +167,7 @@ function inverse(o,b){
 		
 		"&&":["∨","¬","&&","$0"],
 		
-		"**":["^","/"],
+		"^":["^","/"],
 		"∘":["∘","/"],//DEBUG: check this junk
 		"matrix multiplication":I
 		
@@ -210,7 +210,7 @@ function identity(o){
 		"∨":false,
 		
 		"%":Infinity, //Bounds of real numbers
-		"**":1,
+		"^":1,
 		"matrix multiplication":I
 		
 		
@@ -233,7 +233,7 @@ function distributive(o, p){
 	var os={
 		"*":["+","-",",",/*,"∨" messy*/],
 		"/":["+","-"],
-		"**":["*"],
+		"^":["*"],
 		"cross-product":"+",
 		"matrix-multiplication":"+",
 		"set-union":"intersect",
@@ -274,8 +274,25 @@ function associative(o){
 
 Array.prototype.requiresParentheses=function(o){
 	return precedence(o)>precedence(this.type) || 
-	(o=="**" && this.type==="**");
+	(o=="^" && this.type==="^");
 };
+Number.prototype.requiresParentheses=function(o){
+	if(o==="^" && Number(this)<0){
+		return true;
+	}
+	return false;
+};
+String.prototype.requiresParentheses=
+Boolean.prototype.requiresParentheses=
+_false;// Or should it be true for strings, parens = ", and "
+/*
+TODO:
+ fix:
+	' sin(x)' => ∘s∘i∘n∘(x)
+
+
+*/
+
 var msg={
 	"latexParse":"Unable to parse LaTeX string",
 	"parenMismatch":"There are mismatched parentheses"
@@ -299,7 +316,7 @@ var parse = (function (language) {
 	//Operator characters
 	//TODO: calculate programmatically
 	
-	var ochars=":>-.+~!^%/*<=&|?,;±∘'∫∑∫√¬_";
+	var ochars=":>-.+~!^%/*<=&|?,;±∘'∫∑∫√¬_$";
 	
 	//TODO: Allow 1e+2 format
 	var nummustbe="1234567890.";
@@ -321,14 +338,23 @@ var parse = (function (language) {
 		},
 		function(e){
 			//Assumtions: It will only be ONE character ahead of a valid var.
+			
+			/*
+			Not desired, it could get messy. Always use \\varname instead.
 			if(M.global[e]!==undefined){
 				return true;
 			}
+			*/
 			
-			return (e.length === 1) && (varcannotbe.indexOf(e)==-1);
+			if(e.length === 1 || e[0]==="\\"){
+				
+				//Given: It will only be ONE character ahead of a valid var.
+				
+				return varcannotbe.indexOf(e[e.length-1])==-1;
+			}
+			return false;
 		}
 	];
-	window.match = match;
 	//TODO: rewrite this in a way that can split variables also
 	function split_operators(t){
 		if(operators[t]){
@@ -349,6 +375,7 @@ var parse = (function (language) {
 	return function (s){
 		O(1, "parse");
 		var current_type=0;
+		s=s.trim();//Fixes a bug of parsing " ..."
 		var i=0,len=s.length;
 		var current_token=s[0];
 		current_type=4;
@@ -419,7 +446,7 @@ var parse = (function (language) {
 					token.v=Infinity;
 				}
 			}
-			console.log("token: ", token.v, names[token.t]);
+			//console.log("token: ", token.v, names[token.t]);
 			//Comments from http://en.wikipedia.org/wiki/Shunting-yard_algorithm
 			// Read a token.
 			// If the token is a number, then add it to the output queue.
@@ -542,7 +569,7 @@ var parse = (function (language) {
 		var op_last=true;
 		
 		function next_tokens(token) {
-			console.log("lot: ", token.v);
+			//console.log("lot: ", token.v);
 			var tokens=[];
 			var v=token.v;
 			if(token.t===types.paren){
@@ -593,7 +620,6 @@ var parse = (function (language) {
 				}
 			});
 		}
-		window.match=match;
 		//Tokenize:
 		while(i<len) {
 			i++;
@@ -772,6 +798,8 @@ M.Context.prototype.D=function(x, wrt){
 	wrt=wrt||"x";
 	return x.differentiate(wrt,1);
 };
+M.Context.prototype.D.symbolic=true;
+
 M.Context.prototype.reset=function(){
 	for(var i in this){
 		if(this.hasOwnProperty(i)){
@@ -848,13 +876,13 @@ function factorial(ff) {
 M.Context.prototype.factorial = function(x){
 	return factorial(x);
 };
-M.Context.prototype.factorial.numerical = true;
+//M.Context.prototype.factorial.symbolic = true;
 
 
 M.Context.prototype.Gamma = function(x){
 	return Gamma(x);
 }
-M.Context.prototype.Gamma.numerical = true;
+//M.Context.prototype.Gamma.symbolic = true;
 
 //Like jquery noConflict
 M.noConflict = function() {
@@ -890,9 +918,7 @@ M.assume=function(x){
 		//Currently only parses \frac
 		var i,l=s.length
 		//indexOf is BAD!!! It is fine only when we only have one type of \expr
-		var debug=0;
-		while(!debug && (i = s.indexOf("\\begin"))!=-1){
-			debug=1;
+		while((i = s.indexOf("\\begin"))!=-1){
 			var n = s.indexOf("}", i+7);
 			
 			var type=s.substring(i+7,n);
@@ -919,6 +945,15 @@ M.assume=function(x){
 			default:
 				throw(new SyntaxError("Latex \\begin{"+type+"} block not understood."))
 			}
+		}
+		while((i = s.indexOf("\\text"))!=-1){
+			var n = s.indexOf("}", i+6);
+			var text=s.substring(i+6,n);
+			
+			s=s.split("");
+			
+			s.splice(i,n-i+1,"\\"+text);
+			s=s.join("");
 		}
 		while((i = s.indexOf("\\frac"))!=-1){
 			var n,good=false;
@@ -988,37 +1023,9 @@ M.assume=function(x){
 			"div":"/",
 			
 			'gt':">",
-			"left|":"abs:(",
+			"left|":"\\abs(",
 			"right|":")",
-			"cosh":"cosh",
-			"sinh":"sinh",
-			"tanh":"tanh",
-			"coth":"coth",
-			"sech":"sech",
-			"csch":"csch",
-			"cosech":"cosech",
-			"sin":"sin",
-			"cos":"cos",
-			"tan":"tan",
 			"times":"*",
-			"sec":"sec",
-			"cosec":"cosec",
-			"csc":"csc",
-			"cotan":"cotan",
-			"cot":"cot",
-			"ln":"ln",
-			"lg":"log",
-			"log":"log",
-			"det":"det",
-			"dim":"dim",
-			"max":"max",
-			"min":"min",
-			"mod":"mod",
-			"lcm":"lcm",
-			"gcd":"gcd",
-			"gcf":"gcf",
-			"hcf":"hcf",
-			"lim":"lim",
 			":":"",
 			"left(":"(",
 			"right)":")",
@@ -1028,7 +1035,7 @@ M.assume=function(x){
 			'lt':"<",
 			'le':"<=",
 			"infty":"∞",
-			"text":"",
+			"sim":"~",
 			"frac":"",
 			"backslash":"\\",
 			"alpha":"α",
@@ -1099,7 +1106,7 @@ M.assume=function(x){
 		};
 		s=s.replace(/\\([a-z]+)/g,function(u,x){
 			var s=latexexprs[x];
-			return " "+ ((s!=undefined)?s:x);
+			return " "+ ((s!=undefined)?s:("\\"+x));
 		});
 		
 		
@@ -1107,9 +1114,6 @@ M.assume=function(x){
 		s=s.replace(/[\[\{]/g,"(");
 		s=s.replace(/[\]\}]/g,")");
 		
-		s=s.replace(/\\:/g," ");
-		s=s.replace(/\\/g,"");
-		s=s.replace(/\^/g,"**");
 		return s;
 	}
 };
@@ -1152,13 +1156,13 @@ Array.prototype.differentiate=function(x, n){
 				)
 				.apply("/",
 					this[1]
-					.apply("**",2)
+					.apply("^",2)
 				)
-			case "**":
+			case "^":
 				var da=this[0].differentiate(x,n);
 				var db=this[1].differentiate(x,n);
 				return this[0]
-				.apply("**",
+				.apply("^",
 					this[1].apply("-",1)
 				)
 				.apply("*",
@@ -1200,6 +1204,16 @@ Array.prototype.differentiate=function(x, n){
 						)
 					)
 				);
+			case "√":
+				return this[0]
+				.differentiate(x,n)
+				.apply("/",
+					this[0]
+					.apply("√")
+					.apply("*",
+						2
+					)
+				);
 			case "@-":
 			case "@+":
 			case "@±":
@@ -1210,7 +1224,8 @@ Array.prototype.differentiate=function(x, n){
 				.apply("*",
 					//this[0]
 					//.differentiate(x,n)/*TODO: function by name*/
-					"cos"
+					[this[0]].setType("#").differentiate()
+					//"cos"
 					.apply("∘",
 						this[1]
 					)
@@ -1223,11 +1238,12 @@ Array.prototype.differentiate=function(x, n){
 		}
 	}
 };
+
 String.prototype.differentiate=function(x,n){
 	if(n<=-1){
 		return this.integrate(x, -n);
 	}else if(n==0){
-		return this;
+		return String(this);
 	}
 	if(String(this)==x){
 		return (n==1)?1:0;
@@ -1238,7 +1254,7 @@ Number.prototype.differentiate=function(x,n){
 	if(n<=-1){
 		return this.integrate(x, -n);
 	}else if(n==0){
-		return this;
+		return Number(this);
 	}
 	
 	if(this==Infinity || this==-Infinity){
@@ -1264,11 +1280,38 @@ Array.prototype.simplify=function(){
 		//In place?
 		return a.apply(this.type, b);
 	}
+};Array.prototype.sub=function(a,b){
+	var c=[].setType(this.type);
+	if(this.type==="#" && this[1]!=a){
+		//TODO: checl this
+		return this.clone();
+	}else{
+		var i,l=this.length;
+		for(i=0;i<l;i++){
+			c.push(this[i].sub(a,b));
+		}
+	}
+	//TODO: WARNING - DOES NOT SIMPLIFY.
+	return c;
 };
+String.prototype.sub=function(a,b){
+	var t = String(this);
+	if(t===a){
+		return b;
+	}
+	return t;
+};
+Number.prototype.sub=I;
+
 Array.prototype.apply=function(o, x, __commuted__){
 	console.log("Apply ",o,x," to ",this,this.type);
 	if(o==="∘" && this.type==="_"){
+		//TODO: check if it is symbolic.
 		return M.global[this[0]](x, this[1]);
+	}
+	if(o==="∘" && this.type==="#"){
+		return this[0]
+		.sub("x", x)
 	}
 	if(o === "," && this.type === ","){
 		return this.concat([x]).setType(this.type);
@@ -1356,31 +1399,37 @@ Array.prototype.apply=function(o, x, __commuted__){
 	return [this,x].setType(o);
 };
 String.prototype.apply=function(o, b, __commuted__){
-	if(operators[o][2]==1){
-		return [String(this)].setType(o);
-	}
 	
+	var t=String(this);
+	if(operators[o][2]==1){
+		return [t].setType(o);
+	}
 	
 	/*hack for without doing string conversion*/
 	var ident=identity(o);
 	if(ident===b){
-		return String(this);
+		return t;
 	}else if(ident===true && typeof b==="number" && b){
-		return String(this);
+		return t;
 	}else if(ident===false && typeof b==="number" && !b){
-		return String(this);
+		return t;
 	}
 	
 	if(inverse(o,b)===false){
 		return b;
 	}
 	if(!__commuted__ && commutative(o)){
-		return b.clone().apply(o, this, true);
+		return b.clone().apply(o, t, true);
 	}
 	//Global functions:
-	var t=String(this);
 	if(o==="∘" && M.global[t]){
-		return M.global[t](b);
+		if(M.global[t].symbolic){
+			return M.global[t](b);
+		}
+		if(typeof b === "number" || typeof b === "boolean"){
+			return M.global[t](b);
+		}
+		
 	}
 	return [t, b].setType(o);
 }
@@ -1435,7 +1484,7 @@ Number.prototype.apply=function(o, b, __commuted__){
 					return Math.pow(-a,0.5).apply("*","i");
 				}
 				return Math.pow(a, 0.5);
-			case "**":
+			case "^":
 				return Math.pow(a,b);
 			case "===":
 				return a===b;
@@ -1492,6 +1541,11 @@ Number.prototype.apply=function(o, b, __commuted__){
 				throw(new Error("The statement is always false: "+a+" ≠ "+b))
 				throw(new ReferenceError("Left side of assignment is not a reference."))
 			default:
+				if(b===undefined){
+					return [a].setType(o);
+				}
+				return [a,b].setType(o);
+				//TODO: maybe this should be thrown
 				throw("Operator '"+o+"' is not yet numerically implemented.");	
 		}
 	}
@@ -1542,13 +1596,13 @@ Array.prototype.toLatex=function(__matrix__){
 		if(this.type==="/"){
 			
 			return "\\frac{"+this[0].toLatex()+"}{"+this[1].toLatex()+"}";
-		} else if(this.type==="**"){
+		} else if(this.type==="^" || this.type ==="_"){
 			
 			var a = this[0].toLatex();
 			if(this[0].requiresParentheses(this.type)){
 				a="\\left("+a+"\\right)";
 			}
-			return a+"^{"+this[1].toLatex()+"}";
+			return a+this.type+"{"+this[1].toLatex()+"}";
 		} else if(this.type==="∘"){
 			var a = this[0].toLatex();
 			
