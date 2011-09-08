@@ -67,6 +67,9 @@ function inverse(o,b,d,side){
 				
 				//TODO: THIS ASSUMES A*B = B*A
 				// ? = b/d
+				if(d===0){
+					return false; //DIVISION BY ZERO
+				}
 				return [b, d].setType("/");
 			}else if(side===R){
 				// d = ? / b
@@ -81,6 +84,9 @@ function inverse(o,b,d,side){
 			
 			//TODO: THIS ASSUMES A*B = B*A
 			// ? = d / b
+			if(b===0){
+				return false;
+			}
 			return [d, b].setType("/");
 		case "^":
 			if(side===L){
@@ -94,6 +100,9 @@ function inverse(o,b,d,side){
 				// d = ? ^ b
 				// d ^ (1/b) = ?^(b/b)
 				// d ^ (1/b) = ?
+				if(b===0){
+					return false;
+				}
 				return [d, [1, b].setType("/")].setType("^");
 			}else{
 				throw(SideError);

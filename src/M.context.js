@@ -14,7 +14,6 @@ M.Context.prototype.learn=function(x){
 			self[v]=true;
 		}
 	});
-	console.log("Learn: ", vars.join(", "));
 	return handle;
 };
 M.Context.prototype.delete=function(var_name_or_handle){

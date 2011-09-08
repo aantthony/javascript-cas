@@ -188,6 +188,9 @@ function inverse(o,b,d,side){
 				
 				//TODO: THIS ASSUMES A*B = B*A
 				// ? = b/d
+				if(d===0){
+					return false; //DIVISION BY ZERO
+				}
 				return [b, d].setType("/");
 			}else if(side===R){
 				// d = ? / b
@@ -202,6 +205,9 @@ function inverse(o,b,d,side){
 			
 			//TODO: THIS ASSUMES A*B = B*A
 			// ? = d / b
+			if(b===0){
+				return false;
+			}
 			return [d, b].setType("/");
 		case "^":
 			if(side===L){
@@ -215,6 +221,9 @@ function inverse(o,b,d,side){
 				// d = ? ^ b
 				// d ^ (1/b) = ?^(b/b)
 				// d ^ (1/b) = ?
+				if(b===0){
+					return false;
+				}
 				return [d, [1, b].setType("/")].setType("^");
 			}else{
 				throw(SideError);
@@ -1099,7 +1108,6 @@ Array.prototype.solve=function(x){
 			self[v]=true;
 		}
 	});
-	console.log("Learn: ", vars.join(", "));
 	return handle;
 };
 M.Context.prototype.delete=function(var_name_or_handle){
@@ -1560,7 +1568,7 @@ String.prototype.sub=function(a,b){
 Number.prototype.sub=I;
 
 Array.prototype.apply=function(o, x, __commuted__){
-	console.log("Apply ",o,x," to ",this,this.type);
+	//console.log("Apply ",o,x," to ",this,this.type);
 	if(o==="∘" && this.type==="_"){
 		//TODO: check if it is symbolic.
 		return M.global[this[0]](x, this[1]);
@@ -1580,14 +1588,13 @@ Array.prototype.apply=function(o, x, __commuted__){
 		return [this,x].setType(";");
 	}
 	if(x!==undefined && identity(o)===x){
-		console.log("identity");
+		//console.log("identity");
 		return this;
 	}
 	if(x!==undefined && inverse(o,x,NaN,R)===false){
-		console.log("identity - inverse");
+		//console.log("identity - inverse");
 		return x;
 	}
-	console.log(5);
 	//Distributive law:
 	if(this.type === "," && x.type === ","){
 		// Vector-Vector operations:
@@ -1608,7 +1615,7 @@ Array.prototype.apply=function(o, x, __commuted__){
 		return this;
 	}else if(distributive(o,this.type)){
 		
-		console.log("attempting to apply distributve to multiply "+this.toLatex()+" by "+x.toLatex());
+		//console.log("attempting to apply distributve to multiply "+this.toLatex()+" by "+x.toLatex());
 		for (var i = this.length - 1; i >= 0; i--){
 			
 			//console.log(" - multiply ("+o+") the "+this[i].toString()+" factor by "+x);
@@ -1675,7 +1682,7 @@ String.prototype.apply=function(o, b, __commuted__){
 		return b;
 	}
 	if(!__commuted__ && ((typeof b)!="string") && commutative(o)){
-		console.log("commute "+o, b, t);
+		//console.log("commute "+o, b, t);
 		return b.clone().apply(o, t, true);
 	}
 	//Global functions:
@@ -1808,7 +1815,7 @@ Number.prototype.apply=function(o, b, __commuted__){
 	}
 	
 	if(commutative(o)){
-		console.log(Number(this),"commute "+o, b);
+		//console.log(Number(this),"commute "+o, b);
 		if(identity(o)==Number(this)){
 			return b;
 		}
