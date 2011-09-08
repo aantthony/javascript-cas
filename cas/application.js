@@ -102,7 +102,7 @@ window.$$=function getElementById(i){
 		"main":$$("#main")
 	};
 	var context=new M.Context();//State
-	
+	window.context=context;
 	var ctrlcodes={"clear":"[H[2J"};
 	
 	function exec(latex){
@@ -111,8 +111,8 @@ window.$$=function getElementById(i){
 		if(!expr.impliedBy(context)){
 			//throw(new Error("That statement may not be true."));
 			expr.className = "new";
+			context.learn(expr);
 		}
-		
 		if(typeof expr==="string" && ctrlcodes[expr] !== undefined){
 			return ctrlcodes[expr];
 		}

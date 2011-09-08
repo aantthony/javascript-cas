@@ -103,7 +103,7 @@ Number.prototype.toLatex=function(){
 
 String.prototype.toLatex=function(){
 	var s = String(this);
-	if(latexVars.indexOf(s)!=-1){
+	if((s.length>1) || (latexVars.indexOf(s)!=-1)){
 		return "\\"+s;
 	}
 	return s;

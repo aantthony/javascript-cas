@@ -285,8 +285,11 @@ var parse = (function (language) {
 			//console.log("lot: ", token.v);
 			var tokens=[];
 			var v=token.v;
+			if(token.t===types.variable){
+				v=v.replace(/\\/g,"");
+			}
 			if(token.t===types.paren){
-				v=v.replace(/[ \n\t]+/, "");
+				v=v.replace(/[ \n\t]+/g, "");
 			}
 			var _tokens=
 			v
@@ -452,32 +455,7 @@ Array.prototype.valid=function(){
 	return true;
 };
 
-var truth=[1,1].setType("=");
-Array.prototype.impliedBy=function(context){
-	if(this===truth){
-		return true;
-	}
-	if(this.type===","){
-		for (var i = this.length - 1; i >= 0; i--){
-			if(!this[i].impliedBy(context)){
-				return false;
-			}
-		}
-		return true;
-	}
-	
-	if(this.type==="="){
-		return false;
-	}
-	//Sub-statements? Too slow?
-	
-		for (var i = this.length - 1; i >= 0; i--){
-			if(!this[i].impliedBy(context)){
-				return false;
-			}
-		}
-		return true;
-};
+
 Array.prototype.eval=function(){
 	return this.simplify();
 };

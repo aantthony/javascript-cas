@@ -38,25 +38,98 @@ function unary(o){
 
 
 
-function inverse(o,b){
+function inverse(o,b,d,side){
+	var SideError = "Side must be specified for noncommutative operations!";
+	console.log("b=",b);
+	b=b.clone();
+	d=d.clone();
+	// d (old) = [A, B], where b = A if L, and b = B if R.
+	switch(o){
+		case "+":
+			return [d, b].setType("-");
+		case "-":
+			if(side===L){
+				// d = b - ?
+				// ? = b - d
+				return [b, d].setType("-");
+			}else if(side===R){
+				// d = ? - b
+				// ? = d + b
+				return [d, b].setType("+");
+			}else{
+				throw(SideError);
+			}
+		case "/":
+			if(side===L){
+				// d = b / ?
+				// d * ? = b / ? * ?
+				// ? = (1/d) b
+				
+				//TODO: THIS ASSUMES A*B = B*A
+				// ? = b/d
+				return [b, d].setType("/");
+			}else if(side===R){
+				// d = ? / b
+				// d * b = ?
+				return [d, b].setType("*");
+			}else{
+				throw(SideError);
+			}
+		case "*":
+			// d = b * ?
+			// 1/b * d = ?
+			
+			//TODO: THIS ASSUMES A*B = B*A
+			// ? = d / b
+			return [d, b].setType("/");
+		case "^":
+			if(side===L){
+				// d = b ^ ?
+				// d = e ^ (? * log b)
+				// log(d) = ? * log b
+				// log(d) / log(b) = ?
+				//Log should really be an operator
+				return [["log",d].setType("∘"), ["log",b].setType("∘")].setType("/");
+			}else if(side===R){
+				// d = ? ^ b
+				// d ^ (1/b) = ?^(b/b)
+				// d ^ (1/b) = ?
+				return [d, [1, b].setType("/")].setType("^");
+			}else{
+				throw(SideError);
+			}
+		default:
+			return;
+	}
+	
+	/*
+	//Commutative operators:
 	var os={
 		"+":"-",
 		"*":"/",
-		"^":"^",
-		
+		"^":{"L":["^","/"], "R":["log", ]},
+		"-":{"L": "-", "R":"+"},
+		"/":{"L": "/", "R":"*"},
 		"&&":["∨","¬","&&","$0"],
 		
-		"^":["^","/"],
-		"∘":["∘","/"],//DEBUG: check this junk
+		"∘":["∘","/"],//TODO: NEEDS DEBUG CHECK: check this junk
 		"matrix multiplication":I
-		
-		
 	};
 	if(os[o]){
 		var c=b.clone();
-		if(typeof os[o]==="object"){
-			for (var i = os[o].length - 1; i > 0; i--){
-				c=[identity(os[o][i]),c].setType(os[o][i]);
+		var op = os[o];
+		if(typeof op==="object" && !op.length){
+			if(side===R){
+				op = op.R;
+			}else if(side===L){
+				op = op.L;
+			}else{
+				throw("Side must be specified for non-commutative operations.");
+			}
+		}
+		if(typeof op==="object"){
+			for (var i = op.length - 1; i > 0; i--){
+				c=[identity(op[i]),c].setType(op[i]);
 				if(!c.valid()){
 					return false;
 				}
@@ -71,7 +144,7 @@ function inverse(o,b){
 		return c;
 		
 		
-	}
+	}*/
 	
 }
 

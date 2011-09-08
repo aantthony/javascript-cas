@@ -45,7 +45,7 @@ Array.prototype.apply=function(o, x, __commuted__){
 		console.log("identity");
 		return this;
 	}
-	if(x!==undefined && inverse(o,x)===false){
+	if(x!==undefined && inverse(o,x,NaN,R)===false){
 		console.log("identity - inverse");
 		return x;
 	}
@@ -133,10 +133,11 @@ String.prototype.apply=function(o, b, __commuted__){
 		return t;
 	}
 	
-	if(inverse(o,b)===false){
+	if(inverse(o,b,NaN,R)===false){
 		return b;
 	}
-	if(!__commuted__ && commutative(o)){
+	if(!__commuted__ && ((typeof b)!="string") && commutative(o)){
+		console.log("commute "+o, b, t);
 		return b.clone().apply(o, t, true);
 	}
 	//Global functions:
@@ -269,7 +270,7 @@ Number.prototype.apply=function(o, b, __commuted__){
 	}
 	
 	if(commutative(o)){
-		
+		console.log(Number(this),"commute "+o, b);
 		if(identity(o)==Number(this)){
 			return b;
 		}

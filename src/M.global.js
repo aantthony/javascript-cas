@@ -1,5 +1,5 @@
 
-M.Context.prototype=Math;
+M.Context.prototype=Object.create(Math);
 M.Context.prototype.D=function(x, wrt){
 	wrt=wrt||"x";
 	return x.differentiate(wrt,1);
@@ -103,3 +103,5 @@ M.Context.prototype.NaN=NaN;
 
 
 M.global = new M.Context();
+
+M.__proto__=M.global;

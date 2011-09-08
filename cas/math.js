@@ -98,7 +98,7 @@ languages[language] = [
 	[["<","<=",">",">="],L],
 	[[">>","<<"]],
 	["±",R,2],
-	[["+"]],
+	[["+","-"]],
 	[["∫","∑"],R,1],
 	[["*","%"]],
 	[["@+","@-","@±"],R,1], //unary plus/minus
@@ -159,25 +159,98 @@ function unary(o){
 
 
 
-function inverse(o,b){
+function inverse(o,b,d,side){
+	var SideError = "Side must be specified for noncommutative operations!";
+	console.log("b=",b);
+	b=b.clone();
+	d=d.clone();
+	// d (old) = [A, B], where b = A if L, and b = B if R.
+	switch(o){
+		case "+":
+			return [d, b].setType("-");
+		case "-":
+			if(side===L){
+				// d = b - ?
+				// ? = b - d
+				return [b, d].setType("-");
+			}else if(side===R){
+				// d = ? - b
+				// ? = d + b
+				return [d, b].setType("+");
+			}else{
+				throw(SideError);
+			}
+		case "/":
+			if(side===L){
+				// d = b / ?
+				// d * ? = b / ? * ?
+				// ? = (1/d) b
+				
+				//TODO: THIS ASSUMES A*B = B*A
+				// ? = b/d
+				return [b, d].setType("/");
+			}else if(side===R){
+				// d = ? / b
+				// d * b = ?
+				return [d, b].setType("*");
+			}else{
+				throw(SideError);
+			}
+		case "*":
+			// d = b * ?
+			// 1/b * d = ?
+			
+			//TODO: THIS ASSUMES A*B = B*A
+			// ? = d / b
+			return [d, b].setType("/");
+		case "^":
+			if(side===L){
+				// d = b ^ ?
+				// d = e ^ (? * log b)
+				// log(d) = ? * log b
+				// log(d) / log(b) = ?
+				//Log should really be an operator
+				return [["log",d].setType("∘"), ["log",b].setType("∘")].setType("/");
+			}else if(side===R){
+				// d = ? ^ b
+				// d ^ (1/b) = ?^(b/b)
+				// d ^ (1/b) = ?
+				return [d, [1, b].setType("/")].setType("^");
+			}else{
+				throw(SideError);
+			}
+		default:
+			return;
+	}
+	
+	/*
+	//Commutative operators:
 	var os={
 		"+":"-",
 		"*":"/",
-		"^":"^",
-		
+		"^":{"L":["^","/"], "R":["log", ]},
+		"-":{"L": "-", "R":"+"},
+		"/":{"L": "/", "R":"*"},
 		"&&":["∨","¬","&&","$0"],
 		
-		"^":["^","/"],
-		"∘":["∘","/"],//DEBUG: check this junk
+		"∘":["∘","/"],//TODO: NEEDS DEBUG CHECK: check this junk
 		"matrix multiplication":I
-		
-		
 	};
 	if(os[o]){
 		var c=b.clone();
-		if(typeof os[o]==="object"){
-			for (var i = os[o].length - 1; i > 0; i--){
-				c=[identity(os[o][i]),c].setType(os[o][i]);
+		var op = os[o];
+		if(typeof op==="object" && !op.length){
+			if(side===R){
+				op = op.R;
+			}else if(side===L){
+				op = op.L;
+			}else{
+				throw("Side must be specified for non-commutative operations.");
+			}
+		}
+		if(typeof op==="object"){
+			for (var i = op.length - 1; i > 0; i--){
+				c=[identity(op[i]),c].setType(op[i]);
 				if(!c.valid()){
 					return false;
 				}
@@ -192,7 +265,7 @@ function inverse(o,b){
 		return c;
 		
 		
-	}
+	}*/
 	
 }
 
@@ -572,8 +645,11 @@ var parse = (function (language) {
 			//console.log("lot: ", token.v);
 			var tokens=[];
 			var v=token.v;
+			if(token.t===types.variable){
+				v=v.replace(/\\/g,"");
+			}
 			if(token.t===types.paren){
-				v=v.replace(/[ \n\t]+/, "");
+				v=v.replace(/[ \n\t]+/g, "");
 			}
 			var _tokens=
 			v
@@ -739,32 +815,7 @@ Array.prototype.valid=function(){
 	return true;
 };
 
-var truth=[1,1].setType("=");
-Array.prototype.impliedBy=function(context){
-	if(this===truth){
-		return true;
-	}
-	if(this.type===","){
-		for (var i = this.length - 1; i >= 0; i--){
-			if(!this[i].impliedBy(context)){
-				return false;
-			}
-		}
-		return true;
-	}
-	
-	if(this.type==="="){
-		return false;
-	}
-	//Sub-statements? Too slow?
-	
-		for (var i = this.length - 1; i >= 0; i--){
-			if(!this[i].impliedBy(context)){
-				return false;
-			}
-		}
-		return true;
-};
+
 Array.prototype.eval=function(){
 	return this.simplify();
 };
@@ -793,7 +844,7 @@ M.toString.toString=function(){
 M.toString.toString.toString=M.toString.toString;
 window.M = M;
 
-M.Context.prototype=Math;
+M.Context.prototype=Object.create(Math);
 M.Context.prototype.D=function(x, wrt){
 	wrt=wrt||"x";
 	return x.differentiate(wrt,1);
@@ -898,6 +949,211 @@ M.Context.prototype.NaN=NaN;
 
 M.global = new M.Context();
 
+M.__proto__=M.global;function Set(discrete){
+	var t = [];
+	this.discrete = t;
+	if(typeof discrete == "object" && discrete.forEach){
+		discrete.forEach(function(b) {
+			if(t.indexOf(b)==-1){
+				t.push(b);
+			}
+		});
+	}
+};
+Set.prototype.union=function(x){
+	var t=this.discrete;
+	x.discrete.forEach(function(b) {
+		if(t.indexOf(b)==-1){
+			t.push(b);
+		}
+	});
+};
+Set.prototype.forEach=function(x){
+	this.discrete.forEach(x);
+};
+var EmptySet=new Set();
+String.prototype.root=function(x){
+	if(String(this)===x){
+		return new Set([0]);
+	}
+	return EmptySet;
+};
+Boolean.prototype.root=
+Number.prototype.root=function(){
+	return EmptySet;
+};
+function indep(){
+	//Linearly independent
+	return false;
+}
+//inverse(o,b,d,side);
+
+Array.prototype.root=function(x){
+	if(x===undefined){
+		console.warn("Variable not specified (Assume x)");
+		x="x";
+	}
+	var domain = undefined;
+	//Danger: assumes field
+	if(this.type==="*"){
+		var roots=new Set();
+		this.forEach(function(f){
+			//union
+			roots.union(f.root(x));
+		});
+		return roots;
+	}else if(false && this.type==="+" && indep(this[0],this[1])){
+		//THIS IS WRONG. I want it to solve x^2 + y^2 = 0 types. (x^2 AND y^2 have to be zero)
+		var roots=[];//new Set();
+		this.forEach(function(f){
+			roots.intersect(f.root(x));
+		});
+	}
+	var lhs = this;
+	var rhs = 0;
+	var temp = 0;
+	
+	//FACTORISE!!!
+	
+	
+	
+	//OTHERWISE: (?? what condition)
+	
+	//TODO: this is a really slow algoritm. A tree path for the one and only x should be found first, instead of calculating it every single time!
+	if(lhs.vars("x").length===1){
+		while(lhs!==x){
+			//console.log(lhs.clone(),"=",rhs.clone());
+			
+			var op = lhs.type;
+			if(lhs[0].vars("x").length){
+				
+				// f(x) . B = k
+				// f(x) . B / B= k / B
+				//Danger: assumes right associativity
+				//Right inverse of B:
+				var side = L;
+				rhs = inverse(op,lhs[1-side],rhs, side);
+				if(rhs===undefined){
+					throw("Could not solve");
+				}
+				lhs=lhs[side];
+			}else if(lhs[1].vars("x").length){
+				// A . f(x) = k
+				// A^-1 . A . f(x) = A^-1 k
+				// f(x) = A^-1 k
+				//left inverse of A
+				//Danger: assumes left associativity
+				var side = R;
+				rhs = inverse(op,lhs[1-side],rhs, side);
+				if(rhs===undefined){
+					throw("Could not solve");
+				}
+				lhs=lhs[side];
+			}else{
+				throw("The "+x+" variable is missing now!!!!")
+			}
+			
+			
+			
+			if(temp++>40){
+				throw("infinite loop!");
+				break;
+			}
+		}
+		return new Set([rhs])/*.simplify()*/; //TODO: may not be one value
+	}else{
+		throw("I don't know how to solve those");
+	}
+	
+};
+Array.prototype.inverse=function(y,x){
+	//multivalued (as always)
+	return this.apply("-",x).root(y);
+};
+Array.prototype.solve=function(x){
+	function findValueThatIsZeroWhenItIsSatisfied(){
+		//TODO: be more careful here!
+		//Assumes this.type = "="
+		return this[0].apply("-", this[1]);
+		
+	}
+	if(this.type===";"){
+		alert("solve set");
+	}else if(this.type==="="){
+		//make RHS = 0
+		return findValueThatIsZeroWhenItIsSatisfied.apply(this).inverse(0);
+	}
+};M.Context.prototype.learn=function(x){
+	if(x===truth){
+		alert("Base fact already known.");
+	}
+	//Should learn(x) assume logical consistency of x and this
+	var handle=" vars: x,y,z";
+	var vars = new Set(x.vars());
+	var self=this;
+	vars.forEach(function(v) {
+		if(self[v]){
+			throw("Already defined! (TODO: intersect it)");
+		}else{
+			//Should I solve for it now? Or when required?
+			self[v]=true;
+		}
+	});
+	console.log("Learn: ", vars.join(", "));
+	return handle;
+};
+M.Context.prototype.delete=function(var_name_or_handle){
+	if(typeof var_name_or_handle === "object"){
+		//handle
+	}else{
+		delete this[var_name_or_handle];
+	}
+};
+
+Array.prototype.vars = function(x){
+	var v = [];
+	this.map(function(e) {
+		v.push.apply(v,e.vars(x));
+	});
+	return v;
+};
+String.prototype.vars=function(x){
+	var t = String(this);
+	if(x===undefined || x===t){
+		return [t];
+	}
+	return [];
+};
+Number.prototype.vars=
+Boolean.prototype.vars=
+function(){
+	return [];
+};var truth=[1,1].setType("=");
+Array.prototype.impliedBy=function(context){
+	if(this===truth){
+		return true;
+	}
+	if(this.type===";"){
+		for (var i = this.length - 1; i >= 0; i--){
+			if(!this[i].impliedBy(context)){
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	if(this.type==="="){
+		return false;
+	}
+	//Sub-statements? Too slow?
+	
+		for (var i = this.length - 1; i >= 0; i--){
+			if(!this[i].impliedBy(context)){
+				return false;
+			}
+		}
+		return true;
+};
 //TODO: this is a bit messy. Maybe make it in the global, 
 // and that way if it can be determined if it was/is consistent.
 M.assumptions=true;
@@ -1327,7 +1583,7 @@ Array.prototype.apply=function(o, x, __commuted__){
 		console.log("identity");
 		return this;
 	}
-	if(x!==undefined && inverse(o,x)===false){
+	if(x!==undefined && inverse(o,x,NaN,R)===false){
 		console.log("identity - inverse");
 		return x;
 	}
@@ -1415,10 +1671,11 @@ String.prototype.apply=function(o, b, __commuted__){
 		return t;
 	}
 	
-	if(inverse(o,b)===false){
+	if(inverse(o,b,NaN,R)===false){
 		return b;
 	}
-	if(!__commuted__ && commutative(o)){
+	if(!__commuted__ && ((typeof b)!="string") && commutative(o)){
+		console.log("commute "+o, b, t);
 		return b.clone().apply(o, t, true);
 	}
 	//Global functions:
@@ -1551,7 +1808,7 @@ Number.prototype.apply=function(o, b, __commuted__){
 	}
 	
 	if(commutative(o)){
-		
+		console.log(Number(this),"commute "+o, b);
 		if(identity(o)==Number(this)){
 			return b;
 		}
@@ -1677,7 +1934,7 @@ Number.prototype.toLatex=function(){
 
 String.prototype.toLatex=function(){
 	var s = String(this);
-	if(latexVars.indexOf(s)!=-1){
+	if((s.length>1) || (latexVars.indexOf(s)!=-1)){
 		return "\\"+s;
 	}
 	return s;
