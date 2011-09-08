@@ -6,9 +6,7 @@ M.latex={
 		//Currently only parses \frac
 		var i,l=s.length
 		//indexOf is BAD!!! It is fine only when we only have one type of \expr
-		var debug=0;
-		while(!debug && (i = s.indexOf("\\begin"))!=-1){
-			debug=1;
+		while((i = s.indexOf("\\begin"))!=-1){
 			var n = s.indexOf("}", i+7);
 			
 			var type=s.substring(i+7,n);
@@ -35,6 +33,15 @@ M.latex={
 			default:
 				throw(new SyntaxError("Latex \\begin{"+type+"} block not understood."))
 			}
+		}
+		while((i = s.indexOf("\\text"))!=-1){
+			var n = s.indexOf("}", i+6);
+			var text=s.substring(i+6,n);
+			
+			s=s.split("");
+			
+			s.splice(i,n-i+1,"\\"+text);
+			s=s.join("");
 		}
 		while((i = s.indexOf("\\frac"))!=-1){
 			var n,good=false;
@@ -116,7 +123,7 @@ M.latex={
 			'lt':"<",
 			'le':"<=",
 			"infty":"∞",
-			"text":"",
+			"sim":"~",
 			"frac":"",
 			"backslash":"\\",
 			"alpha":"α",

@@ -51,14 +51,23 @@ var parse = (function (language) {
 		},
 		function(e){
 			//Assumtions: It will only be ONE character ahead of a valid var.
+			
+			/*
+			Not desired, it could get messy. Always use \\varname instead.
 			if(M.global[e]!==undefined){
 				return true;
 			}
+			*/
 			
-			return (e.length === 1) && (varcannotbe.indexOf(e)==-1);
+			if(e.length === 1 || e[0]==="\\"){
+				
+				//Given: It will only be ONE character ahead of a valid var.
+				
+				return varcannotbe.indexOf(e[e.length-1])==-1;
+			}
+			return false;
 		}
 	];
-	window.match = match;
 	//TODO: rewrite this in a way that can split variables also
 	function split_operators(t){
 		if(operators[t]){
@@ -79,6 +88,7 @@ var parse = (function (language) {
 	return function (s){
 		O(1, "parse");
 		var current_type=0;
+		s=s.trim();//Fixes a bug of parsing " ..."
 		var i=0,len=s.length;
 		var current_token=s[0];
 		current_type=4;
@@ -323,7 +333,6 @@ var parse = (function (language) {
 				}
 			});
 		}
-		window.match=match;
 		//Tokenize:
 		while(i<len) {
 			i++;
