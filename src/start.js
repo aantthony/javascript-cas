@@ -17,11 +17,11 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-/*
+
 
 (function (window, undefined) {
-*/
-	window.f = {};
+
+	var f = {};
 	function O(n, v){
 		f[v]=f[v]?f[v]+1:1;
 	}
