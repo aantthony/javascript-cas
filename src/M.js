@@ -12,10 +12,11 @@ var msg={
 };
 
 var types = {
-	number: 1,
-	operator: 2,
-	paren: 3,
-	variable: 4
+	"number": 1,
+	"operator": 2,
+	"paren": 3,
+	"variable": 4,
+	"function": 5
 };
 
 var parse = (function (language) {

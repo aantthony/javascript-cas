@@ -34,10 +34,14 @@ var exportLanguages={
 			return {s:o.substring(1)+a.s,t:types.number};
 			case "^":
 			return {s:"Math.pow("+a.s+","+b.s+")",t:types.number};
-			case "∘": // This could mean scalar multiplication. THe variables need to be typed, and this function should return a type
-			return {s:a.s+"("+b.s+")",t:types.number};
+			case "∘":
+			if(a.t===types.function){
+				return {s:a.s+"("+b.s+")",t:types.number};
+			}else{
+				return {s:a.s+"("+b.s+")",t:types.number};
+			}
 			case "#":
-			return {s:"function(x){return "+a.s+"}", t:types.variable};//should really be a "function type"
+			return {s:"function(x){return "+a.s+"}", t:types.function};
 			case "√":
 			return {s:"Math.sqrt("+a.s+")",t:types.number};
 			case "!":
@@ -66,15 +70,26 @@ Number.prototype.toTypedExpression=function(){
 	if(Number(this)===Infinity){
 		return "Infinity";
 	}
-	//TODO: this won't work for numbers that result in a string like 3e+12
+	//Note: this does work for numbers that result in a string like 3e+12, but it won't work for exporting to latex
 	return {s:this.toString(),t:types.number};
 };
 
 String.prototype.toTypedExpression=function(){
-	return {s:String(this),t:types.variable};
+	var s = String(this);
+	var t=types.variable;
+	if(M.global[s]){
+		//and check type of that expression...
+	}
+	if(Math[s]){
+		s="Math."+s;
+		if(typeof Math[s] === "function"){
+			t=types.function;
+		}
+	}
+	return {s:s,t:t};
 };
 
 //TODO: make the following work for latex because it is much neater.
-Object.prototype.toExpression=function(language){
+Function.prototype.toExpression=String.prototype.toExpression=Array.prototype.toExpression=function(language){
 	return this.toTypedExpression(language).s;
 }

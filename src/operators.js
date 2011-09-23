@@ -40,7 +40,6 @@ function unary(o){
 
 function inverse(o,b,d,side){
 	var SideError = "Side must be specified for noncommutative operations!";
-	console.log("b=",b);
 	b=b.clone();
 	d=d.clone();
 	// d (old) = [A, B], where b = A if L, and b = B if R.
