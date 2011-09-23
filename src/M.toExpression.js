@@ -1,3 +1,18 @@
+
+var glsl={
+	"void":1,
+	"bool":2,
+	"int":3,
+	"float":4,
+	"vec2":5,
+	"vec3":6,
+	"vec4":7,
+	"mat2":10,
+	"mat3":11,
+	"mat4":12,
+	"function":20
+};
+
 var exportLanguages={
 	"text/javascript": function (o,a,b){
 		function _(x){
@@ -60,6 +75,98 @@ var exportLanguages={
 				return {s:"Math.sqrt("+a.s+")",t:types.number, p: p};
 			case "!":
 				return {s:"factorial("+a.s+")",t:types.number, p: p};
+			default:
+				throw("Could not translate operator: '"+o+"' into javscript!");
+		}
+	},
+	"x-shader/x-fragment":function(o,a,b){
+		//http://www.opengl.org/registry/doc/GLSLangSpec.Full.1.20.8.pdf
+		function _(x){
+			return "("+x+")";
+		}
+		var p = precedence(o);
+		function S_(x){
+			if(x.p<p){
+				return _(x.s);
+			}
+			return x.s;
+		}
+		switch(o){
+			case "&&":
+			case "||":
+				if(a.t === b.t && b.t === glsl.bool){
+					return {s:S_(a)+o+S_(b), t: glsl.bool, p: p};
+				}
+				throw("Operands must also be boolean values");
+			case "==":
+			case "<":
+			case ">":
+			case "<=":
+			case ">=":
+			case "!=":
+				if(a.t !== b.t){
+					throw("The equality operators and assignment operator are only allowed if the two operands are same size and type.");
+				}
+				return {s:S_(a)+o+S_(b), t: glsl.bool, p: p};
+			
+			case ":":
+				if(a.t !== b.t){
+					throw("Switching groups must be the same type");
+				}
+				
+				return {s:S_(a)+o+S_(b), t: b.t, p: p};
+			case "?":
+				if(a.t !== glsl.bool){
+					throw("Must be boolean type");
+				}
+				return {s:S_(a)+o+S_(b), t: b.t, p: p};
+				
+			case "+":
+			case "-":
+			case ",":
+				if(a.t !== b.t){
+					throw("Types don't match: "+a.t+", "+b.t);
+				}
+				return {s:S_(a)+o+S_(b), t: glsl.float, p: p};
+			case "*":
+			case "/":
+				return {s:S_(a)+o+S_(b), t: glsl.float, p: p};
+			case "_":
+				/*if(a.t === types.variable && (b.t === types.variable || b.t == types.number)){
+					return {s:S_(a)+o+S_(b), t: glsl.float, p: p};
+				}else{
+					throw("Operator '_' does not exist in javaScript for those types.");
+				}*/
+				throw("Write this later.");
+			case "~":
+				return {s:o+S_(a),t:types.number, p: p};
+			case "@-":
+			case "@+":
+				return {s:o.substring(1)+S_(a),t:glsl.float, p: p};
+			case "^":
+				return {s:"pow("+a.s+","+b.s+")",t:glsl.float, p: p};
+			case "∘":
+				if(a.t===glsl.function){
+					return {s:a.s+"("+b.s+")",t:glsl.float, p: p};
+				}else{
+					//this is ugly:
+					p=precedence("*");
+					return {s:S_(a)+"*"+S_(b),t:glsl.float, p: p};
+				}
+			case "#":
+				throw("Anonymous functions not supported.");
+			case "√":
+				return {s:"sqrt("+a.s+")",t:glsl.float, p: p};
+			case "!":
+				//requirements....
+				return {s:"factorial("+a.s+")",t:glsl.float, p: p};
+			case "&":
+			case "|":
+			case "%":
+			case "~":
+			case ">>":
+			case "<<":
+				throw("Reserved");
 			default:
 				throw("Could not translate operator: '"+o+"' into javscript!");
 		}
@@ -228,12 +335,18 @@ Number.prototype.toLatex=function(){
 	return this.toString().replace(/e([\+\-])([\d\.]+)/,"\\cdot 10^{$2}");
 };*/
 Number.prototype.toTypedExpression=function(language){
-	if(language == "text/javascript"){
-		if(Number(this)===Infinity){
+	if(language === "text/javascript"){
+		if(Number(this) === Infinity){
 			return "Infinity";
 		}
 		//Note: this does work for numbers that result in a string like 3e+12, but it won't work for exporting to latex
 		return {s:this.toString(),t:types.number};
+	}else if(language==="x-shader/x-fragment"){
+		var num=this.toExponential();
+		if(num.indexOf(".")===-1){
+			num=num.replace("e",".e");
+		}
+		return {s:num,t:glsl.float};
 	}
 	
 	if(Number(this)===Infinity){
@@ -262,6 +375,11 @@ String.prototype.toTypedExpression=function(language){
 		if(Math[s]){
 			s="Math."+s;
 			t=types.function;
+		}
+	}else if(language==="x-shader/x-fragment"){
+		t=glsl.float;
+		if(Math[s]){
+			t=glsl.function;
 		}
 	}else{
 		//latex
