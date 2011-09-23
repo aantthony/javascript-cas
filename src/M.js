@@ -132,7 +132,7 @@ var parse = (function (language) {
 				// Else,
 				}else{
 					// Pop the top n values from the stack.
-					var values=rpn_stack.splice(-n);
+					var values=rpn_stack.splice(-n,n);
 					// Evaluate the operator, with the values as arguments.
 					//var evaled=("("+values[0]+token.v+values[1]+")");
 					values.type=token.v;
