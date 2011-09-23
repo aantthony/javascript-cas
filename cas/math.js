@@ -419,7 +419,7 @@ var parse = (function (language) {
 			//return ochars.indexOf(e)!==-1;
 		},
 		function(e){
-			return e.length === 1 && parenmustbe.indexOf(e)!=-1;
+			return e && e.length === 1 && parenmustbe.indexOf(e)!=-1;
 		},
 		function(e){
 			//Assumtions: It will only be ONE character ahead of a valid var.
@@ -501,7 +501,7 @@ var parse = (function (language) {
 				// Else,
 				}else{
 					// Pop the top n values from the stack.
-					var values=rpn_stack.splice(-n);
+					var values=rpn_stack.splice(-n,n);
 					// Evaluate the operator, with the values as arguments.
 					//var evaled=("("+values[0]+token.v+values[1]+")");
 					values.type=token.v;
