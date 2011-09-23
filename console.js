@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 
-var math=require("./math.js");
+var math=require("./build/math.js");
 (function (){
 	
 	function con(){

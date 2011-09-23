@@ -17,11 +17,11 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-/*
+
 
 (function (window, undefined) {
-*/
-	window.f = {};
+
+	var f = {};
 	function O(n, v){
 		f[v]=f[v]?f[v]+1:1;
 	}
@@ -92,7 +92,7 @@ languages[language] = [
 	[["∨"]],
 	[["&&"]],
 	[["|"]],
-	[["^"]],//XOR
+	[["??????"]],//XOR
 	[["&"]],
 	[["==","≠","!==","==="]],
 	[["<","<=",">",">="],L],
@@ -161,7 +161,6 @@ function unary(o){
 
 function inverse(o,b,d,side){
 	var SideError = "Side must be specified for noncommutative operations!";
-	console.log("b=",b);
 	b=b.clone();
 	d=d.clone();
 	// d (old) = [A, B], where b = A if L, and b = B if R.
@@ -380,16 +379,19 @@ var msg={
 	"parenMismatch":"There are mismatched parentheses"
 };
 
+var types = {
+	"number": 1,
+	"operator": 2,
+	"paren": 3,
+	"variable": 4,
+	"function": 5
+};
+
 var parse = (function (language) {
 	O(1, "parse - build");
 	//Begin parse building space.
 	//This context will be accessible to parse()
-	var types = {
-		number: 1,
-		operator: 2,
-		paren: 3,
-		variable: 4
-	};
+	
 	
 	var names = ["none","num","op","paren","var"];
 
@@ -1261,7 +1263,6 @@ M.assume=function(x){
 			if(!good){
 				throw(new SyntaxError(msg.latexParse));
 			}
-			console.log(s);
 			s=s.split("");
 			
 			//TODO: bad idea. maybe fix requiresParen...
@@ -1841,7 +1842,6 @@ var latexVars="Gamma|Delta|Theta|Lambda|Xi|Pi|Sigma|Phi|Psi|Omega|lLambda|lambda
 
 var latexFuncs="log|exp|asinh|acosh|atanh|sinh|sech|cosh|coth|tanh|sin|cos|tan|cot|sec|exp|log".split("|");
 
-
 function latexExprForOperator(o){
 	var os={
 		"*":"\\cdot ",
@@ -1945,7 +1945,105 @@ String.prototype.toLatex=function(){
 		return "\\"+s;
 	}
 	return s;
+};var exportLanguages={
+	"text/javascript": function (o,a,b){ //operands a,b
+		switch(o){
+			case "+":
+			case "-": // TODO: this depends on context, it may be a prefix unary
+			case "/":
+			case "*":
+			case "?":
+			case ":":
+			case ",":
+			case "&&":
+			case "==":
+			case "<":
+			case ">":
+			case "<=":
+			case ">=":
+			case "!==":
+			case "====":
+			case ">>":
+			case "<<":
+			case "&":
+			case "%":
+			return {s:a.s+o+b.s, t: types.number};
+			case "_":
+			if(a.t === types.variable && (b.t === types.variable || b.t == types.number)){
+				return {s:a.s+o+b.s, t: types.variable};
+			}else{
+				throw("Operator '_' does not exist in javaScript for those types.");
+			}
+			case "~":
+			return o+a.s;
+			case "@-":
+			case "@+":
+			return {s:o.substring(1)+a.s,t:types.number};
+			case "^":
+			return {s:"Math.pow("+a.s+","+b.s+")",t:types.number};
+			case "∘":
+			if(a.t===types.function){
+				return {s:a.s+"("+b.s+")",t:types.number};
+			}else{
+				return {s:a.s+"("+b.s+")",t:types.number};
+			}
+			case "#":
+			return {s:"function(x){return "+a.s+"}", t:types.function};
+			case "√":
+			return {s:"Math.sqrt("+a.s+")",t:types.number};
+			case "!":
+			return {s:"factorial("+a.s+")",t:types.number};
+			default:
+			throw("Could not translate operator: '"+o+"' into javscript!");
+		}
+	}
 };
+
+
+Array.prototype.toTypedExpression=function(language,__matrix__){
+	//Infix
+	/*
+	
+	*/
+	return exportLanguages[language].apply(this,
+		[this.type].concat(
+			this.map(function(x){
+				return x.toTypedExpression(language);
+			})
+		)
+	);
+};
+Number.prototype.toTypedExpression=function(){
+	if(Number(this)===Infinity){
+		return "Infinity";
+	}
+	//Note: this does work for numbers that result in a string like 3e+12, but it won't work for exporting to latex
+	return {s:this.toString(),t:types.number};
+};
+
+String.prototype.toTypedExpression=function(){
+	var s = String(this);
+	var t=types.variable;
+	if(M.global[s]){
+		//and check type of that expression...
+	}
+	if(Math[s]){
+		s="Math."+s;
+		if(typeof Math[s] === "function"){
+			t=types.function;
+		}
+	}
+	return {s:s,t:t};
+};
+
+//TODO: make the following work for latex because it is much neater.
+Function.prototype.toExpression=
+String.prototype.toExpression=
+Array.prototype.toExpression=
+Number.protototype.toExpression=
+function(language){
+	return this.toTypedExpression(language).s;
+}
 Number.prototype.toStrings=function(){
 	return this.toString().replace(/e([\+\-])([\d\.]+)/,"\\cdot 10^{$2}");
 };
@@ -1980,14 +2078,12 @@ Array.prototype.toStrings=function(){
 Boolean.prototype.toStrings=Boolean.prototype.toString;
 String.prototype.toStrings=String.prototype.toString;
 
-/*
-})(
+}(
 	function(){
 		if(typeof window === 'undefined'){
 			return exports;
 		}
 		return window;
 	}()
-);
-
-*/
+	
+));
