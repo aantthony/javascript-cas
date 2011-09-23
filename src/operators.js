@@ -26,6 +26,7 @@ function precedence(v){
 	}
 	return operators[v][1];
 }
+window.precedence=precedence;
 
 function postfix(o){
 	var op=operators[o];
