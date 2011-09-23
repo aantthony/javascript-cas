@@ -50,7 +50,7 @@ var parse = (function (language) {
 			//return ochars.indexOf(e)!==-1;
 		},
 		function(e){
-			return e.length === 1 && parenmustbe.indexOf(e)!=-1;
+			return e && e.length === 1 && parenmustbe.indexOf(e)!=-1;
 		},
 		function(e){
 			//Assumtions: It will only be ONE character ahead of a valid var.
