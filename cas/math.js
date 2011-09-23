@@ -2040,7 +2040,7 @@ String.prototype.toTypedExpression=function(){
 Function.prototype.toExpression=
 String.prototype.toExpression=
 Array.prototype.toExpression=
-Number.protototype.toExpression=
+Number.prototype.toExpression=
 function(language){
 	return this.toTypedExpression(language).s;
 }
