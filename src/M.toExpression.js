@@ -90,6 +90,10 @@ String.prototype.toTypedExpression=function(){
 };
 
 //TODO: make the following work for latex because it is much neater.
-Function.prototype.toExpression=String.prototype.toExpression=Array.prototype.toExpression=function(language){
+Function.prototype.toExpression=
+String.prototype.toExpression=
+Array.prototype.toExpression=
+Number.protototype.toExpression=
+function(language){
 	return this.toTypedExpression(language).s;
 }
