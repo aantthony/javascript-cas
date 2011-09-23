@@ -11,16 +11,18 @@ var msg={
 	"parenMismatch":"There are mismatched parentheses"
 };
 
+var types = {
+	number: 1,
+	operator: 2,
+	paren: 3,
+	variable: 4
+};
+
 var parse = (function (language) {
 	O(1, "parse - build");
 	//Begin parse building space.
 	//This context will be accessible to parse()
-	var types = {
-		number: 1,
-		operator: 2,
-		paren: 3,
-		variable: 4
-	};
+	
 	
 	var names = ["none","num","op","paren","var"];
 

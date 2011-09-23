@@ -85,7 +85,6 @@ M.latex={
 			if(!good){
 				throw(new SyntaxError(msg.latexParse));
 			}
-			console.log(s);
 			s=s.split("");
 			
 			//TODO: bad idea. maybe fix requiresParen...

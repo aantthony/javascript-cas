@@ -3,7 +3,6 @@ var latexVars="Gamma|Delta|Theta|Lambda|Xi|Pi|Sigma|Phi|Psi|Omega|lLambda|lambda
 
 var latexFuncs="log|exp|asinh|acosh|atanh|sinh|sech|cosh|coth|tanh|sin|cos|tan|cot|sec|exp|log".split("|");
 
-
 function latexExprForOperator(o){
 	var os={
 		"*":"\\cdot ",
