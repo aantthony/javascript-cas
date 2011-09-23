@@ -166,7 +166,7 @@ window.$$=function getElementById(i){
 						this.current.className+=" "+d.className;
 					}
 					var assumptions=M.getAssumptions();
-					res=d.toLatex();
+					res=d.toExpression();
 					//res = exec(d).toLatex();
 					if(res==ctrlcodes.clear){
 						//
@@ -181,7 +181,7 @@ window.$$=function getElementById(i){
 						if(assumptions.length){
 							
 							var ass_m = document.createElement("span");
-							ass_m.appendChild(document.createTextNode(assumptions.toLatex()));
+							ass_m.appendChild(document.createTextNode(assumptions.toExpression()));
 							var ass = document.createElement("span");
 							ass.appendChild(document.createTextNode(", "));
 							ass.appendChild(ass_m);

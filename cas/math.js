@@ -147,6 +147,7 @@ function precedence(v){
 	}
 	return operators[v][1];
 }
+window.precedence=precedence;
 
 function postfix(o){
 	var op=operators[o];
@@ -1837,119 +1838,22 @@ Number.prototype.apply=function(o, b, __commuted__){
 
 Boolean.prototype.apply=Number.prototype.apply;
 
-var latexVars="Gamma|Delta|Theta|Lambda|Xi|Pi|Sigma|Phi|Psi|Omega|lLambda|lambda|delta|sigma|sum".split("|");
-
-
-var latexFuncs="log|exp|asinh|acosh|atanh|sinh|sech|cosh|coth|tanh|sin|cos|tan|cot|sec|exp|log".split("|");
-
-function latexExprForOperator(o){
-	var os={
-		"*":"\\cdot ",
-		"∨":"\\vee ",
-		"&&":"\\wedge ",
-		"±":"\\pm ",
-		"∘":"\\circ "
-	};
-	return os[o]||o;
-}
-
-
-Array.prototype.toLatex=function(__matrix__){
-	//Infix
-	if(this.length>=2){
-		if(this.type==="/"){
-			
-			return "\\frac{"+this[0].toLatex()+"}{"+this[1].toLatex()+"}";
-		} else if(this.type==="^" || this.type ==="_"){
-			
-			var a = this[0].toLatex();
-			if(this[0].requiresParentheses(this.type)){
-				a="\\left("+a+"\\right)";
+var exportLanguages={
+	"text/javascript": function (o,a,b){
+		function _(x){
+			return "("+x+")";
+		}
+		
+		var p = precedence(o);
+		function S_(x){
+			if(x.p<p){
+				return _(x.s);
 			}
-			return a+this.type+"{"+this[1].toLatex()+"}";
-		} else if(this.type==="∘"){
-			var a = this[0].toLatex();
-			
-			if(latexFuncs.indexOf(a)!==-1){
-				a="\\"+a;
-			}else if(this[0].requiresParentheses(this.type)){
-				a="\\left("+a+"\\right)";
-			}
-			
-			return a+"\\left("+this[1].toLatex()+"\\right)";
-		} else if(this.type==="," && __matrix__){
-			var self=this;
-			return this.map(function(t){
-				var a = t.toLatex();
-				if(t.requiresParentheses(self.type)){
-					a="\\left("+a+"\\right)";
-				}
-				return a;
-			}).join(latexExprForOperator("\\:"));
-		} else if(this.type===";" && false){
-			
-			var self=this;
-			return "\\begin{matrix}"+this.map(function(t){
-				var a = t.toLatex(true);
-				if(t.requiresParentheses(self.type)){
-					a="\\left("+a+"\\right)";
-				}
-				return a;
-			}).join("\\\\")+"\\end{matrix}";
-			
-		} else {
-			var self=this;
-			return this.map(function(t){
-				var a = t.toLatex();
-				if(t.requiresParentheses(self.type)){
-					a="\\left("+a+"\\right)";
-				}
-				return a;
-			}).join(latexExprForOperator(this.type));
+			return x.s;
 		}
-	}
-	//Postfix/Prefix Unary operators
-	if(this.length==1){
-		var a = this[0].toLatex();
-		if(this[0].requiresParentheses(this.type)){
-			a="\\left("+a+"\\right)";
-		}
-		if(this.type[0]=="@"){
-			//Prefix
-			return this.type.substring(1)+a;
-		} else if(this.type==="√"){
-			return "\\sqrt{"+this[0].toLatex()+"}";
-		}
-		if(postfix(this.type)){
-			return a+this.type;
-		}
-		return this.type+a;
-	}
-	
-	//Prefix
-	if(false && this.length==2){
-		return this[0].toLatex()+this.type+this[1].toLatex();
-	}
-	
-};
-Number.prototype.toLatex=function(){
-	if(Number(this)===Infinity){
-		return "\\infty";
-	}
-	return this.toString().replace(/e([\+\-])([\d\.]+)/,"\\cdot 10^{$2}");
-};
-
-String.prototype.toLatex=function(){
-	var s = String(this);
-	if((s.length>1) || (latexVars.indexOf(s)!=-1)){
-		return "\\"+s;
-	}
-	return s;
-};var exportLanguages={
-	"text/javascript": function (o,a,b){ //operands a,b
 		switch(o){
 			case "+":
-			case "-": // TODO: this depends on context, it may be a prefix unary
+			case "-":
 			case "/":
 			case "*":
 			case "?":
@@ -1962,77 +1866,250 @@ String.prototype.toLatex=function(){
 			case "<=":
 			case ">=":
 			case "!==":
-			case "====":
+			case "===":
 			case ">>":
 			case "<<":
 			case "&":
 			case "%":
-			return {s:a.s+o+b.s, t: types.number};
+				return {s:S_(a)+o+S_(b), t: types.number, p: p};
 			case "_":
-			if(a.t === types.variable && (b.t === types.variable || b.t == types.number)){
-				return {s:a.s+o+b.s, t: types.variable};
-			}else{
-				throw("Operator '_' does not exist in javaScript for those types.");
-			}
+				if(a.t === types.variable && (b.t === types.variable || b.t == types.number)){
+					return {s:S_(a)+o+S_(b), t: types.variable, p: p};
+				}else{
+					throw("Operator '_' does not exist in javaScript for those types.");
+				}
 			case "~":
-			return o+a.s;
+				return {s:o+S_(a),t:types.number, p: p};
 			case "@-":
 			case "@+":
-			return {s:o.substring(1)+a.s,t:types.number};
+				return {s:o.substring(1)+S_(a),t:types.number, p: p};
 			case "^":
-			return {s:"Math.pow("+a.s+","+b.s+")",t:types.number};
+				return {s:"Math.pow("+a.s+","+b.s+")",t:types.number, p: p};
 			case "∘":
-			if(a.t===types.function){
-				return {s:a.s+"("+b.s+")",t:types.number};
-			}else{
-				return {s:a.s+"("+b.s+")",t:types.number};
-			}
+				if(a.t===types.function){
+					return {s:a.s+"("+b.s+")",t:types.number, p: p};
+				}else{
+					//this is ugly:
+					p=precedence("*");
+					return {s:S_(a)+"*"+S_(b),t:types.number, p: p};
+				}
 			case "#":
-			return {s:"function(x){return "+a.s+"}", t:types.function};
+				//p=precedence("return ");
+				return {s:"function(x){return "+a.s+"}", t:types.function, p: p};
 			case "√":
-			return {s:"Math.sqrt("+a.s+")",t:types.number};
+				return {s:"Math.sqrt("+a.s+")",t:types.number, p: p};
 			case "!":
-			return {s:"factorial("+a.s+")",t:types.number};
+				return {s:"factorial("+a.s+")",t:types.number, p: p};
 			default:
-			throw("Could not translate operator: '"+o+"' into javscript!");
+				throw("Could not translate operator: '"+o+"' into javscript!");
 		}
+	},
+	"text/latex":function(o,a,b){
+		function _(x){
+			return "\\left("+x+"\\right)";
+		}
+		var p = precedence(o);
+		function S_(x){
+			if(x.p<p){
+				return _(x.s);
+			}
+			return x.s;
+		}
+		switch(o){
+			case "/":
+				return {s:"\\frac{"+a.s+"}{"+b.s+"}",t:types.number, p: p};
+			case "^":
+			case "_":
+				return {s:S_(a)+o+"{"+b.s+"}",t:types.variable, p: p};
+			case "∘":
+				return {s:S_(a)+_(b.s),t:types.number, p: p};
+			case "√":
+				return {s:"\\sqrt{"+a.s+"}",t:types.number, p: p};
+			case "#":
+				return {s:o+_(a.s),t:types.function};
+		}
+		if(o[0]=="@"){
+			return {s:o[1]+S_(a),t:types.number, p: p};
+		}
+		if(postfix(o)){
+			return {s:S_(a)+o,t:types.number, t:types.number, p: p};
+		}
+		var self=this;
+		var os={
+				"*":"\\cdot ",
+				"∨":"\\vee ",
+				"&&":"\\wedge ",
+				"±":"\\pm ",
+				"∘":"\\circ "
+		};
+		return {
+			s: Array.prototype.slice.apply(arguments,[1]).map(
+				S_
+			).join(os[o] || o),
+			t: types.number,
+			p: p
+		};
+		
+		/*
+		
+		var latexFuncs="log|exp|asinh|acosh|atanh|sinh|sech|cosh|coth|tanh|sin|cos|tan|cot|sec|exp|log".split("|");
+
+		function latexExprForOperator(o){
+			var os={
+				"*":"\\cdot ",
+				"∨":"\\vee ",
+				"&&":"\\wedge ",
+				"±":"\\pm ",
+				"∘":"\\circ "
+			};
+			return os[o]||o;
+		}
+
+
+		Array.prototype.toLatex=function(__matrix__){
+			//Infix
+			if(this.length>=2){
+				if(this.type==="/"){
+
+					return "\\frac{"+this[0].toLatex()+"}{"+this[1].toLatex()+"}";
+				} else if(this.type==="^" || this.type ==="_"){
+
+					var a = this[0].toLatex();
+					if(this[0].requiresParentheses(this.type)){
+						a="\\left("+a+"\\right)";
+					}
+					return a+this.type+"{"+this[1].toLatex()+"}";
+				} else if(this.type==="∘"){
+					var a = this[0].toLatex();
+
+					if(latexFuncs.indexOf(a)!==-1){
+						a="\\"+a;
+					}else if(this[0].requiresParentheses(this.type)){
+						a="\\left("+a+"\\right)";
+					}
+
+					return a+"\\left("+this[1].toLatex()+"\\right)";
+				} else if(this.type==="," && __matrix__){
+					var self=this;
+					return this.map(function(t){
+						var a = t.toLatex();
+						if(t.requiresParentheses(self.type)){
+							a="\\left("+a+"\\right)";
+						}
+						return a;
+					}).join(latexExprForOperator("\\:"));
+				} else if(this.type===";" && false){
+
+					var self=this;
+					return "\\begin{matrix}"+this.map(function(t){
+						var a = t.toLatex(true);
+						if(t.requiresParentheses(self.type)){
+							a="\\left("+a+"\\right)";
+						}
+						return a;
+					}).join("\\\\")+"\\end{matrix}";
+
+				} else {
+					var self=this;
+					return this.map(function(t){
+						var a = t.toLatex();
+						if(t.requiresParentheses(self.type)){
+							a="\\left("+a+"\\right)";
+						}
+						return a;
+					}).join(latexExprForOperator(this.type));
+				}
+			}
+			//Postfix/Prefix Unary operators
+			if(this.length==1){
+				var a = this[0].toLatex();
+				if(this[0].requiresParentheses(this.type)){
+					a="\\left("+a+"\\right)";
+				}
+				if(this.type[0]=="@"){
+					//Prefix
+					return this.type.substring(1)+a;
+				} else if(this.type==="√"){
+					return "\\sqrt{"+this[0].toLatex()+"}";
+				}
+				if(postfix(this.type)){
+					return a+this.type;
+				}
+				return this.type+a;
+			}
+
+			//Prefix
+			if(false && this.length==2){
+				return this[0].toLatex()+this.type+this[1].toLatex();
+			}
+
+		};
+
+		*/
+		
 	}
 };
 
 
-Array.prototype.toTypedExpression=function(language,__matrix__){
-	//Infix
-	/*
-	
-	*/
+Array.prototype.toTypedExpression=function(language, context){
 	return exportLanguages[language].apply(this,
 		[this.type].concat(
 			this.map(function(x){
-				return x.toTypedExpression(language);
+				return x.toTypedExpression(language, context);
 			})
 		)
 	);
 };
-Number.prototype.toTypedExpression=function(){
+/*
+Number.prototype.toLatex=function(){
 	if(Number(this)===Infinity){
-		return "Infinity";
+		return "\\infty";
 	}
-	//Note: this does work for numbers that result in a string like 3e+12, but it won't work for exporting to latex
-	return {s:this.toString(),t:types.number};
+	return this.toString().replace(/e([\+\-])([\d\.]+)/,"\\cdot 10^{$2}");
+};*/
+Number.prototype.toTypedExpression=function(language){
+	if(language == "text/javascript"){
+		if(Number(this)===Infinity){
+			return "Infinity";
+		}
+		//Note: this does work for numbers that result in a string like 3e+12, but it won't work for exporting to latex
+		return {s:this.toString(),t:types.number};
+	}
+	
+	if(Number(this)===Infinity){
+		return "\\infty";
+	}
+	return {s:this.toString().replace(/e([\+\-])([\d\.]+)/,"\\cdot 10^{$2}"),t:types.number};
+};
+/*
+String.prototype.toLatex=function(){
+	var s = String(this);
+	if((s.length>1) || (latexVars.indexOf(s)!=-1)){
+		return "\\"+s;
+	}
+	return s;
 };
 
-String.prototype.toTypedExpression=function(){
+*/
+
+String.prototype.toTypedExpression=function(language){
 	var s = String(this);
 	var t=types.variable;
-	if(M.global[s]){
-		//and check type of that expression...
-	}
-	if(Math[s]){
-		s="Math."+s;
-		if(typeof Math[s] === "function"){
+	if(language==="text/javascript"){
+		if(M.global[s]){
+			//and check type of that expression...
+		}
+		if(Math[s]){
+			s="Math."+s;
 			t=types.function;
 		}
+	}else{
+		//latex
+		if(s.length>1){
+			s="\\"+s;
+		}
 	}
+	
 	return {s:s,t:t};
 };
 
@@ -2042,8 +2119,11 @@ String.prototype.toExpression=
 Array.prototype.toExpression=
 Number.prototype.toExpression=
 function(language){
-	return this.toTypedExpression(language).s;
+	return this.toTypedExpression(language||"text/latex").s;
 }
+
+
+
 Number.prototype.toStrings=function(){
 	return this.toString().replace(/e([\+\-])([\d\.]+)/,"\\cdot 10^{$2}");
 };
