@@ -16,7 +16,10 @@ var types = {
 	"operator": 2,
 	"paren": 3,
 	"variable": 4,
-	"function": 5
+	"function": 5,
+	"bool": 6,
+	"assignment":7,
+	"vector":8
 };
 
 var parse = (function (language) {

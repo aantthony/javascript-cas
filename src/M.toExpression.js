@@ -1,11 +1,11 @@
 
 var glsl={
 	"void":1,
-	"bool":2,
+	"vec3":2,
+	"bool":6,/*types.bool*/
 	"int":3,
 	"float":4,
 	"vec2":5,
-	"vec3":6,
 	"vec4":7,
 	"mat2":10,
 	"mat3":11,
@@ -21,12 +21,26 @@ var exportLanguages={
 		
 		var p = precedence(o);
 		function S_(x){
-			if(x.p<p){
+			if(x.p<=p){
 				return _(x.s);
 			}
 			return x.s;
 		}
 		switch(o){
+			case "=":
+				return {s:S_(a)+o+S_(b), t: types.assignment, p: p};
+			case "&&":
+			case "<":
+			case ">":
+			case ">=":
+			case "<=":
+			case "!==":
+			case "!=":
+			case "==":
+			case "===":
+			
+				return {s:S_(a)+o+S_(b), t: types.bool, p: p};
+			
 			case "+":
 			case "-":
 			case "/":
@@ -34,14 +48,6 @@ var exportLanguages={
 			case "?":
 			case ":":
 			case ",":
-			case "&&":
-			case "==":
-			case "<":
-			case ">":
-			case "<=":
-			case ">=":
-			case "!==":
-			case "===":
 			case ">>":
 			case "<<":
 			case "&":
@@ -86,7 +92,7 @@ var exportLanguages={
 		}
 		var p = precedence(o);
 		function S_(x){
-			if(x.p<p){
+			if(x.p<=p){
 				return _(x.s);
 			}
 			return x.s;
@@ -177,7 +183,7 @@ var exportLanguages={
 		}
 		var p = precedence(o);
 		function S_(x){
-			if(x.p<p){
+			if(x.p<=p){
 				return _(x.s);
 			}
 			return x.s;
@@ -194,6 +200,14 @@ var exportLanguages={
 				return {s:"\\sqrt{"+a.s+"}",t:types.number, p: p};
 			case "#":
 				return {s:o+_(a.s),t:types.function};
+			case ",":
+				return {
+					s: "\\left("+Array.prototype.slice.apply(arguments,[1]).map(
+						S_
+					).join(o)+"\\right)",
+					t: types.vector,
+					p: p
+				};
 		}
 		if(o[0]=="@"){
 			return {s:o[1]+S_(a),t:types.number, p: p};
