@@ -6,9 +6,6 @@ Array.prototype.setType=function(type){
 Array.prototype.clone=function(){
 	return Array.prototype.slice.apply(this).setType(this.type);
 };
-
-
-
 function I(){
 	return this.constructor(this);
 }
@@ -31,7 +28,7 @@ I;
 Number.prototype.requiresParentheses=
 String.prototype.requiresParentheses=
 Boolean.prototype.requiresParentheses=
-_false;// Or should it be true for strings, parens = ", and "
+_false;
 Number.prototype.impliedBy=
 String.prototype.impliedBy=
 Boolean.prototype.impliedBy=

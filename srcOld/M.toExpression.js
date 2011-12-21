@@ -63,7 +63,7 @@ var exportLanguages={
 				return {s:o+S_(a),t:types.number, p: p};
 			case "@-":
 			case "@+":
-				return {s:o.substring(1)+S_(a),t:types.number, p: p};
+				return {s:_(o.substring(1)+S_(a)),t:types.number, p: p};
 			case "^":
 				return {s:"Math.pow("+a.s+","+b.s+")",t:types.number, p: p};
 			case "∘":
@@ -148,7 +148,7 @@ var exportLanguages={
 				return {s:o+S_(a),t:types.number, p: p};
 			case "@-":
 			case "@+":
-				return {s:o.substring(1)+S_(a),t:glsl.float, p: p};
+				return {s:_(o.substring(1)+S_(a)),t:glsl.float, p: p};
 			case "^":
 				return {s:"pow("+a.s+","+b.s+")",t:glsl.float, p: p};
 			case "∘":

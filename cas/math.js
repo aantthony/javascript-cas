@@ -385,7 +385,10 @@ var types = {
 	"operator": 2,
 	"paren": 3,
 	"variable": 4,
-	"function": 5
+	"function": 5,
+	"bool": 6,
+	"assignment":7,
+	"vector":8
 };
 
 var parse = (function (language) {
@@ -1287,6 +1290,7 @@ M.assume=function(x){
 			"circ":"∘",
 			"sqrt":"√",
 			"div":"/",
+			"%": "%",
 			
 			'gt':">",
 			"left|":"\\abs(",
@@ -1370,7 +1374,7 @@ M.assume=function(x){
 			"integral":"∫"
 			
 		};
-		s=s.replace(/\\([a-z]+)/g,function(u,x){
+		s=s.replace(/\\([a-z\%]+)/g,function(u,x){
 			var s=latexexprs[x];
 			return " "+ ((s!=undefined)?s:("\\"+x));
 		});
@@ -1488,9 +1492,9 @@ Array.prototype.differentiate=function(x, n){
 				return this[1]
 				.differentiate(x,n)
 				.apply("*",
-					//this[0]
-					//.differentiate(x,n)/*TODO: function by name*/
-					[this[0]].setType("#").differentiate()
+					this[0]
+					.differentiate("*",n)/*TODO: function by name*/
+					//[this[0]].setType("#").differentiate()
 					//"cos"
 					.apply("∘",
 						this[1]
@@ -1505,7 +1509,18 @@ Array.prototype.differentiate=function(x, n){
 	}
 };
 
+//hack!!!!!!!
+var derivatives = {
+	"sin": M("#(\\cos(x))"),
+	"cos": M("#(-\\sin(x))"),
+	"tan": M("#((\\sec(x))^2)"),
+	"exp": M("#(exp(x))"),
+	"log": M("#(1/x)")
+};
 String.prototype.differentiate=function(x,n){
+	if(x==="*"){
+		return derivatives[String(this)];
+	}
 	if(n<=-1){
 		return this.integrate(x, -n);
 	}else if(n==0){
@@ -1841,11 +1856,11 @@ Boolean.prototype.apply=Number.prototype.apply;
 
 var glsl={
 	"void":1,
-	"bool":2,
+	"vec3":2,
+	"bool":6,/*types.bool*/
 	"int":3,
 	"float":4,
 	"vec2":5,
-	"vec3":6,
 	"vec4":7,
 	"mat2":10,
 	"mat3":11,
@@ -1861,12 +1876,26 @@ var exportLanguages={
 		
 		var p = precedence(o);
 		function S_(x){
-			if(x.p<p){
+			if(x.p<=p){
 				return _(x.s);
 			}
 			return x.s;
 		}
 		switch(o){
+			case "=":
+				return {s:S_(a)+o+S_(b), t: types.assignment, p: p};
+			case "&&":
+			case "<":
+			case ">":
+			case ">=":
+			case "<=":
+			case "!==":
+			case "!=":
+			case "==":
+			case "===":
+			
+				return {s:S_(a)+o+S_(b), t: types.bool, p: p};
+			
 			case "+":
 			case "-":
 			case "/":
@@ -1874,14 +1903,6 @@ var exportLanguages={
 			case "?":
 			case ":":
 			case ",":
-			case "&&":
-			case "==":
-			case "<":
-			case ">":
-			case "<=":
-			case ">=":
-			case "!==":
-			case "===":
 			case ">>":
 			case "<<":
 			case "&":
@@ -1926,7 +1947,7 @@ var exportLanguages={
 		}
 		var p = precedence(o);
 		function S_(x){
-			if(x.p<p){
+			if(x.p<=p){
 				return _(x.s);
 			}
 			return x.s;
@@ -2000,9 +2021,11 @@ var exportLanguages={
 			case "!":
 				//requirements....
 				return {s:"factorial("+a.s+")",t:glsl.float, p: p};
+			case "%":
+				return {s: "mod("+a.s+","+b.s+")",t:glsl.float, p:p};
 			case "&":
 			case "|":
-			case "%":
+			//case "%":
 			case "~":
 			case ">>":
 			case "<<":
@@ -2017,7 +2040,7 @@ var exportLanguages={
 		}
 		var p = precedence(o);
 		function S_(x){
-			if(x.p<p){
+			if(x.p<=p){
 				return _(x.s);
 			}
 			return x.s;
@@ -2034,6 +2057,14 @@ var exportLanguages={
 				return {s:"\\sqrt{"+a.s+"}",t:types.number, p: p};
 			case "#":
 				return {s:o+_(a.s),t:types.function};
+			case ",":
+				return {
+					s: "\\left("+Array.prototype.slice.apply(arguments,[1]).map(
+						S_
+					).join(o)+"\\right)",
+					t: types.vector,
+					p: p
+				};
 		}
 		if(o[0]=="@"){
 			return {s:o[1]+S_(a),t:types.number, p: p};

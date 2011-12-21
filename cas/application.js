@@ -49,7 +49,7 @@ window.$$=function getElementById(i){
 			if(overlay.current){
 				overlay.hide();
 			}
-			$page=$overlay.find("#"+id);
+			var $page=$overlay.find("#"+id);
 			$overlay.css({"display":"block"});
 			if(overlay[id]){
 				overlay[id].show.apply(overlay[id],[$page].concat(args));
@@ -101,14 +101,30 @@ window.$$=function getElementById(i){
 		"console":$$("#console"),
 		"main":$$("#main")
 	};
-	var context=new M.Context();//State
-	window.context=context;
+	function Page(){
+		this.context = new M.Context();
+		this.equations = [];
+	}
+	Page.prototype.exec = function(){
+		
+	};
+	Page.prototype.deleteEquation = function(id){
+		this.equations[id] = undefined;
+	};
+	Page.prototype.writeEquation = function(eqn){
+		
+		return equationID;
+	};
+	var pages = {
+		
+	};
 	var ctrlcodes={"clear":"[H[2J"};
 	
 	function exec(latex){
 		//Convert to javascript:
 		var expr=M(M.latex.parse(latex)).eval();
-		if(!expr.impliedBy(context)){
+		window.pageID=pageID;
+		if(!expr.impliedBy(pages[pageID].context)){
 			//throw(new Error("That statement may not be true."));
 			expr.className = "new";
 			context.learn(expr);
@@ -124,17 +140,18 @@ window.$$=function getElementById(i){
 		var $elem=$target.parent();
 		var code = $elem.attr("id");
 		code = /^page-(\d+)-eqn-(\d+)$/.exec(code).slice(1);
+		var page = code[0];
+		var eqn = code[1];
 		$target.remove();
-		$(e.ta)
 		$elem.hide(200);
 	}
 	var lastID=1;
-	var page=0;
+	var pageID=0;
 	var console = {
 		"current":undefined,
-		"write" :function(data, className){
+		"write" :function(data, className, id){
 			var elem = document.createElement("li");
-			elem.id="page-"+page+"-eqn-"+lastID++;
+			elem.id=id;
 			elem.className=className;
 			elem.tabIndex=0;
 			elem.appendChild(typeof data === "string" ? document.createTextNode(data) : data);
@@ -204,8 +221,8 @@ window.$$=function getElementById(i){
 				this.current.draggable=true;
 			}
 			var mathQuill=document.createElement("div");
-			
-			var current = this.current = this.write(mathQuill, "write user");
+			var id = "page-"+pageID+"-eqn-"+lastID++;
+			var current = this.current = this.write(mathQuill, "write user", id);
 			
 			setTimeout(function(){current.style.opacity=1.0;},1);
 			mathQuill.appendChild(document.createTextNode(res||""));
@@ -274,6 +291,10 @@ window.$$=function getElementById(i){
 		
 		
 		"new":function(){
+			var pid=Math.random();
+			pages[pid] = new Page();
+			pageID = pid;
+			window.pages=pages;
 		},
 		"load":function(l){
 			l=JSON.parse(l);
@@ -313,7 +334,7 @@ window.$$=function getElementById(i){
 			c.load(state);
 		}else{
 			c.new();
-			localStorage.setItem(jsCAS_application_data,c.export());
+			//localStorage.setItem(jsCAS_application_data,c.export());
 		}
 		console.execute();
 	}else{
