@@ -4,25 +4,7 @@ if [ ! -d build ]; then
 fi
 
 cat \
-	src/start.js \
-	src/Array.js \
-	src/language.js \
-	src/operators.js \
-	src/M.js \
-	src/M.global.js \
-	src/Set.js \
-	src/M.inverse.js \
-	src/M.context.js \
-	src/M.impliedBy.js \
-	src/M.assume.js \
-	src/M.latex.js \
-	src/M.differentiate.js \
-	src/M.simplify.js \
-	src/M.apply.js \
-	src/M.toLatex.js \
-	src/M.toExpression.js \
-	src/M.toStrings.js \
-	src/end.js \
+	$(for i in src/*.js ; do printf "%s\n" "$i" ; done | sort -n) \
 	> build/math.js
 
 uglifyjs build/math.js \
