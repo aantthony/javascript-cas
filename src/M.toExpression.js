@@ -215,7 +215,7 @@ var exportLanguages={
 			return {s:o[1]+S_(a),t:types.number, p: p};
 		}
 		if(postfix(o)){
-			return {s:S_(a)+o,t:types.number, t:types.number, p: p};
+			return {s:S_(a)+o, t:types.number, p: p};
 		}
 		var self=this;
 		var os={
