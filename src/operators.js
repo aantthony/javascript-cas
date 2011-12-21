@@ -163,7 +163,6 @@ function identity(o){
 	var os={
 		"+":0,
 		"*":1,
-		"^":0,
 		
 		"/":1, //Implied by inverse?()
 		"-":0,

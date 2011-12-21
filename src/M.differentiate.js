@@ -104,9 +104,9 @@ Array.prototype.differentiate=function(x, n){
 				return this[1]
 				.differentiate(x,n)
 				.apply("*",
-					//this[0]
-					//.differentiate(x,n)/*TODO: function by name*/
-					[this[0]].setType("#").differentiate()
+					this[0]
+					.differentiate("*",n)/*TODO: function by name*/
+					//[this[0]].setType("#").differentiate()
 					//"cos"
 					.apply("∘",
 						this[1]
@@ -121,7 +121,18 @@ Array.prototype.differentiate=function(x, n){
 	}
 };
 
+//hack!!!!!!!
+var derivatives = {
+	"sin": M("#(\\cos(x))"),
+	"cos": M("#(-\\sin(x))"),
+	"tan": M("#((\\sec(x))^2)"),
+	"exp": M("#(exp(x))"),
+	"log": M("#(1/x)")
+};
 String.prototype.differentiate=function(x,n){
+	if(x==="*"){
+		return derivatives[String(this)];
+	}
 	if(n<=-1){
 		return this.integrate(x, -n);
 	}else if(n==0){

@@ -166,9 +166,11 @@ var exportLanguages={
 			case "!":
 				//requirements....
 				return {s:"factorial("+a.s+")",t:glsl.float, p: p};
+			case "%":
+				return {s: "mod("+a.s+","+b.s+")",t:glsl.float, p:p};
 			case "&":
 			case "|":
-			case "%":
+			//case "%":
 			case "~":
 			case ">>":
 			case "<<":

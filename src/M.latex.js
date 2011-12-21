@@ -108,6 +108,7 @@ M.latex={
 			"circ":"∘",
 			"sqrt":"√",
 			"div":"/",
+			"%": "%",
 			
 			'gt':">",
 			"left|":"\\abs(",
@@ -191,7 +192,7 @@ M.latex={
 			"integral":"∫"
 			
 		};
-		s=s.replace(/\\([a-z]+)/g,function(u,x){
+		s=s.replace(/\\([a-z\%]+)/g,function(u,x){
 			var s=latexexprs[x];
 			return " "+ ((s!=undefined)?s:("\\"+x));
 		});
