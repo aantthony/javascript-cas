@@ -1,3 +1,4 @@
+/*
 }(
 	function(){
 		if(typeof window === 'undefined'){
@@ -7,3 +8,4 @@
 	}()
 	
 ));
+*/

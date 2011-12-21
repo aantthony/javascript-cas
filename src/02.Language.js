@@ -14,7 +14,7 @@ function Language(language){
 			operators[v]=memsave;
 		}
 	}
-	languages[language||"jsMath"].forEach(function(o) {
+	language.forEach(function(o) {
 		op(o[0],o[1]||L,(o[2]===undefined)?2:o[2]);
 	});
 	this.operators = operators;
@@ -36,81 +36,7 @@ Language.prototype.unary = function (o){
 	return (unary_secondarys.indexOf(o)!=-1)?("@"+o):false;
 }
 
-Language.prototype.inverse = function (o,b,d,side){
-	var SideError = "Side must be specified for noncommutative operations!";
-	b=b.clone();
-	d=d.clone();
-	// d (old) = [A, B], where b = A if L, and b = B if R.
-	switch(o){
-		case "+":
-			return [d, b].setType("-");
-		case "-":
-			if(side===L){
-				// d = b - ?
-				// ? = b - d
-				return [b, d].setType("-");
-			}else if(side===R){
-				// d = ? - b
-				// ? = d + b
-				return [d, b].setType("+");
-			}else{
-				throw(SideError);
-			}
-		case "/":
-			if(side===L){
-				// d = b / ?
-				// d * ? = b / ? * ?
-				// ? = (1/d) b
-				
-				//TODO: THIS ASSUMES A*B = B*A
-				// ? = b/d
-				if(d===0){
-					return false; //DIVISION BY ZERO
-				}
-				return [b, d].setType("/");
-			}else if(side===R){
-				// d = ? / b
-				// d * b = ?
-				return [d, b].setType("*");
-			}else{
-				throw(SideError);
-			}
-		case "*":
-			// d = b * ?
-			// 1/b * d = ?
-			
-			//TODO: THIS ASSUMES A*B = B*A
-			// ? = d / b
-			if(b===0){
-				return false;
-			}
-			return [d, b].setType("/");
-		case "^":
-			if(side===L){
-				// d = b ^ ?
-				// d = e ^ (? * log b)
-				// log(d) = ? * log b
-				// log(d) / log(b) = ?
-				//Log should really be an operator
-				return [["log",d].setType("∘"), ["log",b].setType("∘")].setType("/");
-			}else if(side===R){
-				// d = ? ^ b
-				// d ^ (1/b) = ?^(b/b)
-				// d ^ (1/b) = ?
-				if(b===0){
-					return false;
-				}
-				return [d, [1, b].setType("/")].setType("^");
-			}else{
-				throw(SideError);
-			}
-		default:
-			return;
-	}
-	
-}
-
-var left,right;
+var left, right;
 var L = left = 0;
 var R = right = 1;
 

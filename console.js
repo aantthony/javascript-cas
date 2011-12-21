@@ -30,7 +30,7 @@ var math=require("./build/math.js");
 					stdout.write("\x1b[H\x1b[2J");
 				}else if(line){
 					try{
-						stdout.write(math.M(line).simplify().toStrings()+"\n");
+						stdout.write(math.M(line).simplify().toTypedExpression().s+"\n");
 					}catch(ex){
 						stderr.write(color(ex)+"\n");
 					}
