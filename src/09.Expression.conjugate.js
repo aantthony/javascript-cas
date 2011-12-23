@@ -1,3 +1,3 @@
 Expression.prototype.conjugate = function(){
-	return 
+	throw('dsf');
 };

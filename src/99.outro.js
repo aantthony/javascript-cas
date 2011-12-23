@@ -2,7 +2,7 @@
 }(
 	function(){
 		if(typeof window === 'undefined'){
-			return exports;
+			return module;
 		}
 		return window;
 	}()
