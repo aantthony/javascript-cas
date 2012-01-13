@@ -75,7 +75,13 @@ Language.prototype._build = function(){
 					// Else,
 				} else {
 					// Pop the top n values from the stack.
-					var values = ExpressionWithArray(rpn_stack.splice( - n, n), token.v);
+					var spliced = rpn_stack.splice( - n, n);
+					//var values = ExpressionWithArray(spliced, token.v);
+					//TODO: check non-binary operators
+					if(spliced.length !== 2){
+					    throw("non binary operator in next_rpn.");
+					}
+					var values = spliced[0].apply(token.v, spliced.slice(1)[0]);
 					// Evaluate the operator, with the values as arguments.
 					//var evaled=(" ("+values[0]+token.v+values[1]+")");
 					// Push the returned results, if any, back onto the stack.
@@ -223,7 +229,7 @@ Language.prototype._build = function(){
 
 				// If the token at the top of the stack is a function token, pop it onto the output queue.
 				if (stack.length && stack[stack.length - 1].t === token_types.func) {
-					next_rpn(stack.pop);
+					next_rpn(stack.pop());
 				}
 			}
 		}
