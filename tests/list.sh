@@ -1,0 +1,1 @@
+echo $(for i in src/*.js ; do printf "%s\n" "$i" ; done | sort -n)

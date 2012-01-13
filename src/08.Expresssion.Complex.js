@@ -50,7 +50,61 @@ Expression.Complex.prototype.conjugate = function(){
 					var cc_dd = x._real * x._real + x._imag * x._imag;
 					return new Expression.Complex((this._real * x._real + this._imag * x._imag)/cc_dd, (this._imag * x._real - this._real*x._imag)/cc_dd);
 				case '^':
-					return new Expression.Complex(Math.pow(this, x));
+				    /*
+				        (a+bi)^(c+di)
+				        = (e^(log(a+bi))) ^ (c+di)
+				        = e^(log(a+bi) * (c+di))
+				        = e^p
+				        [g =  Math.Atan2(b, a)]
+				        [l = (0.5 * Math.Log(Norm(a+bi))) + i g]
+				        [p = l * (c+di)]
+				        [s = e^(Re[p])]
+				        [k = Im[p]]
+				        = s * Math.Cos(k) + i  (s * Math.Sin(k))
+				        
+				    */
+				    /*
+				    var g = Math.atan2(b, a);
+				    var l = [0.5 * Math.Log(a*a + b*b), g];
+				    var p = [l[0] * c - l[1] * d, l[0] * d + l[1] * c];
+				    var s = Math.exp(p[0]);
+				    var k = p[1];
+					return new Expression.Complex(s*Math.cos(k), s*Math.sin(k));
+				    
+				    //
+				    [
+				        (Math.exp(0.5 * Math.log(a*a + b*b) * c - Math.atan2(b, a) * d)*Math.cos(0.5 * Math.log(a*a + b*b) * d + Math.atan2(b, a) * c)),
+				        (Math.exp(0.5 * Math.log(a*a + b*b) * c - Math.atan2(b, a) * d)*Math.sin(0.5 * Math.log(a*a + b*b) * d + Math.atan2(b, a) * c))
+				    ]
+				    */
+				    var hlm = 0.5 * Math.log(a*a + b*b);
+				    var theta = Math.atan2(b, a);
+				    var hmld_tc = hlm * d + theta * c;
+				    var e_hmlc_td = Math.exp(hlm * c - theta * d);
+                    return new Expression.Complex(
+                        (e_hmlc_td * Math.cos(hmld_tc)),
+				        (e_hmlc_td * Math.sin(hmld_tc))
+                    );
+				    /*
+				    [
+				        (e_hmlc_td*Math.cos(hmld_tc)),
+				        (e_hmlc_td*Math.sin(hmld_tc))
+				    ]
+				    
+				    e_hmlc_td =  Math.exp(hlm * c - theta * d);
+				              =  Math.exp(x-y)
+				              =  Math.exp(x)/Math.exp(y)
+				              =  Math.exp(hlm * c - theta * d) / Math.exp(theta * d)
+				              =  Math.exp(0.5 * Math.log(a*a + b*b) * c) / Math.exp(theta * d)
+				              =  Math.pow(a*a + b*b, 0.5*c) / Math.exp(theta*d)
+				    
+				    */
+                    /*
+                        \log(a+b)=\log(a(b/a+1))=\log(a) + log(b/a+1)
+                        
+                    
+                    */
+                    
 				default:
 			}
 		}

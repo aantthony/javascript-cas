@@ -18,6 +18,7 @@ function Language(language){
 		op(o[0],o[1]||L,(o[2]===undefined)?2:o[2]);
 	});
 	this.operators = operators;
+	this._build();
 }
 
 Language.prototype.precedence = function (v){
