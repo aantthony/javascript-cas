@@ -119,7 +119,7 @@ Expression.Complex.prototype.conjugate = function(){
 	
 }());
 
-Expression.prototype.valueOf = function(){
+Expression.Complex.prototype.valueOf = function(){
 	return this.abs()._real;
 };
 

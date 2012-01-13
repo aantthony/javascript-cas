@@ -23,4 +23,9 @@ Expression.Symbol.prototype.integrate = function(x){
 Expression.Symbol.prototype.toString = function(){
 	return this.symbol;
 };
+
+Expression.Symbol.prototype.toTypedExpression = function(){
+    return this.symbol;
+};
+
 Expression.Symbol.prototype.constructor = Expression.Symbol;
