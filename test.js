@@ -21,7 +21,10 @@ exec('make', function(err, stdout, stderr){
             console.log("------");
         }
     }
-    run(
+    //console.log(M("3"));
+    console.log("------");
+    
+    0 && run(
         function three(){
             M("  3  ");
         },

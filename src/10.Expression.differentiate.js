@@ -3,13 +3,13 @@ Expression.prototype.differentiate = function(x){
 		case '*':
 			return
 				this[0]
-				.diff(x)
+				.differentiate(x)
 				.apply('*',
 					this[1]
 				)
 				.apply('+',
 					this[1]
-					.diff(x)
+					.differentiate(x)
 					.apply('*',
 						this[0]
 					)
@@ -18,21 +18,21 @@ Expression.prototype.differentiate = function(x){
 		case '-':
 			return
 				this[1]
-				.diff(x)
+				.differentiate(x)
 				.apply(this.operator,
 					this[1]
-					.diff(x)
+					.differentiate(x)
 				);
 		case '/':
 			return
 				this[0]
-				.diff(x)
+				.differentiate(x)
 				.apply('*',
 					this[1]
 				)
 				.apply('-',
 					this[0]
-					.diff(x)
+					.differentiate(x)
 					.apply('*',
 						this[1]
 					)
@@ -56,5 +56,3 @@ Expression.prototype.differentiateN = function(x, n){
 		return this.differentiate(x);
 	}
 };
-
-Expression.prototype.diff = Expression.prototype.differentiate;

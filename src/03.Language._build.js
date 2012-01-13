@@ -39,10 +39,13 @@ Language.prototype._build = function(){
 		},
 		function symbol(x){
 		    return /^[A-Za-z]$/.test(x[x.length-1]);
+		},
+		function Error(x){
+		    throw (new SyntaxError("Invalid character: '"+x+"'"));
 		}
 	];
 	var names = match.map(function(e){return e.name;});
-	this.parse = function (s, output) {
+	this.parse = function (s, context) {
 		var last_token_type = token_types.parenopen;
 		
 		//Stack of tokens for the shunting yard algorithm
@@ -56,7 +59,7 @@ Language.prototype._build = function(){
 			// Read the next token from input.
 			//console.log("rpn: ",token);
 			// If the token is a value
-			if (token.t === token_types.number || token.t === token_types.variable) {
+			if (token.t === token_types.number || token.t === token_types.symbol) {
 				// Push it onto the stack.
 				rpn_stack.push(token.v);
 			}
@@ -68,16 +71,14 @@ Language.prototype._build = function(){
 				// If there are fewer than n values on the stack
 				if (rpn_stack.length < n) {
 					// (Error) The user has not input sufficient values in the expression.
-					throw (new SyntaxError("The " + token.v + "operator requires exactly " + n + "operands, whereas only " + rpn_stack.length + "" + (rpn_stack.length === 1 ? "was ": "were ") + "supplied."));
+					throw (new SyntaxError("The '" + token.v + "' operator requires exactly " + n + " operands, whereas only " + rpn_stack.length + " " + (rpn_stack.length === 1 ? "was ": "were ") + "supplied, namely "+rpn_stack.toString()));
 					// Else,
 				} else {
 					// Pop the top n values from the stack.
-					var values = rpn_stack.splice( - n, n);
+					var values = ExpressionWithArray(rpn_stack.splice( - n, n), token.v);
 					// Evaluate the operator, with the values as arguments.
 					//var evaled=(" ("+values[0]+token.v+values[1]+")");
-					values.type = token.v;
 					// Push the returned results, if any, back onto the stack.
-					//console.log("values: ",values.clone());
 					rpn_stack.push(values);
 				}
 			}
@@ -89,25 +90,31 @@ Language.prototype._build = function(){
 		//instead of pushing to a temporary array, just call next_token(token).
 		//The same applies to the RPN evaluator (above)
 		function next_token(token){
-		    if (token.t === token_types.variable) {
+		    if (token.t === token_types.symbol) {
 				//'Keyword' search: eg. break, if. Stuff like that.
 				if (operators[token.v]) {
 					token.t = token_types.operator;
-				} else if (token.v === "false ") {
+				} else if (token.v === "false") {
 					token.v = false;
-				} else if (token.v === "true ") {
+				} else if (token.v === "true") {
 					token.v = true;
-				} else if (token.v === "Infinity ") {
+				} else if (token.v === "Infinity") {
 					token.v = Infinity;
+				} else if(typeof token.v === "string"){
+				    if(context[token.v]){
+				        token.v = context[token.v];
+				    }else{
+    				    token.v = new Expression.Symbol(token.v);
+				    }
 				}
 			}
 			//console.log("token: ", token.v, names[token.t]);
 			//Comments from http://en.wikipedia.org/wiki/Shunting-yard_algorithm
 			// Read a token.
 			// If the token is a number, then add it to the output queue.
-			if (token.t == token_types.number || token.t == token_types.variable) {
+			if (token.t == token_types.number || token.t == token_types.symbol) {
 				if (token.t == token_types.number) {
-					token.v = Number(token.v);
+					token.v = new Expression.Numerical(Number(token.v), 0);
 				}
 				next_rpn(token);
 			}
@@ -135,7 +142,7 @@ Language.prototype._build = function(){
 			if (token.t === token_types.operator) {
 				//, o1, then:
 				var o1 = token;
-				var o1precedence = precedence(o1.v);
+				var o1precedence = operators[o1.v][1];
 				//var o1associative=associativity(o1.v);
 				var o1associative = operators[o1.v][0];
 				// ("o2 " is assumed to exist)
@@ -159,7 +166,7 @@ Language.prototype._build = function(){
 				//less than or equal to
 				<=
 				//that of o2,
-				precedence(o2.v)
+				operators[o2.v][1]
 				)
 				//or
 				||
@@ -177,7 +184,7 @@ Language.prototype._build = function(){
 				<
 
 				//that of o2
-				precedence(o2.v)
+				operators[o2.v][1]
 				)
 
 				)
@@ -191,12 +198,12 @@ Language.prototype._build = function(){
 				stack.push(o1);
 			}
 			// If the token is a left parenthesis,
-			if (token.v == " (") {
+			if (token.t === token_types.parenopen) {
 				//then push it onto the stack.
 				stack.push(token);
 			}
 			// If the token is a right parenthesis:
-			if (token.v == ")") {
+			if (token.t === token_types.parenclose) {
 				// Until the token at the top of the stack is a left parenthesis,
 				while (stack[stack.length - 1].v != " (") {
 
@@ -222,7 +229,7 @@ Language.prototype._build = function(){
 		}
 		function next_raw_token(str, t){
 		    if(t === token_types.comment){
-		        console.log('/*' + str + '*/');
+		        //console.log('/*' + str + '*/');
 		        return;
 		    }
 		    if(t !== token_types.operator && t !== token_types.parenclose){
@@ -232,6 +239,7 @@ Language.prototype._build = function(){
     		        }
     		    }
 		    }
+		    
 		    next_token({v: str, t: t});
 		    last_token_type = t;
 		}
@@ -262,5 +270,30 @@ Language.prototype._build = function(){
             }
         }
         next_raw_token(current_token, t);
+
+		//Shunting yard algorithm:
+		// (The final part that does not read tokens)
+		// When there are no more tokens to read:
+		// While there are still operator tokens in the stack:
+		while (stack.length) {
+			var the_operator;
+			// If the operator token on the top of the stack is a parenthesis, then
+			var t__ = (the_operator = stack.pop()).t;
+			if ((t__ === token_types.parenopen) || (t__ === token_types.parenclose)) {
+				//there are mismatched parentheses.
+				throw ("there are mismatched parentheses.");
+
+			}
+			//Pop the operator onto the output queue.
+			next_rpn(the_operator);
+
+		}
+		if (rpn_stack.length !== 1) {
+			console.warn("Stack not the right size ! ", rpn_stack);
+			//who gives?
+			return rpn_stack;
+		}
+		return rpn_stack[0];
+		
 	};
 };

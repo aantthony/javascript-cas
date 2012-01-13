@@ -114,7 +114,7 @@ Expression.Complex.prototype.conjugate = function(){
 		}
 		*/
 
-		return ExpressionWithArray([this, arguments], operator);
+		return ExpressionWithArray([this, x], operator);
 	}
 	
 }());

@@ -1,5 +1,6 @@
 function M(a, b){
-	return new Expression(a, b);
+    var ne = Expression(a, b || M.Global);
+	return ne;
 }
 
 M.toString=function(){

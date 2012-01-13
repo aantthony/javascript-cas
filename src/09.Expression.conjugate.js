@@ -1,3 +1,4 @@
 Expression.prototype.conjugate = function(){
-	throw('dsf');
+    debugger;
+	throw('Conjugate');
 };
