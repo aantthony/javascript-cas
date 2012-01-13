@@ -17,20 +17,20 @@ var parse = (function(language) {
 	var parenmustbe = "([{}\"])";
 	var varcannotbe = ochars + parenmustbe + nummustbe;
 	var match = [0,
-		function(e) {
+		function num( e) {
 			return ! isNaN(e);
 		},
-		function(e) {
+		function op(e) {
 			if (operators[e]) {
 				return true;
 			}
 			return false;
 			//return ochars.indexOf(e)!==-1;
 		},
-		function(e) {
+		function paren(e) {
 			return e && e.length === 1 && parenmustbe.indexOf(e) != -1;
 		},
-		function(e) {
+		function v(e) {
 			//Assumtions: It will only be ONE character ahead of a valid var.
 			/*
 				Not desired, it could get messy. Always use varname instead.

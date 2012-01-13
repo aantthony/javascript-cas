@@ -10,11 +10,13 @@ exec('make', function(err, stdout, stderr){
     function color(str){
 		return '\x1b[1m' + (str || "") + '\x1b[22m';
 	}
-	
+	function _(){
+	    console.log("  ----");
+	}
     function run(){
         var i,l;
         for(i=0,l=arguments.length;i<l;i++){
-            stdout.write(color("Test: "+ (arguments[i].name || i+1))+"\n");
+            stdout.write(color("Test: "+ (arguments[i].name.replace('_',' ') || i+1))+"\n");
             arguments[i]();
             console.log("------");
         }
@@ -23,14 +25,23 @@ exec('make', function(err, stdout, stderr){
         function three(){
             M("  3  ");
         },
-        function(){
+        function Simple_Addition(){
             M("3 +  x");
         },
-        function(){
-            M("3+(x)/[+]")
+        function Parenthesis(){
+            M("3+(x)/[((+))]")
         },
-        function(){
+        function Mutlicharacter_Operators(){
             M("x++");
+        },
+        function Implied_Multiplication(){
+            M("2x");
+            _();
+            M("x x");
+            _();
+            M(" x(x)");
+            _();
+            M("(x)x");
         }
     );
 })
