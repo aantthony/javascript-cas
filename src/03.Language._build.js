@@ -1,205 +1,207 @@
 Language.prototype._build = function() {
+	var latexexprs = {
+		"cdot": "*",
+		"vee": "∨",
+		"wedge": "&&",
+		"neg": "¬",
+		"left": "",
+		"right": "",
+		"pm": "±",
+		"circ": "∘",
+		"sqrt": "√",
+		"div": "/",
+		"%": "%",
+		
+		'gt': ">",
+		"left|": "\\abs(",
+		"right|": ")",
+		"times": "*",
+		":": "",
+		"left(": "(",
+		"right)": ")",
+		"left[": "[",
+		"right]": "]",
+		'ge': ">=",
+		'lt': "<",
+		'le': "<=",
+		"infty": "∞",
+		"sim": "~",
+		"frac": "",
+		"backslash": "\\",
+		"alpha": "α",
+		"beta": "β",
+		'gamma': "γ",
+		'delta': "δ",
+		'zeta': "ζ",
+		'eta': "η",
+		'theta': "θ",
+		'iota': "ι",
+		'kappa': "κ",
+		'mu': "μ",
+		'nu': "ν",
+		'xi': "ξ",
+		'omicron': "ο",
+		'rho': "ρ",
+		'sigma': "σ",
+		'tau': "τ",
+		'upsilon': "υ",
+		'chi': "χ",
+		'psi': "ψ",
+		'omega': "ω",
+		'phi': "ϕ",
+		"phiv": "φ",
+		"varphi": "φ",
+		"epsilon": "ϵ",
+		"epsiv": "ε",
+		"varepsilon": "ε",
+		"sigmaf": "ς",
+		"sigmav": "ς",
+		"gammad": "ϝ",
+		"Gammad": "ϝ",
+		"digamma": "ϝ",
+		"kappav": "ϰ",
+		"varkappa": "ϰ",
+		"piv": "ϖ",
+		"varpi": "ϖ",
+		"rhov": "ϱ",
+		"varrho": "ϱ",
+		"thetav": "ϑ",
+		"vartheta": "ϑ",
+		"pi": "π",
+		"lambda": "λ",
+		'Gamma': "Γ",
+		'Delta': "Δ",
+		'Theta': "Θ",
+		'Lambda': "Λ",
+		'Xi': "Ξ",
+		'Pi': "Π",
+		'Sigma': "Σ",
+		'Upsilon': "Υ",
+		'Phi': "Φ",
+		'Psi': "Ψ",
+		'Omega': "Ω",
+		"perp": "⊥",
+		",": " ",
+		"nabla": "∇",
+		"forall": "∀",
+		"sum": "∑",
+		"summation": "∑",
+		"prod": "∏",
+		"product": "∏",
+		"coprod": "∐",
+		"coproduct": "∐",
+		"int": "∫",
+		"integral": "∫"
+	};
+	
 	function deLaTeX(s){
+		//Converts a latex format equation into a text based one, 
+		//where multi-character names keep a preceeding and required \ character
+
 		//A mess!!!!
 		//O(n)
-		var i,l=s.length
+		var i, l = s.length;
 		//indexOf is BAD!!! It is fine only when we only have one type of \expr
-		while((i = s.indexOf("\\begin"))!=-1){
+		while ((i = s.indexOf("\\begin")) != -1){
 			var n = s.indexOf("}", i+7);
 
 			var type=s.substring(i+7,n);
 
 			var end_string="\\end{"+type+"}";
-			
+
 			var b = s.indexOf(end_string, n);
 			var x = s.substring(n+1,b);
-			switch(type){
-			case "matrix":
-				
-				x=x.replace(/\\\:/g, ",").replace(/\\\\/g, ";");
-				s=s.split("");
+			switch (type) {
+				case "matrix":
 
-				//s.splice(b,b+end_string.length);
+					x=x.replace(/\\\:/g, ",").replace(/\\\\/g, ";");
+					s=s.split("");
 
-				s[i]="[";
-				s.splice(b, end_string.length-1);
-				s[b]="]";
-				s.splice(n+1,b-n-1,x);
-				s.splice(i+1,n+1-i-1);
-				s=s.join("");
-				break;
-			default:
-				throw(new SyntaxError("Latex \\begin{"+type+"} block not understood."))
+					//s.splice(b,b+end_string.length);
+
+					s[i] = "[";
+					s.splice(b, end_string.length - 1);
+					s[b] = "]";
+					s.splice(n + 1, b - n - 1, x);
+					s.splice(i + 1, n + 1 - i - 1);
+					s = s.join("");
+					break;
+				default:
+					throw(new SyntaxError("Latex \\begin{" + type + "} block not understood."))
 			}
 		}
-		while((i = s.indexOf("\\text"))!=-1){
-			var n = s.indexOf("}", i+6);
-			var text=s.substring(i+6,n);
+		while((i = s.indexOf("\\text")) !== -1){
+			var n = s.indexOf("}", i + 6);
+			var text = s.substring(i + 6, n);
 			
 			s=s.split("");
 			
-			s.splice(i,n-i+1,"\\"+text);
+			s.splice(i, n - i + 1,"\\" + text);
 			s=s.join("");
 		}
-		while((i = s.indexOf("\\frac"))!=-1){
-			var n,good=false;
-			var deep=0;
-			for(n = i+5;n<l;n++){
-				if(s[n]=="{"){
+		while((i = s.indexOf("\\frac")) !== -1){
+			var n, good = false;
+			var deep = 0;
+			for(n = i + 5; n < l; n++){
+				if (s[n] === "{") {
 					deep++;
-				} else if(s[n]=="}"){	
+				} else if(s[n] === "}") {	
 					deep--;
-					if(!deep){
-						good=true;
+					if (!deep) {
+						good = true;
 						break;
 					}
 				}
 			}
-			if(!good){
+			if (!good) {
 				throw(new SyntaxError(msg.latexParse));
 			}
-			good=false;
+			good = false;
 			
-			if(s[n+1]!="{"){
-				throw(new SyntaxError("Unexpected '"+s[n+1]+"' between \\frac operands"));
+			if(s[n+1] !== "{"){
+				throw(new SyntaxError("Unexpected '" + s[n+1] + "' between \\frac operands"));
 			}
 			
-			var i2=n+1;
+			var i2 = n + 1;
 			var n2;
-			for(n2 = i2;n2<l ;n2++){
-				if(s[n2]=="{"){
+			for(n2 = i2; n2 < l; n2++){
+				if (s[n2] === "{") {
 					deep++;
-				} else if(s[n2]=="}"){
+				} else if(s[n2] === "}") {
 					
 					deep--;
-					if(!deep){
-						good=true;
+					if (!deep) {
+						good = true;
 						break;
-					}else{
+					} else {
 						
 					}
 				}
 			}
-			if(!good){
+			if (!good) {
 				throw(new SyntaxError(msg.latexParse));
 			}
-			s=s.split("");
+			s = s.split("");
 			
 			//TODO: bad idea. maybe fix requiresParen...
-			s[i+5]="((";
-			s[n]=")";
-			s[i2]="(";
-			s[n2]="))";
-			s.splice(i2,0,"/");
-			s.splice(i,5);
+			s[i+5] = "((";
+			s[n] = ")";
+			s[i2] = "(";
+			s[n2] = "))";
+			s.splice(i2, 0, "/");
+			s.splice(i, 5);
 			s=s.join("");
 			
 		}
-		var latexexprs = {
-			"cdot":"*",
-			"vee":"∨",
-			"wedge":"&&",
-			"neg":"¬",
-			"left":"",
-			"right":"",
-			"pm":"±",
-			"circ":"∘",
-			"sqrt":"√",
-			"div":"/",
-			"%": "%",
-			
-			'gt':">",
-			"left|":"\\abs(",
-			"right|":")",
-			"times":"*",
-			":":"",
-			"left(":"(",
-			"right)":")",
-			"left[":"[",
-			"right]":"]",
-			'ge':">=",
-			'lt':"<",
-			'le':"<=",
-			"infty":"∞",
-			"sim":"~",
-			"frac":"",
-			"backslash":"\\",
-			"alpha":"α",
-			"beta":"β",
-			'gamma':"γ",
-			'delta':"δ",
-			'zeta':"ζ",
-			'eta':"η",
-			'theta':"θ",
-			'iota':"ι",
-			'kappa':"κ",
-			'mu':"μ",
-			'nu':"ν",
-			'xi':"ξ",
-			'omicron':"ο",
-			'rho':"ρ",
-			'sigma':"σ",
-			'tau':"τ",
-			'upsilon':"υ",
-			'chi':"χ",
-			'psi':"ψ",
-			'omega':"ω",
-			'phi':"ϕ",
-			"phiv":"φ",
-			"varphi":"φ",
-			"epsilon":"ϵ",
-			"epsiv":"ε",
-			"varepsilon":"ε",
-			"sigmaf":"ς",
-			"sigmav":"ς",
-			"gammad":"ϝ",
-			"Gammad":"ϝ",
-			"digamma":"ϝ",
-			"kappav":"ϰ",
-			"varkappa":"ϰ",
-			"piv":"ϖ",
-			"varpi":"ϖ",
-			"rhov":"ϱ",
-			"varrho":"ϱ",
-			"thetav":"ϑ",
-			"vartheta":"ϑ",
-			"pi":"π",
-			"lambda":"λ",
-			'Gamma':"Γ",
-			'Delta':"Δ",
-			'Theta':"Θ",
-			'Lambda':"Λ",
-			'Xi':"Ξ",
-			'Pi':"Π",
-			'Sigma':"Σ",
-			'Upsilon':"Υ",
-			'Phi':"Φ",
-			'Psi':"Ψ",
-			'Omega':"Ω",
-			"perp":"⊥",
-			",":" ",
-			"nabla":"∇",
-			"forall":"∀",
-			"sum":"∑",
-			"summation":"∑",
-			"prod":"∏",
-			"product":"∏",
-			"coprod":"∐",
-			"coproduct":"∐",
-			"int":"∫",
-			"integral":"∫"
-			
-		};
-		s=s.replace(/\\([a-z\%]+)/g,function(u,x){
-			var s=latexexprs[x];
-			return " "+ ((s!=undefined)?s:("\\"+x));
+		s = s.replace(/\\([a-z\%]+)/g, function(u, x) {
+			var s = latexexprs[x];
+			return " "+ ((s !== undefined) ? s : ("\\" + x));
 		});
-		
-		
+
 		//Naughty:
-		s=s.replace(/[\[\{]/g,"(");
-		s=s.replace(/[\]\}]/g,")");
-		
+		s = s.replace(/[\[\{]/g, "(");
+		s = s.replace(/[\]\}]/g, ")");
+
 		return s;
 	}
 	var operators = this.operators;
