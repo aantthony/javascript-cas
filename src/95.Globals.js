@@ -12,18 +12,6 @@ Global.sin = {
 				return new Expression.Complex(Math.sin(x._real) * cosh_b, Math.cos(x._real) * sinh_b);
 			case Expression.NumericalReal:
 				return new Expression.NumericalReal(Math.sin(x));
-			case "Expression.List":
-				var ri = x.realimag();
-				var exp_b = Global.e.apply("^", ri[1]);
-				var one_o_exp_b = Global.One.apply("/", exp_b);
-				var two = new Expression.Numerical(2);
-				var cosh_b = exp_b.apply("+", one_o_exp_b).apply("/", two);
-				var sinh_b = exp_b.apply("+", one_o_exp_b).apply("/", two);
-
-				var res = Global.sin.apply(undefined, ri[0]).apply("*", cosh_b).apply("+",
-					Global.i.apply("*", Global.cos.apply(undefined, ri[0]).apply("*", sinh_b))
-				);
-				return 
 			default:
 				return Expression.List([Global.sin, x]);
 		}
@@ -40,15 +28,31 @@ Global.sin = {
 				var one_o_exp_b = Global.One.apply("/", exp_b);
 				var two = new Expression.NumericalReal(2);
 				var cosh_b = exp_b.apply("+", one_o_exp_b).apply("/", two);
-				var sinh_b = exp_b.apply("+", one_o_exp_b).apply("/", two);
-				
-				console.log({x: x, ri: ri, cosh_b: cosh_b});
-				
+				var sinh_b = exp_b.apply("-", one_o_exp_b).apply("/", two);
+
 				return [Global.sin.apply(undefined, ri[0]).apply("*", cosh_b),
 					Global.cos.apply(undefined, ri[0]).apply("*", sinh_b)
 				];
 			default:
+				console.error("realimag unchecked!");
 				return [Expression.List([Global.sin, x]), M.Global.Zero];
+		}
+	},
+	toTypedString: function(language) {
+		//Non symbolic equivalent
+		var guid = "jscas___sin";
+		var code;
+		switch (language) {
+			case "text/javascript":
+				guid = "Math.sin";
+				break;
+			case "x-shader/x-fragment":
+				guid = "sin";
+				break;
+		}
+		return {
+			s:guid,
+			t:javascript.Function
 		}
 	},
 	title: "Sine Function",
@@ -58,19 +62,58 @@ Global.cos = {
 	apply: function(op, x) {
 		switch (x.constructor) {
 			case Expression.Complex:
-				// sin(a+bi) = sin(a)cosh(b) + i cos(a)sinh(b)
+				// cos(a+bi) = sin(a)cosh(b) + i cos(a)sinh(b)
 				var exp_b = Math.exp(x._imag);
 				var cosh_b = (exp_b + 1 / exp_b) / 2;
-				var nsinh_b = (1 / exp_b - exp_b) / 2;
-				return new Expression.Complex(Math.cos(x._real) * cosh_b, Math.sin(x._real) * nsinh_b);
+				var sinh_b = (exp_b - 1 / exp_b) / 2;
+				return new Expression.Complex(Math.cos(x._real) * cosh_b, -Math.sin(x._real) * sinh_b);
 			case Expression.NumericalReal:
-				return Math.sin(x);
+				return new Expression.NumericalReal(Math.cos(x));
 			default:
-				return Expression.List([Global.sin, x]);
+				return Expression.List([Global.cos, x]);
+		}
+	},
+	apply_realimag: function(op, x) {
+		switch (x.constructor) {
+			case Expression.Complex:
+				throw("???");
+			case Expression.NumericalReal:
+				throw("???");
+			case Expression.List:
+				var ri = x.realimag();
+				var exp_b = Global.e.apply("^", ri[1]);
+				var one_o_exp_b = Global.One.apply("/", exp_b);
+				var two = new Expression.NumericalReal(2);
+				var cosh_b = exp_b.apply("+", one_o_exp_b).apply("/", two);
+				var nsinh_b = one_o_exp_b.apply("-", exp_b).apply("/", two);
+
+				return [Global.cos.apply(undefined, ri[0]).apply("*", cosh_b),
+					Global.sin.apply(undefined, ri[0]).apply("*", nsinh_b)
+				];
+			default:
+				console.error("realimag unchecked!");
+				return [Expression.List([Global.cos, x]), M.Global.Zero];
+		}
+	},
+	toTypedString: function(language) {
+		//Non symbolic equivalent
+		var guid = "jscas___cos";
+		var code;
+		switch (language) {
+			case "text/javascript":
+				guid = "Math.cos";
+				break;
+			case "x-shader/x-fragment":
+				guid = "cos";
+				break;
+		}
+		return {
+			s:guid,
+			t:javascript.Function
 		}
 	},
 	title: "Cosine Function",
-	description: Global.sin.description
+	description: "Cosine Function desc"
 };
 Global.log = {
 	apply: function (op, x) {
@@ -78,7 +121,7 @@ Global.log = {
 			case Expression.Complex:
 				throw("Not ready Type!: " + x.constructor);
 			case Expression.NumericalReal:
-				return Math.log(x.value);
+				return new Expression.NumericalReal(Math.log(x));
 			default:
 				throw("Unknown Type!: " + x.constructor);
 		}
@@ -88,6 +131,7 @@ Global.log = {
 };
 Global.atan2 = {
 	apply: function(op, x) {
+		console.log("Apply atan2");
 		switch (x[0].constructor) {
 			case Expression.Complex:
 				switch (x[1].constructor) {

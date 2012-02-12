@@ -19,6 +19,10 @@ M.Context = Context;
 //Allow modification of global context
 M.Global = Global;
 
+//Debug:
+
+M.Expression = Expression;
+
 if (window.exports !== undefined) {
 	//Node
 	window.exports = M;

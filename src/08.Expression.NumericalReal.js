@@ -22,6 +22,9 @@ Expression.NumericalReal.prototype.conjugate = function() {
 	return this;
 };
 Expression.NumericalReal.prototype.apply = function(operator, x) {
+	if (operator === ",") {
+		return Expression.Vector([this, x]);
+	}
 	if(x === undefined){
 		//Unary
 		switch (operator) {
@@ -102,6 +105,6 @@ Expression.NumericalReal.prototype.apply = function(operator, x) {
 				return Global.Zero; //Contradics x/0 = Infinity
 			}
 	}
-	return Expression.List([this, xs], operator);
+	return Expression.List([this, x], operator);
 };
 Expression.NumericalReal.prototype.constructor = Expression.NumericalReal;

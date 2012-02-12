@@ -20,15 +20,15 @@ function Language(language) {
 	this._build();
 }
 Language.prototype.precedence = function (v) {
-    deprecated("Slow");
-	if (!operators[v]) {
+    //deprecated("Slow");
+	if (!this.operators[v]) {
 		throw("Precedence of "+v+" not known!");
 	}
-	return operators[v][1];
+	return this.operators[v][1];
 }
 
 Language.prototype.postfix = function (o) {
-	var op = operators[o];
+	var op = this.operators[o];
 	return op[0] === 0 && op[2] === 1;
 }
 Language.prototype.unary = function (o) {

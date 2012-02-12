@@ -22,7 +22,7 @@ var language = new Language([
 	[["*", "%"]],
 	[["@+", "@-", "@±"], R, 1], //unary plus/minus
 	[["¬"], L, 1],
-	[undefined, R, 2],
+	[undefined, L, 2],
 	["∘", R, 2],
 	[["/"]],
 	[["^"]],//e**x

@@ -1,3 +1,7 @@
 function deprecated(message){
-    console.warn(new Error(message).stack.replace(/^Error\: /, "Deprecated: "));
+	var err = new Error(message).stack;
+	if(!err){
+		return console.warn("Deprecated: " + message);
+	}
+    console.warn(err.replace(/^Error\: /, "Deprecated: "));
 }

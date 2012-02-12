@@ -1,7 +1,7 @@
 Expression.prototype.apply = function(operator, /* Expression */ e) {
 	if (operator === ",") {
 		//Maybe this should be a new object type??? Vector?
-		console.log("APPLY");
+		console.log("APPLY: ", this.constructor, this, e);
 		return Expression.Vector([this, e]);
 	}
 	if (e === undefined) {

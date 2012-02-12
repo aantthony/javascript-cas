@@ -44,6 +44,42 @@ Language.prototype._build = function() {
 		    throw (new SyntaxError("Invalid character: '" + x + "'"));
 		}
 	];
+	
+	//Latex:
+	var match = [
+	    function none() {
+	        throw("NONE");
+	    },
+		function string(x) {
+			return false;
+		},
+		function number(x) {
+			//Not correct: e.g, 3.2.5
+			return nummustbe.indexOf(x[x.length - 1]) !== -1;
+		},
+		function operator(x) {
+			return operator_str_list.indexOf(x) !== -1;
+		},
+		function comment(x) {
+			return x[x.length-1] === " ";
+		},
+		function parenopen(x) {
+			return (x.length == 1) && (parenopenmustbe.indexOf(x) != -1);
+		},
+		function parenclose(x) {
+			return (x.length == 1) && (parenclosemustbe.indexOf(x) != -1);
+		},
+		function symbol(x) {
+			if(x[0] === "\\") {
+				return (x.length === 1) || /^[A-Za-z]$/.test(x[x.length-1]);
+			}
+			return x.length === 1 && /^[A-Za-z]$/.test(x[0]);
+		},
+		function Error(x) {
+		    throw (new SyntaxError("Invalid character: '" + x + "'"));
+		}
+	];
+	
 	var names = match.map(function(e) {return e.name;});
 	this.parse = function (s, context) {
 		var last_token_type = token_types.parenopen;

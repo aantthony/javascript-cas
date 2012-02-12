@@ -1,4 +1,4 @@
-Expression.Vector = function (e){
+Expression.Vector = function (e) {
 	e.__proto__ = Expression.Vector.prototype;
 	return e;
 };
@@ -40,7 +40,7 @@ Expression.Vector.prototype.apply = function(operator, e) {
 			throw("Vector operation not allowed.");
 	}
 };
-
+Expression.Vector.prototype.constructor = Expression.Vector;
 Expression.Vector.prototype.toTypedString = function(language) {
 	var l = this.length;
 	return "vec"+l+"("+Array.prototype.join.apply(this, [", "])+")"
