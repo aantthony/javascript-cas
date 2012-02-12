@@ -2,7 +2,7 @@
 //The apply has nothing to do with Function.prototype.apply, for now.
 
 Global.sin = {
-	apply: function(op, x){
+	apply: function(op, x) {
 		switch (x.constructor) {
 			case Expression.Complex:
 				// sin(a+bi) = sin(a)cosh(b) + i cos(a)sinh(b)
@@ -10,14 +10,67 @@ Global.sin = {
 				var cosh_b = (exp_b + 1 / exp_b) / 2;
 				var sinh_b = (exp_b - 1 / exp_b) / 2;
 				return new Expression.Complex(Math.sin(x._real) * cosh_b, Math.cos(x._real) * sinh_b);
-			case Expresssion.NumericalReal:
-				return Math.sin(x);
+			case Expression.NumericalReal:
+				return new Expression.NumericalReal(Math.sin(x));
+			case "Expression.List":
+				var ri = x.realimag();
+				var exp_b = Global.e.apply("^", ri[1]);
+				var one_o_exp_b = Global.One.apply("/", exp_b);
+				var two = new Expression.Numerical(2);
+				var cosh_b = exp_b.apply("+", one_o_exp_b).apply("/", two);
+				var sinh_b = exp_b.apply("+", one_o_exp_b).apply("/", two);
+
+				var res = Global.sin.apply(undefined, ri[0]).apply("*", cosh_b).apply("+",
+					Global.i.apply("*", Global.cos.apply(undefined, ri[0]).apply("*", sinh_b))
+				);
+				return 
 			default:
-				throw("Unknown Type!: " + x.constructor);
+				return Expression.List([Global.sin, x]);
+		}
+	},
+	apply_realimag: function(op, x) {
+		switch (x.constructor) {
+			case Expression.Complex:
+				throw("???");
+			case Expression.NumericalReal:
+				throw("???");
+			case Expression.List:
+				var ri = x.realimag();
+				var exp_b = Global.e.apply("^", ri[1]);
+				var one_o_exp_b = Global.One.apply("/", exp_b);
+				var two = new Expression.NumericalReal(2);
+				var cosh_b = exp_b.apply("+", one_o_exp_b).apply("/", two);
+				var sinh_b = exp_b.apply("+", one_o_exp_b).apply("/", two);
+				
+				console.log({x: x, ri: ri, cosh_b: cosh_b});
+				
+				return [Global.sin.apply(undefined, ri[0]).apply("*", cosh_b),
+					Global.cos.apply(undefined, ri[0]).apply("*", sinh_b)
+				];
+			default:
+				return [Expression.List([Global.sin, x]), M.Global.Zero];
 		}
 	},
 	title: "Sine Function",
 	description: "See http://en.wikipedia.org/wiki/Trigonometric_functions#Sine.2C_cosine.2C_and_tangent"
+};
+Global.cos = {
+	apply: function(op, x) {
+		switch (x.constructor) {
+			case Expression.Complex:
+				// sin(a+bi) = sin(a)cosh(b) + i cos(a)sinh(b)
+				var exp_b = Math.exp(x._imag);
+				var cosh_b = (exp_b + 1 / exp_b) / 2;
+				var nsinh_b = (1 / exp_b - exp_b) / 2;
+				return new Expression.Complex(Math.cos(x._real) * cosh_b, Math.sin(x._real) * nsinh_b);
+			case Expression.NumericalReal:
+				return Math.sin(x);
+			default:
+				return Expression.List([Global.sin, x]);
+		}
+	},
+	title: "Cosine Function",
+	description: Global.sin.description
 };
 Global.log = {
 	apply: function (op, x) {
@@ -108,29 +161,29 @@ Global.Gamma = {
 }
 
 
-Global.e = new Expression.Numerical(Math.E, 0);
+Global.e = new Expression.NumericalReal(Math.E, 0);
 Global.e.title = "e";
 Global.e.description = "The transcendental number that is the base of the natural logarithm, approximately equal to 2.71828.";
 
 
-Global.pi = new Expression.Numerical(Math.PI, 0);
+Global.pi = new Expression.NumericalReal(Math.PI, 0);
 Global.pi.title = "Pi";
 Global.pi.description = "";
 
 
 
-Global.Infinity = new Expression.Numerical(Infinity, 0);
+Global.Infinity = new Expression.NumericalReal(Infinity, 0);
 Global.Infinity.title = "Infinity";
 Global.Infinity.description = "";
 
-Global.Zero = new Expression.Numerical(0, 0);
+Global.Zero = new Expression.NumericalReal(0, 0);
 Global.Zero.title = "Zero";
 Global.Zero.description = "Additive Identity";
 
-Global.One = new Expression.Numerical(1, 0);
+Global.One = new Expression.NumericalReal(1, 0);
 Global.One.title = "One";
 Global.One.description = "Multiplicative Identity";
 
-Global.i = new Expression.Numerical(0, 1);
+Global.i = new Expression.Complex(0, 1);
 Global.i.title = "Imaginary Unit";
 Global.i.description = "A number which satisfies the property <m>i^2 = -1</m>.";

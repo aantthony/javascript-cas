@@ -118,7 +118,7 @@ Language.prototype._build = function() {
 			// If the token is a number, then add it to the output queue.
 			if (token.t === token_types.number || token.t === token_types.symbol) {
 				if (token.t == token_types.number) {
-					token.v = new Expression.Numerical(Number(token.v), 0);
+					token.v = new Expression.NumericalReal(Number(token.v), 0);
 				}
 				next_rpn(token);
 			}

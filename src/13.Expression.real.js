@@ -12,6 +12,9 @@ Expression.prototype.imag = function() {
 Expression.List.prototype.realimag = function() {
 	switch (this.operator) {
 		case undefined:
+			if(this[0].apply_realimag && this.length === 2) {
+				return this[0].apply_realimag(this.operator, this[1]);
+			}
 			throw(".realimag() method invoked for Expression without operator?");
 		case '+':
 		case '-':
