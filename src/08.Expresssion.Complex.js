@@ -54,6 +54,7 @@ Expression.Complex.prototype.conjugate = function() {
 		} else if (x.constructor === Expression.NumericalReal) {
 			switch (operator) {
 				case "*":
+				case undefined:
 					return new Expression.Complex(this._real * x.value, this._imag * x.value);
 				case "+":
 					return new Expression.Complex(this._real + x.value, this._imag);

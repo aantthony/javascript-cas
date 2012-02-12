@@ -42,6 +42,7 @@ Expression.NumericalReal.prototype.apply = function(operator, x) {
 	} else if(x.constructor === this.constructor){
 		switch (operator) {
 			case '*':
+			case undefined:
 				return new Expression.NumericalReal(this.value * x);
 			case '+':
 				return new Expression.NumericalReal(this.value + x);
@@ -58,7 +59,6 @@ Expression.NumericalReal.prototype.apply = function(operator, x) {
 		switch (operator) {
 			case '*':
 			case undefined:
-				// (a+bi)(c+di) = (ac-bd) + (ad+bc)i 
 				return new Expression.Complex(this.value * x._real, this.value * x._imag);
 			case '+':
 				return new Expression.Complex(this.value + x._real, x._imag);

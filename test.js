@@ -57,12 +57,12 @@ exec('make', function(err, stdout, stderr){
             _();
             M("(x)x");
             _();
-            assert(M("(3)2").toString() === "6 + 0i");
+            assert(M("(3)2") == 6);
         },
         function Numerical(){
-            assert(M("0.4").toString() === "0.4 + 0i");
-            assert(M("3+2").toString() === "5 + 0i");
-            assert(M("3-5").toString() === "-2 + 0i");
+            assert(M("0.4") == 0.4);
+            assert(M("3+2") == 5);
+            assert(M("3-5") == -2);
         },
         function Complex_Numerical(){
             assert(M("i").toString() === "0 + 1i");
