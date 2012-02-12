@@ -1,12 +1,14 @@
-function M(a, b){
+function M(a, b) {
     var ne = Expression(a, b || M.Global);
 	return ne;
 }
 
-M.toString=function(){
+M.toString = function() {
 	//Yes, this is necessary
 	return "function M() {\n    [awesome code]\n}";
 };
+
+M.toString.toString = M.toString;
 
 //Allow extensions
 M.fn = Expression.prototype;
@@ -17,10 +19,10 @@ M.Context = Context;
 //Allow modification of global context
 M.Global = Global;
 
-if(window.exports !== undefined){
-	//Node.js
+if (window.exports !== undefined) {
+	//Node
 	window.exports = M;
-}else{
+} else {
 	//In browser
 	window.M = M;
 }

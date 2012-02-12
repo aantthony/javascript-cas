@@ -1,6 +1,6 @@
-Expression.prototype.integrate = function(){
+Expression.prototype.integrate = function() {
 	
 };
-Expression.prototype.integrateN = function(){
+Expression.prototype.integrateN = function() {
 	
 };

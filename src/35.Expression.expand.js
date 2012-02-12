@@ -1,3 +1,3 @@
-Expression.prototype.expand = function(){
+Expression.prototype.expand = function() {
 	//Use distributive law
 };

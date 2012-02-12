@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 
-var math=require("./build/math.js");
+var M=require("./build/math.js");
 (function (){
 	
 	function con(){
@@ -30,7 +30,8 @@ var math=require("./build/math.js");
 					stdout.write("\x1b[H\x1b[2J");
 				}else if(line){
 					try{
-						stdout.write(math.M(line).simplify().toTypedExpression().s+"\n");
+					    var expr = M(line).simplify()
+						stdout.write(expr.toString()+"\n");
 					}catch(ex){
 						stderr.write(color(ex)+"\n");
 					}

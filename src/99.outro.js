@@ -1,6 +1,6 @@
 }(
-	function(){
-		if(typeof window === 'undefined'){
+	function() {
+		if (typeof window === 'undefined') {
 			return module;
 		}
 		return window;

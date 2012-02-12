@@ -1,9 +1,13 @@
-Expression.prototype.mod2 = function(){
+Expression.prototype.mod2 = function() {
 	return this
 		.apply('*',
 			this.conjugate()
 		);
 };
-Expression.prototype.abs = function(){
+Expression.prototype.abs = function() {
 	return this.mod2().apply("\u221A");
+};
+
+Expression.prototype.valueOf = function() {
+	return this.abs();
 };

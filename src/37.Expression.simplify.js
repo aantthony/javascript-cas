@@ -1,3 +1,3 @@
-Expression.prototype.simplify = function(){
+Expression.prototype.simplify = function() {
 	return this;
 };
