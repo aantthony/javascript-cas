@@ -38,20 +38,11 @@ Global.sin = {
 				return [Expression.List([Global.sin, x]), M.Global.Zero];
 		}
 	},
+	"text/latex": "\\sin",
+	"text/javascript": "Math.sin",
 	toTypedString: function(language) {
-		//Non symbolic equivalent
-		var guid = "jscas___sin";
-		var code;
-		switch (language) {
-			case "text/javascript":
-				guid = "Math.sin";
-				break;
-			case "x-shader/x-fragment":
-				guid = "sin";
-				break;
-		}
 		return {
-			s:guid,
+			s: this[language],
 			t:javascript.Function
 		}
 	},
@@ -95,20 +86,11 @@ Global.cos = {
 				return [Expression.List([Global.cos, x]), M.Global.Zero];
 		}
 	},
+	"text/latex": "\\cos",
+	"text/javascript": "Math.cos",
 	toTypedString: function(language) {
-		//Non symbolic equivalent
-		var guid = "jscas___cos";
-		var code;
-		switch (language) {
-			case "text/javascript":
-				guid = "Math.cos";
-				break;
-			case "x-shader/x-fragment":
-				guid = "cos";
-				break;
-		}
 		return {
-			s:guid,
+			s: this[language],
 			t:javascript.Function
 		}
 	},
@@ -124,6 +106,14 @@ Global.log = {
 				return new Expression.NumericalReal(Math.log(x));
 			default:
 				throw("Unknown Type!: " + x.constructor);
+		}
+	},
+	"text/latex": "\\log",
+	"text/javascript": "Math.log",
+	toTypedString: function(language) {
+		return {
+			s: this[language],
+			t:javascript.Function
 		}
 	},
 	title: "Natural Logarithm",
@@ -147,6 +137,14 @@ Global.atan2 = {
 					case Expression.NumericalReal:
 						return new Expression.NumericalReal(Math.atan2(x[1], x[0]));
 				}
+		}
+	},
+	"text/latex": "\\atan2",
+	"text/javascript": "Math.atan2",
+	toTypedString: function(language) {
+		return {
+			s: this[language],
+			t:javascript.Function
 		}
 	},
 	title: "Two argument arctangent function",
@@ -201,7 +199,14 @@ Global.Gamma = {
 				return Expression.List([Global.Gamma, x]);
 		}
 	},
-	
+	"text/latex": "\\Gamma",
+	"text/javascript": "M.Global.Gamma.f",
+	toTypedString: function(language) {
+		return {
+			s: this[language],
+			t:javascript.Function
+		}
+	},
 	title: "Gamma Function",
 	description: "See http://en.wikipedia.org/wiki/Gamma_function"
 }

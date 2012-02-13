@@ -28,6 +28,10 @@ Expression.NumericalReal.prototype.apply = function(operator, x) {
 	if(x === undefined){
 		//Unary
 		switch (operator) {
+			case "@+":
+				return this;
+			case "@-":
+				return new Expression.NumericalReal(-this.value);
 			case "++":
 			case "--":
 				throw(new TypeError("Postfix " +operator + " operator applied to value that is not a reference."));
@@ -90,9 +94,13 @@ Expression.NumericalReal.prototype.apply = function(operator, x) {
 			}
 			break;
 		case "+":
-		case "-":
 			if(this.value === 0) {
 				return x;
+			}
+			break;
+		case "-":
+			if(this.value === 0) {
+				return x.apply('@-');
 			}
 			break;
 		case "*":

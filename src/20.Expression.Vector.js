@@ -13,6 +13,7 @@ Expression.Vector.prototype.apply = function(operator, e) {
 			//MODIFIES!!!!!!!!!
 			this[l] = e;
 			return this;
+		case undefined:
 		case "*":
 			if(l != e.length) {
 				throw("Vector Dimension mismatch.");
@@ -33,7 +34,7 @@ Expression.Vector.prototype.apply = function(operator, e) {
 			for (i = 0; i < l; i++) {
 				n[i] = this[i].apply(operator, e[i]);
 			}
-			return Expression.List(e, ",");
+			return Expression.Vector(n);
 		case "/":
 		case "^":
 		default:
@@ -41,7 +42,3 @@ Expression.Vector.prototype.apply = function(operator, e) {
 	}
 };
 Expression.Vector.prototype.constructor = Expression.Vector;
-Expression.Vector.prototype.toTypedString = function(language) {
-	var l = this.length;
-	return "vec"+l+"("+Array.prototype.join.apply(this, [", "])+")"
-};

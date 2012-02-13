@@ -199,6 +199,7 @@ Language.prototype._build = function() {
 		});
 
 		//Naughty:
+		s = s.replace(/\\\:/g, " ");
 		s = s.replace(/[\[\{]/g, "(");
 		s = s.replace(/[\]\}]/g, ")");
 
@@ -215,7 +216,7 @@ Language.prototype._build = function() {
     	symbol: 7
 	};
 	var nummustbe = "1234567890.";
-	var operator_str_list = ["+", "-", "*", "/", "^", "++", "=", "!", ","];
+	var operator_str_list = ["+", "-", "@", "*", "/", "^", "++", "=", "!", ",", "@-", "@+"];
 	var parenopenmustbe = "([{";
 	var parenclosemustbe = "}\"])";
 	var varcannotbe = operator_str_list.join("") + parenopenmustbe + parenclosemustbe + nummustbe;
@@ -249,7 +250,6 @@ Language.prototype._build = function() {
 		    throw (new SyntaxError("Invalid character: '" + x + "'"));
 		}
 	];
-	
 	//Latex:
 	var match = [
 	    function none() {
@@ -456,13 +456,19 @@ Language.prototype._build = function() {
 		    if(t === token_types.comment) {
 		        return;
 		    }
-		    if(t !== token_types.operator && t !== token_types.parenclose) {
+		    if (t !== token_types.operator && t !== token_types.parenclose) {
 		        if(last_token_type !== token_types.parenopen) {
     		        if(last_token_type !== token_types.operator) {
     		            next_raw_token(default_operator, token_types.operator);
     		        }
     		    }
-		    }
+		    } else if (t === token_types.operator && !language.postfix(str)) {
+				if (last_token_type === token_types.parenopen || last_token_type === token_types.operator) {
+					if (language.unary(str)) {
+						str = language.unary(str);
+					}
+				}
+			}
 		    next_token({v: str, t: t});
 		    last_token_type = t;
 		}

@@ -205,7 +205,9 @@ var exportLanguages={
 				}
 				return x.s;
 			}
-			if(x.p <= p){
+			if(x.p === p) {
+				return language.assoc(o) === true ? x.s : _(x.s);
+			} else if(x.p <= p){
 				return _(x.s);
 			}
 			return x.s;
@@ -267,11 +269,33 @@ Expression.List.prototype.toTypedString = function(language) {
 };
 
 Expression.Complex.prototype.toTypedString = function(language) {
+	deprecated("Complex.toTypedString????");
 	if (language === "text/latex") {
 		if(this === Global.i) {
 			return {s: "i", t: javascript.Number};
 		}
-		return {s: this._real + " + " + this._imag + "i", t: javascript.Number};
+		
+		var n = this.realimag();
+
+		if (this._real === 0) {
+			if (this._imag === 1) {
+				return {s: "i", t: javascript.Number};
+			} else if (this._imag === -1) {
+				return {s: "-i", t: javascript.Number};
+			}
+			return {s: n[1].toTypedString(language).s + "i", t: javascript.Number};
+		} else if(this._imag === 0) {
+			return {s: n[0].toTypedString(language).s, t: javascript.Number};
+		}
+		if(this._imag === 1) {
+			return {s: n[0].toTypedString(language).s + " + i", t: javascript.Number};
+			
+		} else if(this._imag === -1) {
+			return {s: n[0].toTypedString(language).s + " - i", t: javascript.Number};
+		} else if(this._imag < 0) {
+			return {s: n[0].toTypedString(language).s + " + " + n[1].toTypedString(language).s + "i", t: javascript.Number};
+		}
+		return {s: n[0] + " + " + n[1].toTypedString(language).s + "i", t: javascript.Number};
 	}
 	throw("Please use x.realimag()[0 /* or 1 */].toTypedString() to generate code.");
 };
@@ -303,12 +327,24 @@ Expression.NumericalReal.prototype.toTypedString = function(language) {
 				s = "\\infty";
 			}
 			
-			return {s:s || this.value.toString().replace(/e([\+\-])([\d\.]+)/, "\\cdot 10^{$2}"), t:javascript.Number};
+			return {
+				s:s || this.value.toString()
+				.replace(/e([\d\.]+)/, "\\cdot 10^{$1}")
+				.replace(/e-([\d\.]+)/, "\\cdot 10^{-$1}"),
+				t:javascript.Number};
 			
 	}
 };
 
-
+Expression.Vector.prototype.toTypedString = function(language) {
+	var l = this.length;
+	return {
+		s: "["+Array.prototype.map.apply(this, [function(component){
+			return component.toTypedString(language).s;
+		}]).join(", ")+"]",
+		t:  javascript.Array
+	};
+};
 
 Expression.Symbol.prototype.toTypedString=function(language) {
 	var s = this.symbol;

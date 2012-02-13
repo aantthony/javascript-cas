@@ -26,6 +26,11 @@ Expression.Complex.prototype.conjugate = function() {
 			return Expression.Vector([this, x]);
 		} else if (x === undefined) {
 			switch (operator) {
+				
+				case "@+":
+					return this;
+				case "@-":
+					return new Expression.Complex(-this._real, -this._imag);
 				case "\u221A":
 					//http://www.mathpropress.com/stan/bibliography/complexSquareRoot.pdf
 					var sgn_b;
@@ -65,7 +70,7 @@ Expression.Complex.prototype.conjugate = function() {
 				case "^":
 					var a = this._real;
 				    var b = this._imag;
-				    var c = x._real;
+				    var c = x.value;
 
 				    var hlm = 0.5 * Math.log(a*a + b*b);
 				    var theta = Math.atan2(b, a);
@@ -169,9 +174,13 @@ Expression.Complex.prototype.conjugate = function() {
 				}
 				break;
 			case "+":
-			case "-":
 				if(this._real === 0 && this._imag === 0) {
 					return x;
+				}
+				break;
+			case "-":
+				if(this.value === 0) {
+					return x.apply('@-');
 				}
 				break;
 			case "*":

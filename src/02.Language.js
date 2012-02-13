@@ -25,13 +25,17 @@ Language.prototype.precedence = function (v) {
 		throw("Precedence of "+v+" not known!");
 	}
 	return this.operators[v][1];
-}
+};
 
 Language.prototype.postfix = function (o) {
 	var op = this.operators[o];
 	return op[0] === 0 && op[2] === 1;
-}
+};
 Language.prototype.unary = function (o) {
 	var unary_secondarys = ["+", "-", "±"];
 	return (unary_secondarys.indexOf(o) != -1) ? ("@" + o) : false;
-}
+};
+
+Language.prototype.assoc = function(o) {
+	return this.operators[i][1] === true;
+};
