@@ -197,6 +197,8 @@ Global.Gamma = {
 					return new Expression.NumericalReal(-Math.PI / (x * Math.sin(Math.PI * x) * Math.exp(gammln(-x))));
 			    }
 				return new Expression.NumericalReal(Math.exp(gammln(x)));
+			default:
+				return Expression.List([Global.Gamma, x]);
 		}
 	},
 	

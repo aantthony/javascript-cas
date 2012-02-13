@@ -218,10 +218,13 @@ var exportLanguages={
 				return {s:S_(x[0])+o+"{"+x[1].s+"}",t:javascript.ref, p: p};
 			case undefined:
 			//TODO: CLEANUP, check types
-				return {s:S_(x[0],1)+ " " + S_(x[1],1),t:javascript.Number, p: p};
+				if (x[0].s === "\\sqrt") {
+					return {s: "\\sqrt{"+x[1].s + "}",t:javascript.Number, p: p};
+				}
+				return {s: S_(x[0], 1) + " " + S_(x[1], 1), t: javascript.Number, p: p};
 				return {s:S_(x[0])+_(x[1].s),t:javascript.Number, p: p};
-			case "√":
-				return {s:"\\sqrt{"+x[0].s+"}",t:javascript.Number, p: p};
+			//case "√":
+			//	return {s:"\\sqrt{"+x[0].s+"}",t:javascript.Number, p: p};
 			case "#":
 				return {s:o+_(x[0].s),t:javascript.Fumber};
 			case ",":

@@ -5,6 +5,12 @@ Expression.prototype.apply = function(operator, /* Expression */ e) {
 		return Expression.Vector([this, e]);
 	}
 	if (e === undefined) {
+		//Unary:
+		switch (operator) {
+			case "!":
+				return Global.Gamma.apply(undefined, this.apply("+", Global.One));
+			default:
+		}
 		return Expression.List([this], operator);
 	} else {
 		// Simplification:

@@ -8,7 +8,7 @@ Language.prototype._build = function() {
 		"right": "",
 		"pm": "±",
 		"circ": "∘",
-		"sqrt": "√",
+		//"sqrt": "\u221A",
 		"div": "/",
 		"%": "%",
 		
@@ -93,7 +93,7 @@ Language.prototype._build = function() {
 		"int": "∫",
 		"integral": "∫"
 	};
-	
+	window.deLaTeX = deLaTeX;
 	function deLaTeX(s){
 		//Converts a latex format equation into a text based one, 
 		//where multi-character names keep a preceeding and required \ character
