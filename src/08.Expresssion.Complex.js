@@ -32,18 +32,7 @@ Expression.Complex.prototype.conjugate = function() {
 				case "@-":
 					return new Expression.Complex(-this._real, -this._imag);
 				case "\u221A":
-					//http://www.mathpropress.com/stan/bibliography/complexSquareRoot.pdf
-					var sgn_b;
-					if (this._imag === 0.0) {
-						return new Expression.Complex(Math.sqrt(this._real), 0);
-					} else if(this._imag>0) {
-						sgn_b = 1.0;
-					} else {
-						sgn_b = -1.0;
-					}
-					var s_a2_b2 = Math.sqrt(this._real * this._real + this._imag * this._imag);
-					var p = one_on_rt2 * Math.sqrt(s_a2_b2 + this._real);
-					var q = sgn_b * one_on_rt2 * Math.sqrt(s_a2_b2 - this._real);
+					throw("OLD SQRT. New one is a function, not operator.")
 					return new Expression.Complex(p, q);
 				case "++":
 				case "--":

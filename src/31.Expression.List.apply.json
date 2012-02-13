@@ -1,8 +1,13 @@
-Expression.prototype.apply = function(operator, /* Expression */ e) {
+//Similar to Expression.prototype.apply
+Expression.List.prototype.apply = function(operator, /* Expression */ e) {
 	if (operator === ",") {
-		//Maybe this should be a new object type??? Vector?
-		console.log("APPLY: ", this.constructor, this, e);
 		return Expression.Vector([this, e]);
+	}
+	if (operator === undefined) {
+		//Maybe not clean enough, should # be a function, instead of an operator?
+		if(this.operator === "#") {
+			return this.apply()
+		}
 	}
 	if (e === undefined) {
 		//Unary:

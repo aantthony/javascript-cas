@@ -7,16 +7,16 @@ Expression.Symbol.prototype = Object.create(Expression.prototype);
 
 Expression.Symbol.prototype.differentiate = function(x) {
     if (this.symbol === x.symbol) {
-        return new Expression.Numerical(1, 0);
+        return M.Global.One;
     } else {
-        return new Expression.Numerical(0, 0);
+        return M.Global.Zero;
     }
 };
 Expression.Symbol.prototype.integrate = function(x) {
     if (this.symbol === x) {
-        return new Expression.Numerical(0.5, 0).apply('*', x.apply('^', new Expression.Numerical(2,0)));
+        return new Expression.NumericalReal(0.5, 0).apply('*', x.apply('^', new Expression.NumericalReal(2,0)));
     } else {
-        return new Expression.Numerical(0, 0);
+        return this.apply('*', x);
     }
 };
 

@@ -38,8 +38,12 @@ Global.sin = {
 				return [Expression.List([Global.sin, x]), M.Global.Zero];
 		}
 	},
+	apply_differentiate: function(op, x, t) {
+		return Global.cos.apply(undefined, x).apply("*", x.differentiate(x));
+	},
 	"text/latex": "\\sin",
 	"text/javascript": "Math.sin",
+	"x-shader/x-fragment": "sin",
 	toTypedString: function(language) {
 		return {
 			s: this[language],
@@ -47,7 +51,9 @@ Global.sin = {
 		}
 	},
 	title: "Sine Function",
-	description: "See http://en.wikipedia.org/wiki/Trigonometric_functions#Sine.2C_cosine.2C_and_tangent"
+	description: "See http://en.wikipedia.org/wiki/Trigonometric_functions#Sine.2C_cosine.2C_and_tangent",
+	examples: ["\\sin (\\pi)"],
+	related: ["cos", "tan"]
 };
 Global.cos = {
 	apply: function(op, x) {
@@ -86,8 +92,12 @@ Global.cos = {
 				return [Expression.List([Global.cos, x]), M.Global.Zero];
 		}
 	},
+	apply_differentiate: function(op, x, t) {
+		return Global.sin.apply(undefined, x).apply("*", x.differentiate(x)).apply('*', new Expression.NumericalReal(-1));
+	},
 	"text/latex": "\\cos",
 	"text/javascript": "Math.cos",
+	"x-shader/x-fragment": "cos",
 	toTypedString: function(language) {
 		return {
 			s: this[language],
@@ -95,7 +105,9 @@ Global.cos = {
 		}
 	},
 	title: "Cosine Function",
-	description: "Cosine Function desc"
+	description: "Cosine Function desc",
+	examples: ["\\cos (\\pi)"],
+	related: ["sin", "tan"]
 };
 Global.log = {
 	apply: function (op, x) {
@@ -105,11 +117,25 @@ Global.log = {
 			case Expression.NumericalReal:
 				return new Expression.NumericalReal(Math.log(x));
 			default:
-				throw("Unknown Type!: " + x.constructor);
+				return Expression.List([Global.log, x]);
 		}
+	},
+	apply_realimag: function(op, x) {
+		switch (x.constructor) {
+			case Expression.List:
+				var ri = x.realimag();
+
+			default:
+				console.error("realimag unchecked!");
+				return [Expression.List([Global.log, x]), M.Global.Zero];
+		}
+	},
+	apply_differentiate: function(op, x) {
+		throw("TODO: apply_differentiate log");
 	},
 	"text/latex": "\\log",
 	"text/javascript": "Math.log",
+	"x-shader/x-fragment": "log",
 	toTypedString: function(language) {
 		return {
 			s: this[language],
@@ -117,7 +143,9 @@ Global.log = {
 		}
 	},
 	title: "Natural Logarithm",
-	description: "Base e. See http://en.wikipedia.org/wiki/Natural_logarithm"
+	description: "Base e. See http://en.wikipedia.org/wiki/Natural_logarithm",
+	examples: ["\\log (ye^(2x))"],
+	related: ["exp", "Log"]
 };
 Global.atan2 = {
 	apply: function(op, x) {
@@ -135,12 +163,29 @@ Global.atan2 = {
 					case Expression.Complex:
 						throw("???");
 					case Expression.NumericalReal:
-						return new Expression.NumericalReal(Math.atan2(x[1], x[0]));
+						return new Expression.NumericalReal(Math.atan2(x[0], x[1]));
+				}
+			default:
+				switch(x[1].constructor) {
+					case Expression.Complex:
+						if(x[1]._real === 0 && x[1]._imag === 0) {
+							
+						}
+					case Expression.NumericalReal:
+						if(x[1].value === 0) {
+							
+						}
 				}
 		}
+		return Expression.List([Global.atan2, x]);
+	},
+	apply_realimag: function(op, x) {
+		//TODO: DANGER! Assuming real numbers, but it should have some fast way to do this.
+		return [Expression.List([Global.atan2, x]), M.Global.Zero];
 	},
 	"text/latex": "\\atan2",
 	"text/javascript": "Math.atan2",
+	"x-shader/x-fragment": "atan",
 	toTypedString: function(language) {
 		return {
 			s: this[language],
@@ -148,8 +193,9 @@ Global.atan2 = {
 		}
 	},
 	title: "Two argument arctangent function",
-	description: "Arctan(x, y). Will equal arctan(y / x) except when x and y are both negative. See http://en.wikipedia.org/wiki/Atan2"
-}
+	description: "Arctan(y, x). Will equal arctan(y / x) except when x and y are both negative. See http://en.wikipedia.org/wiki/Atan2"
+};
+Global.atan = Global.atan2;
 
 Global.Gamma = {
 	apply: function(op, x){
@@ -208,7 +254,103 @@ Global.Gamma = {
 		}
 	},
 	title: "Gamma Function",
-	description: "See http://en.wikipedia.org/wiki/Gamma_function"
+	description: "See http://en.wikipedia.org/wiki/Gamma_function",
+	examples: ["\\Gamma (x)", "x!"],
+	related: ["Log", "LogGamma"]
+};
+Global.Re = {
+	apply: function(op, x) {
+		return x.real();
+	},
+	apply_realimag: function(op, x) {
+		return [x.real(), Global.Zero];
+	},
+	"text/latex": "\\Re"
+};
+Global.Im = {
+	apply: function(op, x) {
+		return x.imag();
+	},
+	distributed_under_differentiation: true,
+	apply_realimag: function(op, x) {
+		return [x.imag(), Global.Zero];
+	},
+	"text/latex": "\\Im"
+}
+Global.sqrt = {
+	apply: function (op, x) {
+		switch (x.constructor) {
+			case Expression.Complex:
+				//http://www.mathpropress.com/stan/bibliography/complexSquareRoot.pdf
+				var sgn_b;
+				if (x._imag === 0.0) {
+					return new Expression.Complex(Math.sqrt(x._real), 0);
+				} else if(x._imag>0) {
+					sgn_b = 1.0;
+				} else {
+					sgn_b = -1.0;
+				}
+				var s_a2_b2 = Math.sqrt(x._real * x._real + x._imag * x._imag);
+				var p = one_on_rt2 * Math.sqrt(s_a2_b2 + x._real);
+				var q = sgn_b * one_on_rt2 * Math.sqrt(s_a2_b2 - x._real);
+			case Expression.NumericalReal:
+				return new Expression.RealNumerical(Math.sqrt(x));
+			case Expression.List:
+				if (x.operator === "^") {
+					return Global.abs.apply(undefined, x[0].apply('^', x[1].apply('/', new Expression.NumericalReal(2,0))));
+				}
+			default:
+				return Expression.List([Global.sqrt, x]);
+		}
+	},
+	apply_realimag: function(op, x) {
+		//TODO: DANGER! Assuming real numbers, but it should have some fast way to do this.
+		
+		//Uses exp, atan2 and log functions. A really bad idea. (square rooting, then squaring, then atan, also [exp(log)])
+		return x.apply("^", new Expression.NumericalReal(0.5,0)).realimag();
+		//var ri = x.realimag();
+		//return [Expression.List([Global.sqrt, x]), M.Global.Zero];
+	},
+	"text/latex": "\\sqrt",
+	"text/javascript": "Math.sqrt",
+	"x-shader/x-fragment": "sqrt",
+	toTypedString: function(language) {
+		return {
+			s: this[language],
+			t:javascript.Function
+		}
+	},
+	title: "Sqrt Function",
+	description: "See http://en.wikipedia.org/wiki/Square_Root",
+	examples: ["\\sqrt (x^4)"],
+	related: ["pow", "abs", "mod"]
+};
+Global.abs = {
+	apply: function (op, x) {
+		//This should reaplace .abs???
+		switch (x.constructor) {
+			case Expression.Complex:
+				return new Expression.RealNumerical(x._real*x._real + x._imag*x._imag);
+			case Expression.NumericalReal:
+				return new Expression.RealNumerical(Math.abs(x));
+			case Expression.List:
+			default:
+				return Expression.List([Global.abs, x]);
+			
+		}
+	},
+	"text/latex": "\\abs", //temp
+	"text/javascript": "Math.abs",
+	toTypedString: function(language) {
+		return {
+			s: this[language],
+			t:javascript.Function
+		}
+	},
+	titie: "Absolute Value Function",
+	description: "Abs",
+	examples: ["\\sin (\\pi)"],
+	related: ["cos", "tan"]
 }
 
 

@@ -37,5 +37,5 @@ Language.prototype.unary = function (o) {
 };
 
 Language.prototype.assoc = function(o) {
-	return this.operators[i][1] === true;
+	return this.operators[o][1] === true;
 };

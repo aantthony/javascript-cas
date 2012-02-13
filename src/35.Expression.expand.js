@@ -1,3 +1,4 @@
-Expression.prototype.expand = function() {
+
+Expression.List.prototype.expand = function() {
 	//Use distributive law
 };

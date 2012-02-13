@@ -28,6 +28,7 @@ Language.prototype._build = function() {
 		"sim": "~",
 		"frac": "",
 		"backslash": "\\",
+		/*
 		"alpha": "α",
 		"beta": "β",
 		'gamma': "γ",
@@ -91,7 +92,7 @@ Language.prototype._build = function() {
 		"coprod": "∐",
 		"coproduct": "∐",
 		"int": "∫",
-		"integral": "∫"
+		"integral": "∫"*/
 	};
 	window.deLaTeX = deLaTeX;
 	function deLaTeX(s){
@@ -193,13 +194,16 @@ Language.prototype._build = function() {
 			s=s.join("");
 			
 		}
+		s = s.replace(/\^([^\{\(])/g, "^{$1}")
+		s = s.replace(/\\left\|/g, "\\abs(");
+		s = s.replace(/\\right\|/g, ")");
+		s = s.replace(/\\\:/g, " ");
 		s = s.replace(/\\([a-z\%]+)/g, function(u, x) {
 			var s = latexexprs[x];
 			return " "+ ((s !== undefined) ? s : ("\\" + x));
 		});
 
 		//Naughty:
-		s = s.replace(/\\\:/g, " ");
 		s = s.replace(/[\[\{]/g, "(");
 		s = s.replace(/[\]\}]/g, ")");
 
@@ -216,7 +220,7 @@ Language.prototype._build = function() {
     	symbol: 7
 	};
 	var nummustbe = "1234567890.";
-	var operator_str_list = ["+", "-", "@", "*", "/", "^", "++", "=", "!", ",", "@-", "@+"];
+	var operator_str_list = ["+", "-", "@", "*", "/", "^", "++", "=", "!", ",", "@-", "@+", "_", "#", "<", "<=", ">", ">="];
 	var parenopenmustbe = "([{";
 	var parenclosemustbe = "}\"])";
 	var varcannotbe = operator_str_list.join("") + parenopenmustbe + parenclosemustbe + nummustbe;
@@ -287,6 +291,9 @@ Language.prototype._build = function() {
 	
 	var names = match.map(function(e) {return e.name;});
 	this.parse = function (s, context) {
+		if(s === "") {
+			return undefined;
+		}
 		s = deLaTeX(s);
 		var last_token_type = token_types.parenopen;
 		

@@ -15,21 +15,29 @@ Expression.List.prototype.realimag = function() {
 			if(this[0].apply_realimag && this.length === 2) {
 				return this[0].apply_realimag(this.operator, this[1]);
 			}
-			throw(".realimag() method invoked for Expression without operator?");
-		case '+':
-		case '-':
-			var a = this[0].realimag();
-			var b = this[1].realimag();
-			return [
-				a[0].apply('+',b[0]),
-				a[1].apply('+',b[1])
-			];
+			//throw(".realimag() method invoked for Expression without operator?");
+			
 		case '*':
 			var a = this[0].realimag();
 			var b = this[1].realimag();
 			return [
 				a[0].apply('*',b[0]).apply('-', a[1].apply('*',b[1])),
 				a[0].apply('*',b[1]).apply('+',a[1].apply('*',b[0]))
+			];
+		case "@+":
+		case "@-":
+			var a = this[0].realimag();
+			return [
+				a[0].apply(this.operator),
+				a[1].apply(this.operator)
+			];
+		case '+':
+		case '-':
+			var a = this[0].realimag();
+			var b = this[1].realimag();
+			return [
+				a[0].apply(this.operator,b[0]),
+				a[1].apply(this.operator,b[1])
 			];
 		case '/':
 			var a = this[0].realimag();
@@ -56,7 +64,7 @@ Expression.List.prototype.realimag = function() {
 					)
 				)
 			);
-			var theta = Global.atan2.apply(undefined, Expression.Vector([a[0], a[1]]));
+			var theta = Global.atan2.apply(undefined, Expression.Vector([a[1], a[0]]));
 			var hmld_tc = hlm.apply('*', b[1]).apply('+', theta.apply('*', b[0]));
 			/*
 			var e_hmlc_td = Global.exp.apply(undefined,

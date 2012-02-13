@@ -222,6 +222,8 @@ var exportLanguages={
 			//TODO: CLEANUP, check types
 				if (x[0].s === "\\sqrt") {
 					return {s: "\\sqrt{"+x[1].s + "}",t:javascript.Number, p: p};
+				} else if (x[0].s === "\\abs") {
+					return {s: "\\left|"+x[1].s + "\\right|",t:javascript.Number, p: p};
 				}
 				return {s: S_(x[0], 1) + " " + S_(x[1], 1), t: javascript.Number, p: p};
 				return {s:S_(x[0])+_(x[1].s),t:javascript.Number, p: p};
@@ -338,10 +340,15 @@ Expression.NumericalReal.prototype.toTypedString = function(language) {
 
 Expression.Vector.prototype.toTypedString = function(language) {
 	var l = this.length;
+	var open = "[";
+	var close = "]";
+	if(language === "x-shader/x-fragment") {
+		open = close = "";
+	}
 	return {
-		s: "["+Array.prototype.map.apply(this, [function(component){
+		s: open+Array.prototype.map.apply(this, [function(component){
 			return component.toTypedString(language).s;
-		}]).join(", ")+"]",
+		}]).join(", ")+close,
 		t:  javascript.Array
 	};
 };

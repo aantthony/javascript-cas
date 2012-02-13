@@ -6,5 +6,5 @@ Expression.Constant.prototype.simplify = function() {
 	return this;
 };
 Expression.Constant.prototype.differentiate = function() {
-	return new Expression.Numerical(0, 0);
+	return M.Global.Zero;
 };
