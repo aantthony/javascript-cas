@@ -91,7 +91,7 @@ Expression.List.ComplexPolar.prototype.apply = function(o, x) {
 				//Also fast
 				return Expression.List.ComplexPolar([
 					this[0].apply("/", new Expression.NumericalReal(x._real)),
-					this[1].apply("-", new Expression.NumericalReal(x._imag)
+					this[1].apply("-", new Expression.NumericalReal(x._imag))
 				]);
 			case "+":
 			case "-":
