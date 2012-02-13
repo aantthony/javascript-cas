@@ -13,7 +13,6 @@
 
 */
 Expression.List.ComplexCartesian = function(x){
-	var r = x.realimag();
 	r.__proto__ = Expression.List.ComplexCartesian.prototype;
 };
 Expression.List.ComplexCartesian.prototype = Object.create(Expression.List.prototype);
@@ -26,8 +25,15 @@ Expression.List.ComplexCartesian.prototype.real = function(){
 Expression.List.ComplexCartesian.prototype.imag = function(){
 	return this[1];
 };
+Expression.List.ComplexCartesian.prototype.conjugate = function () {
+	return Expression.List.ComplexCartesian([
+		this[0],
+		this[1].apply("@-")
+	]);
+};
 Expression.List.ComplexCartesian.prototype.constructor = Expression.List.ComplexCartesian;
 Expression.List.ComplexCartesian.prototype.apply = function(o, x){
+	trhwo("TODO!!!!! Expression.List.ComplexCartesian.prototype.apply");
 	if (o.constructor === this.constructor) {
 		switch(o) {
 			case "+":

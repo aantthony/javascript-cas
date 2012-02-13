@@ -1,9 +1,9 @@
 Expression.prototype.real = function() {
-	deprecated("hack:");
+	console.warn("TODO: don't calculate both parts (Expression.prototype.real)");
 	return this.realimag()[0];
 };
 Expression.prototype.imag = function() {
-	deprecated("hack:");
+	console.warn("TODO: don't calculate both parts (Expression.prototype.imag)");
 	return this.realimag()[1];
 };
 
@@ -20,33 +20,33 @@ Expression.List.prototype.realimag = function() {
 		case '*':
 			var a = this[0].realimag();
 			var b = this[1].realimag();
-			return [
+			return Expression.List.ComplexCartesian([
 				a[0].apply('*',b[0]).apply('-', a[1].apply('*',b[1])),
 				a[0].apply('*',b[1]).apply('+',a[1].apply('*',b[0]))
-			];
+			]);
 		case "@+":
 		case "@-":
 			var a = this[0].realimag();
-			return [
+			return Expression.List.ComplexCartesian([
 				a[0].apply(this.operator),
 				a[1].apply(this.operator)
-			];
+			]);
 		case '+':
 		case '-':
 			var a = this[0].realimag();
 			var b = this[1].realimag();
-			return [
+			return Expression.List.ComplexCartesian([
 				a[0].apply(this.operator,b[0]),
 				a[1].apply(this.operator,b[1])
-			];
+			]);
 		case '/':
 			var a = this[0].realimag();
 			var b = this[1].realimag();
 			var cc_dd = b[0].apply('*',b[0]).apply('+',b[1].apply('*',b[1]));
-			return [
+			return Expression.List.ComplexCartesian([
 				(a[0].apply('*',b[0]).apply('+',a[1].apply('*',b[1]))).apply('/', cc_dd),
 				(a[1].apply('*',b[0]).apply('-',a[0].apply('*',b[1]))).apply('/', cc_dd)
-			];
+			]);
 		case '^':
 			//TODO: simplify in case of real numbers only, or some zeros
 			var a = this[0].realimag();
@@ -88,9 +88,9 @@ Expression.List.prototype.realimag = function() {
 				)
 			);
 
-			return [
+			return Expression.List.ComplexCartesian([
 				(e_hmlc_td.apply('*',Global.cos.apply(undefined, hmld_tc))),
 				(e_hmlc_td.apply('*',Global.sin.apply(undefined, hmld_tc)))
-			];
+			]);
 	}
 };
