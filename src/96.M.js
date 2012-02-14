@@ -18,6 +18,18 @@ M.Context = Context;
 
 //Allow modification of global context
 M.Global = Global;
+var extensions = {};
+M.register = function (name, installer){
+	if(Expression.prototype[name]) {
+		throw("Method ."+name+" is already in use!");
+	}
+	extensions[name] = installer;
+};
+M.load = function(name, config) {
+	Expression.prototype[name] = extensions[name](config);
+	delete extensions[name];
+};
+
 
 //Debug:
 

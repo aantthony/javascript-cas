@@ -39,7 +39,7 @@ Global.sin = {
 		}
 	},
 	apply_differentiate: function(op, x, t) {
-		return Global.cos.apply(undefined, x).apply("*", x.differentiate(x));
+		return Global.cos.apply(undefined, x).apply("*", x.differentiate(t));
 	},
 	"text/latex": "\\sin",
 	"text/javascript": "Math.sin",
@@ -93,7 +93,7 @@ Global.cos = {
 		}
 	},
 	apply_differentiate: function(op, x, t) {
-		return Global.sin.apply(undefined, x).apply("*", x.differentiate(x)).apply('*', new Expression.NumericalReal(-1));
+		return Global.sin.apply(undefined, x).apply("*", x.differentiate(t)).apply('*', new Expression.NumericalReal(-1));
 	},
 	"text/latex": "\\cos",
 	"text/javascript": "Math.cos",

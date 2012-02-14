@@ -19,7 +19,7 @@ Expression.List.Real.polar = function () {
 		this,
 		M.Global.Zero
 	];
-}
+};
 Expression.List.Real.abs = function (){
 	return this;
 };
