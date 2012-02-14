@@ -40,8 +40,11 @@ exec('make', function(err, stdout, stderr){
 			M("x=2");
 		},
         function Parenthesis(){
+	console.log("A");
             M("(1)");
+		console.log("B");
             M("3/(2)");
+		console.log("C");
             M("3+(x)/[((5))]");
             //M("3/(+2)");
         },
@@ -57,16 +60,16 @@ exec('make', function(err, stdout, stderr){
             _();
             M("(x)x");
             _();
-            assert(M("(3)2") == 6);
+            assert(M("(3)2").value == 6);
         },
         function Numerical(){
-            assert(M("0.4") == 0.4);
-            assert(M("3+2") == 5);
-            assert(M("3-5") == -2);
+            assert(M("0.4").value == 0.4);
+            assert(M("3+2").value == 5);
+            assert(M("3-5").value == -2);
         },
         function Complex_Numerical(){
-            assert(M("i").toString() === "0 + 1i");
-            assert(M("i*i").toString() === "-1 + 0i");
+            assert(M("i").toString() === "i");
+            assert(M("i*i").toString() === "-1");
             //assert(M("i^2").toString() === "-1 + 0i");
         },
         function Complex(){

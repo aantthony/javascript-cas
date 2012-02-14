@@ -3,9 +3,7 @@ Expression.NumericalReal = function(e) {
 };
 
 Expression.NumericalReal.prototype = Object.create(Expression.Constant.prototype);
-Expression.NumericalReal.prototype.valueOf = function() {
-	return this.value;
-}
+Expression.NumericalReal.prototype.valueOf = null;
 Expression.NumericalReal.prototype.real = function() {
 	return this;
 };
@@ -47,15 +45,15 @@ Expression.NumericalReal.prototype.apply = function(operator, x) {
 		switch (operator) {
 			case '*':
 			case undefined:
-				return new Expression.NumericalReal(this.value * x);
+				return new Expression.NumericalReal(this.value * x.value);
 			case '+':
-				return new Expression.NumericalReal(this.value + x);
+				return new Expression.NumericalReal(this.value + x.value);
 			case '-':
-				return new Expression.NumericalReal(this.value - x);
+				return new Expression.NumericalReal(this.value - x.value);
 			case '/':
-				return new Expression.NumericalReal(this.value / x);
+				return new Expression.NumericalReal(this.value / x.value);
 			case '^':
-				return new Expression.NumericalReal(Math.pow(this.value, x));
+				return new Expression.NumericalReal(Math.pow(this.value, x.value));
 			default:
 			
 		}

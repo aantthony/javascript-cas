@@ -12,7 +12,7 @@ Expression.prototype.identity = function() {
 
 Expression.prototype.toString = function() {
     deprecated("Slow");
-	return "[Expression " + (this.constructor.name || '?') + "]";
+	return this.toTypedString("text/latex").s;
 };
 
 Expression.prototype.constructor = Expression;

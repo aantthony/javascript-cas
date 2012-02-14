@@ -188,7 +188,4 @@ Expression.Complex.prototype.conjugate = function() {
 	
 }());
 
-Expression.Complex.prototype.toString = function() {
-	return this._real.toString() + ' + ' + this._imag.toString()+'i';
-};
 Expression.Complex.prototype.constructor = Expression.Complex;
