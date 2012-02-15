@@ -12,6 +12,9 @@ Global.sin = {
 				return new Expression.Complex(Math.sin(x._real) * cosh_b, Math.cos(x._real) * sinh_b);
 			case Expression.NumericalReal:
 				return new Expression.NumericalReal(Math.sin(x));
+			case Expression.List.Real:
+			case Expression.Symbol.Real:
+				return Expression.List.Real([Global.sin, x]);
 			default:
 				return Expression.List([Global.sin, x]);
 		}
@@ -66,6 +69,9 @@ Global.cos = {
 				return new Expression.Complex(Math.cos(x._real) * cosh_b, -Math.sin(x._real) * sinh_b);
 			case Expression.NumericalReal:
 				return new Expression.NumericalReal(Math.cos(x));
+			case Expression.List.Real:
+			case Expression.Symbol.Real:
+				return Expression.List.Real([Global.cos, x]);
 			default:
 				return Expression.List([Global.cos, x]);
 		}
@@ -110,13 +116,22 @@ Global.cos = {
 	related: ["sin", "tan"]
 };
 Global.log = {
-	apply: function (op, x) {
+	apply: function (op, x, assumptions) {
 		switch (x.constructor) {
 			case Expression.Complex:
 				throw("Not ready Type!: " + x.constructor);
 			case Expression.NumericalReal:
-				return new Expression.NumericalReal(Math.log(x));
+				if(x.value > 0){
+					return new Expression.NumericalReal(Math.log(x));
+				}
+				throw("-Log");
+			case Expression.List.Real:
+			case Expression.Symbol.Real:
+				if(assumptions && massumptions.positive) {
+					return Expression.List.Real([Global.log, x]);
+				}
 			default:
+				
 				return Expression.List([Global.log, x]);
 		}
 	},
@@ -130,8 +145,12 @@ Global.log = {
 				return [Expression.List([Global.log, x]), M.Global.Zero];
 		}
 	},
-	apply_differentiate: function(op, x) {
-		throw("TODO: apply_differentiate log");
+	differentiate: function(x) {
+		return Global.One.apply("/", x);
+	},
+	apply_differentiate: function(op, x, t) {
+		return Global.One.apply("/", x).apply("*", x.differentiate(t));
+		return Global.cos.apply(undefined, x).apply("*", x.differentiate(t));
 	},
 	"text/latex": "\\log",
 	"text/javascript": "Math.log",
@@ -165,6 +184,8 @@ Global.atan2 = {
 					case Expression.NumericalReal:
 						return new Expression.NumericalReal(Math.atan2(x[0], x[1]));
 				}
+			case Expression.List.Real:
+				return Expression.List.Real([Global.atan2, x]);
 			default:
 				switch(x[1].constructor) {
 					case Expression.Complex:
@@ -327,16 +348,10 @@ Global.sqrt = {
 };
 Global.abs = {
 	apply: function (op, x) {
-		//This should reaplace .abs???
-		switch (x.constructor) {
-			case Expression.Complex:
-				return new Expression.RealNumerical(x._real*x._real + x._imag*x._imag);
-			case Expression.NumericalReal:
-				return new Expression.RealNumerical(Math.abs(x));
-			case Expression.List:
-			default:
-				return Expression.List([Global.abs, x]);
-			
+			console.warn("ABS IS FOR USER INPUT ONLY. USE .abs()");
+			//Using abs is better (I think) because it finds the method through the prototype chain,
+			//which is going to be faster than doing an if list / switch case list. TODO: Check the truthfullnes of this!
+			return x.abs();
 		}
 	},
 	"text/latex": "\\abs", //temp
@@ -349,9 +364,31 @@ Global.abs = {
 	},
 	titie: "Absolute Value Function",
 	description: "Abs",
-	examples: ["\\sin (\\pi)"],
-	related: ["cos", "tan"]
+	examples: ["\\abs (-3)", "\\abs (i+3)"],
+	related: ["arg", "tan"]
+};
+Global.arg = {
+	apply: function (op, x) {
+			console.warn("ARG IS FOR USER INPUT ONLY. USE .arg()");
+			//Using abs is better (I think) because it finds the method through the prototype chain,
+			//which is going to be faster than doing an if list / switch case list. TODO: Check the truthfullnes of this!
+			return x.arg();
+		}
+	},
+	"text/latex": "\\arg", //temp
+	"text/javascript": "Math.arg_real",
+	toTypedString: function(language) {
+		return {
+			s: this[language],
+			t:javascript.Function
+		}
+	},
+	titie: "Arg Function",
+	description: "Arg",
+	examples: ["\\arg (-3)", "\\arg (3)", "\\arg(3+2i)"],
+	related: ["abs"]
 }
+
 
 
 Global.e = new Expression.NumericalReal(Math.E, 0);
@@ -380,3 +417,9 @@ Global.One.description = "Multiplicative Identity";
 Global.i = new Expression.Complex(0, 1);
 Global.i.title = "Imaginary Unit";
 Global.i.description = "A number which satisfies the property <m>i^2 = -1</m>.";
+Global.i.realimag = function(){
+	return Expression.List.ComplexCartesian([
+		Global.Zero,
+		Global.One
+	]);
+};

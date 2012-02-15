@@ -20,8 +20,34 @@ Expression.NumericalReal.prototype.conjugate = function() {
 	return this;
 };
 Expression.NumericalReal.prototype.apply = function(operator, x) {
-	if (operator === ",") {
-		return Expression.Vector([this, x]);
+	
+	switch (operator){
+		case ",":
+			return Expression.Vector([this, x]);
+		case "^":
+			if(this.value === 0) {
+				return Global.Zero; // Contradicts x^0 = 1
+			}
+			break;
+		case "+":
+			if(this.value === 0) {
+				return x;
+			}
+			break;
+		case "-":
+			if(this.value === 0) {
+				return x.apply('@-');
+			}
+			break;
+		case "*":
+			if(this.value === 1){
+				return x;
+			}
+			//Note: There is not meant to be a break here.
+		case "/":
+			if(this.value === 0){
+				return Global.Zero; //Contradics x/0 = Infinity
+			}
 	}
 	if(x === undefined){
 		//Unary
@@ -53,7 +79,12 @@ Expression.NumericalReal.prototype.apply = function(operator, x) {
 			case '/':
 				return new Expression.NumericalReal(this.value / x.value);
 			case '^':
-				return new Expression.NumericalReal(Math.pow(this.value, x.value));
+				var n = Math.pow(this.value, x.value);
+				if(isNaN(n)){
+					throw("Nan (Numerical powers, javascript reals)");
+				}else{
+					return new Expression.NumericalReal(n);
+				}
 			default:
 			
 		}
@@ -83,34 +114,64 @@ Expression.NumericalReal.prototype.apply = function(operator, x) {
                 );
 			default:
 		}
+	} else if(x.constructor === Expression.List.ComplexCartesian) {
+		switch (operator) {
+			case "+":
+			case "-":
+				return Expression.List.ComplexCartesian([
+					x[0].apply(operator, this),
+					x[1]
+				]);
+			case "*":
+			case "/":
+				return Expression.List.ComplexCartesian([
+					x[0].apply(operator, this),
+					x[1].apply(operator, this)
+				]);
+			case "^":
+				console.warn("ineffecient: NR ^ CL");
+				return this.realimag().apply(operator, x);
+			
+		}
+	} else if(x.constructor === Expression.List.ComplexPolar) {
+		switch (operator) {
+			case "+":
+			case "-":
+			case "^":
+				//(a+bi)+Ae^(ik)
+				return Expression.List([this, x], operator);
+				// or ? return this.apply(operator, x.realimag()); //Jump up to above +-
+			case "*":
+			case "/":
+				return Expression.List.ComplexPolar([
+					x[0].apply(operator, this),
+					x[1]
+				]);
+		}
+	} else if (x.constructor === Expression.List.Real) {
+		switch(operator) {
+			case "+":
+			case "-":
+			case "*":
+			case "/":
+				return Expression.List.Real([this, x], operator);
+			case "^":
+				if(this.value === 0){
+					throw("N(0) ^ x");
+				}
+				if(this.value > 0) {
+					return Expression.List.Real([this, x], operator);
+				} else {
+					return Expression.List.ComplexPolar([
+						(new Expression.Numerical(-this.value)).apply("^", x),
+						Global.pi.apply('*', x)
+					]);
+				}
+
+				
+		}
 	}
 	
-	switch (operator){
-		case "^":
-			if(this.value === 0) {
-				return Global.Zero; // Contradicts x^0 = 1
-			}
-			break;
-		case "+":
-			if(this.value === 0) {
-				return x;
-			}
-			break;
-		case "-":
-			if(this.value === 0) {
-				return x.apply('@-');
-			}
-			break;
-		case "*":
-			if(this.value === 1){
-				return x;
-			}
-			//Note: There is not meant to be a break here.
-		case "/":
-			if(this.value === 0){
-				return Global.Zero; //Contradics x/0 = Infinity
-			}
-	}
 	return Expression.List([this, x], operator);
 };
 Expression.NumericalReal.prototype.constructor = Expression.NumericalReal;

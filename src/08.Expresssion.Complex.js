@@ -11,10 +11,10 @@ Expression.Complex.prototype.imag = function() {
 	return new Expression.NumericalReal(this._imag);
 };
 Expression.Complex.prototype.realimag = function() {
-	return [
+	return Expression.List.ComplexCartesian([
 		new Expression.NumericalReal(this._real),
 		new Expression.NumericalReal(this._imag)
-	];
+	]);
 };
 Expression.Complex.prototype.conjugate = function() {
 	return new Expression.Complex(this._real, -this._imag);
@@ -22,6 +22,32 @@ Expression.Complex.prototype.conjugate = function() {
 (function(){
 	var one_on_rt2 = 1/Math.sqrt(2);
 	Expression.Complex.prototype.apply = function(operator, x) {
+		switch (operator){
+			case "^":
+				if(this._real === 0 && this._imag === 0) {
+					return Global.Zero; // Contradicts x^0 = 1
+				}
+				break;
+			case "+":
+				if(this._real === 0 && this._imag === 0) {
+					return x;
+				}
+				break;
+			case "-":
+				if(this.value === 0) {
+					return x.apply('@-');
+				}
+				break;
+			case "*":
+				if(this._real === 1 && this._imag === 0){
+					return x;
+				}
+				//Note: There is not meant to be a break here.
+			case "/":
+				if(this._real === 0 && this._imag === 0){
+					return Global.Zero; //Contradics x/0 = Infinity
+				}
+		}
 		if (operator === ",") {
 			return Expression.Vector([this, x]);
 		} else if (x === undefined) {
@@ -149,39 +175,19 @@ Expression.Complex.prototype.conjugate = function() {
                     */
 				default:
 			}
+		} else if(x.constructor === Expression.List.ComplexCartesian) {
+			return this.realimag().apply(operator, x);
+		} else if(x.constructor === Expression.List.ComplexPolar) {
+			return this.polar().apply(operator, x);
 		}
+		console.error("cmplx . " + operator + " => E.List?");
 		/*
 		if(this._real === 0.0 && this._imag === 0.0){
 			return this;
 		}
 		*/
 		
-		switch (operator){
-			case "^":
-				if(this._real === 0 && this._imag === 0) {
-					return Global.Zero; // Contradicts x^0 = 1
-				}
-				break;
-			case "+":
-				if(this._real === 0 && this._imag === 0) {
-					return x;
-				}
-				break;
-			case "-":
-				if(this.value === 0) {
-					return x.apply('@-');
-				}
-				break;
-			case "*":
-				if(this._real === 1 && this._imag === 0){
-					return x;
-				}
-				//Note: There is not meant to be a break here.
-			case "/":
-				if(this._real === 0 && this._imag === 0){
-					return Global.Zero; //Contradics x/0 = Infinity
-				}
-		}
+		
 		
 		return Expression.List([this, x], operator);
 	}

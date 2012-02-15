@@ -1,5 +1,6 @@
 //Similar to Expression.prototype.apply
 Expression.List.prototype.apply = function(operator, /* Expression */ e) {
+	console.error("Expression.List.prototype.apply");
 	if (operator === ",") {
 		return Expression.Vector([this, e]);
 	}

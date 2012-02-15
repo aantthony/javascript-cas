@@ -41,4 +41,20 @@ Expression.Vector.prototype.apply = function(operator, e) {
 			throw("Vector operation not allowed.");
 	}
 };
+
+Expression.Vector.prototype.realimag = function(){
+	var l = this.length;
+	var _x = new Array(l);
+	var _y = new Array(l);
+	var i;
+	for(i = 0; i < l; i++) {
+		var ri = this[i].realimag();
+		_x[i] = ri[0];
+		_y[i] = ri[1];
+	}
+	return Expression.List.ComplexCartesian([
+		Expression.Vector(_x),
+		Expression.Vector(_y)
+	]);
+};
 Expression.Vector.prototype.constructor = Expression.Vector;

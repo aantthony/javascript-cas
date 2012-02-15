@@ -1,4 +1,5 @@
 Expression.prototype.apply = function(operator, /* Expression */ e) {
+	throw("UNKNOWN COMPLEX CART/POLAR");
 	if (operator === ",") {
 		//Maybe this should be a new object type??? Vector?
 		console.log("APPLY: ", this.constructor, this, e);

@@ -49,7 +49,7 @@ exec('make', function(err, stdout, stderr){
             //M("3/(+2)");
         },
         function Mutlicharacter_Operators(){
-            M("x++");
+            //M("x++");
         },
         function Implied_Multiplication(){
             M("2x");

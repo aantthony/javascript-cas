@@ -8,10 +8,12 @@ Expression.prototype.polar = function() {
 };
 //TODO: DUPLICATED (OVERWRITTEN)
 Expression.prototype.abs = function() {
+	console.warn("SLOW?");
 	var ri = this.realimag();
 	return ri[0].apply("*", ri[0]).apply("+", ri[1].apply("*", ri[1]));
 };
 Expression.prototype.arg = function() {
+	console.warn("Slow?");
 	var ri = this.realimag();
 	return Global.atan2.apply(undefined, Expression.Vector([ri[1],r[0]]));
 };

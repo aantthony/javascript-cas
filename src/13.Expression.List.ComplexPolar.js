@@ -1,7 +1,8 @@
 Expression.List.ComplexPolar = function (x){
 	x.__proto__ = Expression.List.ComplexPolar.prototype;
+	return x;
 }
-Expression.List.ComplexPolar.prototype = Object.create(Expression.List);
+Expression.List.ComplexPolar.prototype = Object.create(Expression.prototype);
 Expression.List.ComplexPolar.prototype.polar = function(){
 	return this;
 };
