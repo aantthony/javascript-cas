@@ -20,10 +20,10 @@ var language = new Language([
 	[["+"],true],
 	[["-"], L],
 	[["∫", "∑"], R, 1],
-	[["*", "%"]],
+	[["*", "%"], R],
 	[["@+", "@-", "@±"], R, 1], //unary plus/minus
 	[["¬"], L, 1],
-	[undefined, L, 2],
+	[undefined, R, 2], //I changed this to R for 5sin(t)
 	["∘", R, 2],
 	[["/"]],
 	[["^"]],//e**x

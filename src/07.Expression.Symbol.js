@@ -42,15 +42,15 @@ Expression.Symbol.Real.prototype.imag = function() {
 };
 Expression.Symbol.Real.prototype.polar = function() {
 	return Expression.List.ComplexPolar([
-		Global.abs.apply(undefined, this),
-		Global.arg.apply(undefined, this)
+		Expression.List.Real([Global.abs, this]),
+		Expression.List.Real([Global.arg, this])
 	]);
 };
 Expression.Symbol.Real.prototype.abs = function() {
-	return Global.abs.apply(undefined, this);
+	return Expression.List.Real([Global.abs, this]);
 };
 Expression.Symbol.Real.prototype.arg = function() {
-	return Global.arg.apply(undefined, this);
+	return Expression.List.Real([Global.arg, this]);
 };
 Expression.Symbol.Real.prototype.apply = function(operator, e) {
 	if (operator === ",") {
@@ -77,13 +77,20 @@ Expression.Symbol.Real.prototype.apply = function(operator, e) {
 		// Simplification:
 		switch (e.constructor){
 			case Expression.Symbol.Real:
+			case Expression.List.Real:
 				/*if(this.positive && e.positive) {
 					return Expression.List.Real([this, e], operator);
 				}*/
 				switch(operator) {
 					case "^":
 						//TODO: Bad idea? This will stay in this form until realimag() is called by user, and user only.
-						return Expression.List([this, e], operator);
+						//return Expression.List([this, e], operator);
+						return Expression.List.ComplexPolar([
+							Expression.List.Real([Expression.List.Real([Global.abs, this]), e],"^"),
+							Expression.List.Real([e, Expression.List.Real([Global.arg, this])],"*")
+						]);
+					case undefined:
+						return Expression.List.Real([this, e], "*");
 					default:
 						return Expression.List.Real([this, e], operator);
 				}
@@ -96,43 +103,29 @@ Expression.Symbol.Real.prototype.apply = function(operator, e) {
 						}
 						return Expression.List.Real([this, e], operator);
 						break;
+					case undefined:
 					case "*":
 						if(e.value === 1){
 							return this;
 						} else if(e.value === 0){
 							return Global.Zero;
 						}
-						return Expression.List.Real([this, e], operator);
+						return Expression.List.Real([this, e], "*");
 						break;
+					case "%":
+						return Expression.List.Real([this, e], "%");
 					case "^":
 						if(e.value === 1){
 							return this;
 						} else if(e.value === 0){
 							return Global.One;
 						}
-						
-						// Im(a^b) = (a^2)^(b/2) * sin(b arg(a))
-						/*if(this.positive) {
-							if(e.value > 0) {
-								return Expression.List.Real([this, e], operator);
-							}
-						}*/
-						/*
-							if sin(b arg(a)) == 0 
-							if b arg(a) == n pi
-							if b * arg(a)/pi == n
-							if b == n
-								return Real
-						*/
-						//Is this useless: ?
-						if(e.value === ~~e.value){
+						if(false && opengl_TODO_hack() && e.value === ~~e.value){
 							return Expression.List.Real([this, e], operator);
 						}
-						FIX_ME;p-3p---
 						return Expression.List.ComplexPolar([
-							//Global.abs.apply(undefined, this).apply("^", )
 							Expression.List.Real([Expression.List.Real([Global.abs, this]), e],"^"),
-							Expression.List.Real([Expression.List.Real([Global.arg, this]), e],"*")
+							Expression.List.Real([e, Expression.List.Real([Global.arg, this])],"*")
 						]);
 						
 						break;
@@ -159,6 +152,8 @@ Expression.Symbol.Real.prototype.apply = function(operator, e) {
 							this.apply(operator, e[0]),
 							e[1]
 						]);
+					case undefined:
+						operator = "*";
 					case "*":
 						return Expression.List.ComplexCartesian([
 							this.apply(operator, e[0]),
@@ -175,7 +170,7 @@ Expression.Symbol.Real.prototype.apply = function(operator, e) {
 				//Maybe there is a way to swap the order?
 				return this.polar().apply(operator, e);
 		}
-		throw("LIST FROM REAL SYMBOL!");
+		throw("LIST FROM REAL SYMBOL! "+ operator, e.constructor);
 		return Expression.List([this, e], operator);
 	}
 };

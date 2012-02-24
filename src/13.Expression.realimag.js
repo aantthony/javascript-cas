@@ -10,7 +10,7 @@ Expression.prototype.imag = function() {
 
 // ========= List ========= //
 Expression.List.prototype.realimag = function() {
-	throw("LIST, FORCE!");
+	console.error("Only the user can call this function");
 	switch (this.operator) {
 		case undefined:
 			if(this[0].apply_realimag && this.length === 2) {

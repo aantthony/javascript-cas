@@ -1,4 +1,4 @@
-Expression.NumericalReal = function(e) {
+Expression.NumericalReal = function NumericalReal(e) {
 	this.value = e;
 };
 
@@ -39,6 +39,7 @@ Expression.NumericalReal.prototype.apply = function(operator, x) {
 				return x.apply('@-');
 			}
 			break;
+		case undefined:
 		case "*":
 			if(this.value === 1){
 				return x;
@@ -79,11 +80,13 @@ Expression.NumericalReal.prototype.apply = function(operator, x) {
 			case '/':
 				return new Expression.NumericalReal(this.value / x.value);
 			case '^':
-				var n = Math.pow(this.value, x.value);
-				if(isNaN(n)){
-					throw("Nan (Numerical powers, javascript reals)");
-				}else{
-					return new Expression.NumericalReal(n);
+				if(this.value > 0) {
+					return new Expression.NumericalReal(Math.pow(this.value, x.value));
+				} else {
+					// TODO: This will produce ugly decimals. Maybe we should express it in polar form?!
+					var r = Math.pow(-this.value, x.value)
+					var theta = Math.PI * x.value;
+					return new Expression.Complex(r*Math.cos(theta), r*Math.sin(theta));
 				}
 			default:
 			
@@ -104,7 +107,7 @@ Expression.NumericalReal.prototype.apply = function(operator, x) {
 			    var a = this.value;
 			    var c = x._real;
 			    var d = x._imag;
-
+				console.error("Bad implementation ( num ^ complex)");
 			    var hlm = 0.5 * Math.log(a*a);
 			    var hmld_tc = hlm * d;
 			    var e_hmlc_td = Math.exp(hlm * c);
@@ -122,6 +125,8 @@ Expression.NumericalReal.prototype.apply = function(operator, x) {
 					x[0].apply(operator, this),
 					x[1]
 				]);
+			case undefined:
+				operator = "*";
 			case "*":
 			case "/":
 				return Expression.List.ComplexCartesian([
@@ -141,7 +146,13 @@ Expression.NumericalReal.prototype.apply = function(operator, x) {
 				//(a+bi)+Ae^(ik)
 				return Expression.List([this, x], operator);
 				// or ? return this.apply(operator, x.realimag()); //Jump up to above +-
+			case undefined:
+				operator = "*";
 			case "*":
+				return Expression.List.ComplexPolar([
+					x[0].apply(operator, this),
+					x[1]
+				]);
 			case "/":
 				return Expression.List.ComplexPolar([
 					x[0].apply(operator, this),
@@ -150,9 +161,11 @@ Expression.NumericalReal.prototype.apply = function(operator, x) {
 		}
 	} else if (x.constructor === Expression.List.Real) {
 		switch(operator) {
+			case undefined:
+				operator = "*";
+			case "*":
 			case "+":
 			case "-":
-			case "*":
 			case "/":
 				return Expression.List.Real([this, x], operator);
 			case "^":
@@ -167,11 +180,32 @@ Expression.NumericalReal.prototype.apply = function(operator, x) {
 						Global.pi.apply('*', x)
 					]);
 				}
-
+		}
 				
+	} else if (x.constructor === Expression.Symbol.Real) {
+		switch(operator) {
+			case undefined:
+				operator = "*";
+			case "*":
+			case "+":
+			case "-":
+			case "/":
+				return Expression.List.Real([this, x], operator);
+			case "^":
+				if(this.value === 0){
+					throw("N(0) ^ x");
+				}
+				if(this.value > 0) {
+					return Expression.List.Real([this, x], operator);
+				} else {
+					return Expression.List.ComplexPolar([
+						Expression.List.Real([(new Expression.NumericalReal(-this.value)), x], "^"),
+						Global.pi.apply('*', x)
+					]);
+				}
 		}
 	}
-	
+	throw("?? - real");
 	return Expression.List([this, x], operator);
 };
 Expression.NumericalReal.prototype.constructor = Expression.NumericalReal;

@@ -220,7 +220,7 @@ Language.prototype._build = function() {
     	symbol: 7
 	};
 	var nummustbe = "1234567890.";
-	var operator_str_list = ["+", "-", "@", "*", "/", "^", "++", "=", "!", ",", "@-", "@+", "_", "#", "<", "<=", ">", ">="];
+	var operator_str_list = ["+", "-", "@", "*", "/", "^", "++", "=", "!", ",", "@-", "@+", "_", "#", "<", "<=", ">", ">=", "%"];
 	var parenopenmustbe = "([{";
 	var parenclosemustbe = "}\"])";
 	var varcannotbe = operator_str_list.join("") + parenopenmustbe + parenclosemustbe + nummustbe;

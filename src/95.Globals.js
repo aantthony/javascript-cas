@@ -316,6 +316,7 @@ Global.sqrt = {
 				var q = sgn_b * one_on_rt2 * Math.sqrt(s_a2_b2 - x._real);
 			case Expression.NumericalReal:
 				return new Expression.RealNumerical(Math.sqrt(x));
+			case Expression.List.Real:
 			case Expression.List:
 				if (x.operator === "^") {
 					return Global.abs.apply(undefined, x[0].apply('^', x[1].apply('/', new Expression.NumericalReal(2,0))));
@@ -348,19 +349,24 @@ Global.sqrt = {
 };
 Global.abs = {
 	apply: function (op, x) {
-			console.warn("ABS IS FOR USER INPUT ONLY. USE .abs()");
-			//Using abs is better (I think) because it finds the method through the prototype chain,
-			//which is going to be faster than doing an if list / switch case list. TODO: Check the truthfullnes of this!
-			return x.abs();
-		}
+		console.warn("ABS IS FOR USER INPUT ONLY. USE .abs()");
+		//Using abs is better (I think) because it finds the method through the prototype chain,
+		//which is going to be faster than doing an if list / switch case list. TODO: Check the truthfullnes of this!
+		return x.abs();
 	},
-	"text/latex": "\\abs", //temp
+	"text/latex": "\\abs",
 	"text/javascript": "Math.abs",
 	toTypedString: function(language) {
 		return {
 			s: this[language],
 			t:javascript.Function
 		}
+	},
+	differentiate: function(x) {
+		return x.apply("/", x.abs());
+	},
+	apply_differentiate: function(op, x, t) {
+		return x.apply("/", x.abs()).apply("*", x.differentiate(t));
 	},
 	titie: "Absolute Value Function",
 	description: "Abs",
@@ -369,11 +375,10 @@ Global.abs = {
 };
 Global.arg = {
 	apply: function (op, x) {
-			console.warn("ARG IS FOR USER INPUT ONLY. USE .arg()");
-			//Using abs is better (I think) because it finds the method through the prototype chain,
-			//which is going to be faster than doing an if list / switch case list. TODO: Check the truthfullnes of this!
-			return x.arg();
-		}
+		console.warn("ARG IS FOR USER INPUT ONLY. USE .arg()");
+		//Using abs is better (I think) because it finds the method through the prototype chain,
+		//which is going to be faster than doing an if list / switch case list. TODO: Check the truthfullnes of this!
+		return x.arg();
 	},
 	"text/latex": "\\arg", //temp
 	"text/javascript": "Math.arg_real",

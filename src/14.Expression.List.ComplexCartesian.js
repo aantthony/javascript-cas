@@ -123,6 +123,12 @@ Expression.List.ComplexCartesian.prototype.apply = function(o, x){
 		}
 	} else if (x.constructor === Expression.Complex) {
 		return this.apply(o, x.realimag());
+	} else if (x.constructor === Expression.Symbol.Real) {
+		console.error("Duplicated an x! This makes it difficult to solve complex equations, I think");
+		return this.apply(o, x.realimag());
+	} else if (x.constructor === Expression.List.Real) {
+		console.error("Duplicated an x! This makes it difficult to solve complex equations, I think");
+		return this.apply(o, x.realimag());
 	}
 	throw("CMPLX.LIST * " + o);
 };

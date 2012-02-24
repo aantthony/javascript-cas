@@ -19,6 +19,9 @@ Expression.List.prototype.differentiate = function(x) {
 						this[0]
 					)
 				);
+		case "@+":
+		case "@-":
+			return this[0].differentiate(x).apply(this.operator);
 		case '+':
 		case '-':
 			return this[0]

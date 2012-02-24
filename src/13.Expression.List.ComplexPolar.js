@@ -25,9 +25,35 @@ Expression.List.ComplexPolar.prototype.conjugate = function() {
 		this[1].apply("@-")
 	]);
 };
+Expression.List.ComplexPolar.prototype.differentiate = function(x){
+	// d/dx a(x) * e^(ib(x))
+	
+	//TODO ensure below  f' + if g' part is realimag (f', fg')
+	return Global.e
+	.apply(
+		"^",
+		Global.i
+		.apply("*",
+			this[1]
+		)
+	)
+	.apply("*",
+		this[0].differentiate(x)
+		.apply("+",
+			Global.i
+			.apply("*",
+				this[0]
+			)
+			.apply("*",
+				this[1].differentiate(x)
+			)
+		)
+	);
+};
 Expression.List.ComplexPolar.prototype.apply = function(o, x) {
 	if (x.constructor === this.constructor) {
 		switch (o) {
+			case undefined:
 			case "*":
 				//Fast
 				return Expression.List.ComplexPolar([
@@ -54,6 +80,7 @@ Expression.List.ComplexPolar.prototype.apply = function(o, x) {
 		}
 	} else if (x.constructor === Expression.NumericalReal) {
 		switch (o) {
+			case undefined:
 			case "*":
 				//Fast
 				return Expression.List.ComplexPolar([
@@ -82,6 +109,7 @@ Expression.List.ComplexPolar.prototype.apply = function(o, x) {
 		}
 	} else if (x.constructor === Expression.Complex) {
 		switch (o) {
+			case undefined:
 			case "*":
 				//Fast
 				return Expression.List.ComplexPolar([
@@ -109,10 +137,10 @@ Expression.List.ComplexPolar.prototype.apply = function(o, x) {
 	}
 	
 };
-Expression.List.ComplexPolar.abs = function (){
+Expression.List.ComplexPolar.prototype.abs = function (){
 	return this[0];
 };
-Expression.List.ComplexPolar.arg = function (){
+Expression.List.ComplexPolar.prototype.arg = function (){
 	return this[1];
 };
 Expression.List.ComplexPolar.prototype.constructor = Expression.List.ComplexPolar;

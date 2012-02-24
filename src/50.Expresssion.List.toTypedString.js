@@ -161,6 +161,7 @@ var exportLanguages={
 			case "@+":
 				return {s:o.substring(1)+S_(x[0]),t:glsl.float, p: p};
 			case "^":
+				//TODO: remove this hack
 				if (x[0].s === "2.718281828459045e+0") {
 					return {s: "exp("+x[1].s+")", t: glsl.float, p: p};
 				}
@@ -270,6 +271,24 @@ Expression.List.prototype.toTypedString = function(language) {
 	);
 };
 
+Expression.List.ComplexPolar.prototype.toTypedString = function(language) {
+	if(language !== "text/latex") {
+		throw("Exporting not supported for complex values.");
+	}
+	return {
+		s: this[0].toTypedString(language).s + "\\cdot e^{i" + this[1].toTypedString(language).s + "}",
+		t: javascript.Number
+	};
+};
+Expression.List.ComplexCartesian.prototype.toTypedString = function(language) {
+	if(language !== "text/latex") {
+		throw("Exporting not supported for complex values.");
+	}
+	return {
+		s: this[0].toTypedString(language).s + "+ i(" + this[1].toTypedString(language).s + ")",
+		t: javascript.Number
+	};
+};
 Expression.Complex.prototype.toTypedString = function(language) {
 	deprecated("Complex.toTypedString????");
 	if (language === "text/latex") {
@@ -343,7 +362,8 @@ Expression.Vector.prototype.toTypedString = function(language) {
 	var open = "[";
 	var close = "]";
 	if(language === "x-shader/x-fragment") {
-		open = close = "";
+		open = "vec" + this.length + "(";
+		close = ")";
 	}
 	return {
 		s: open+Array.prototype.map.apply(this, [function(component){

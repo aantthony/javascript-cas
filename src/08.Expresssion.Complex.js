@@ -38,6 +38,7 @@ Expression.Complex.prototype.conjugate = function() {
 					return x.apply('@-');
 				}
 				break;
+			case undefined:
 			case "*":
 				if(this._real === 1 && this._imag === 0){
 					return x;
@@ -179,6 +180,10 @@ Expression.Complex.prototype.conjugate = function() {
 			return this.realimag().apply(operator, x);
 		} else if(x.constructor === Expression.List.ComplexPolar) {
 			return this.polar().apply(operator, x);
+		} else if(x.constructor === Expression.List.Real) {
+			return this.realimag().apply(operator, x);
+		} else if(x.constructor === Expression.Symbol.Real) {
+			return this.realimag().apply(operator, x);
 		}
 		console.error("cmplx . " + operator + " => E.List?");
 		/*
@@ -188,7 +193,7 @@ Expression.Complex.prototype.conjugate = function() {
 		*/
 		
 		
-		
+		return this.realimag().apply(operator, x);
 		return Expression.List([this, x], operator);
 	}
 	
