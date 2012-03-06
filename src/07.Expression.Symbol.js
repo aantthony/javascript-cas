@@ -68,7 +68,6 @@ Expression.Symbol.Real.prototype.apply = function(operator, e) {
 				return Global.Gamma.apply(undefined, this.apply("+", Global.One));
 			case "@+":
 			case "@-":
-				
 				return Expression.List.Real([this], operator);
 			default:
 		}

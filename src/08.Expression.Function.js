@@ -1,11 +1,6 @@
-Expression.LambdaExpression = function (f){
-	return {
-		apply: function (op, e){
-			return f.apply(e);
-		},
-		name: f.name
-	};
-	this.variables;
+Expression.LambdaExpression = function (expr, bound_symbols){
+	this.expr = expr;
+	this.symbols = bound_symbols;
 };
 Expression.LambdaExpression.prototype = Object.create(Expression.prototype);
 

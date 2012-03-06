@@ -27,74 +27,8 @@ Language.prototype._build = function() {
 		"infty": "∞",
 		"sim": "~",
 		"frac": "",
-		"backslash": "\\",
-		/*
-		"alpha": "α",
-		"beta": "β",
-		'gamma': "γ",
-		'delta': "δ",
-		'zeta': "ζ",
-		'eta': "η",
-		'theta': "θ",
-		'iota': "ι",
-		'kappa': "κ",
-		'mu': "μ",
-		'nu': "ν",
-		'xi': "ξ",
-		'omicron': "ο",
-		'rho': "ρ",
-		'sigma': "σ",
-		'tau': "τ",
-		'upsilon': "υ",
-		'chi': "χ",
-		'psi': "ψ",
-		'omega': "ω",
-		'phi': "ϕ",
-		"phiv": "φ",
-		"varphi": "φ",
-		"epsilon": "ϵ",
-		"epsiv": "ε",
-		"varepsilon": "ε",
-		"sigmaf": "ς",
-		"sigmav": "ς",
-		"gammad": "ϝ",
-		"Gammad": "ϝ",
-		"digamma": "ϝ",
-		"kappav": "ϰ",
-		"varkappa": "ϰ",
-		"piv": "ϖ",
-		"varpi": "ϖ",
-		"rhov": "ϱ",
-		"varrho": "ϱ",
-		"thetav": "ϑ",
-		"vartheta": "ϑ",
-		"pi": "π",
-		"lambda": "λ",
-		'Gamma': "Γ",
-		'Delta': "Δ",
-		'Theta': "Θ",
-		'Lambda': "Λ",
-		'Xi': "Ξ",
-		'Pi': "Π",
-		'Sigma': "Σ",
-		'Upsilon': "Υ",
-		'Phi': "Φ",
-		'Psi': "Ψ",
-		'Omega': "Ω",
-		"perp": "⊥",
-		",": " ",
-		"nabla": "∇",
-		"forall": "∀",
-		"sum": "∑",
-		"summation": "∑",
-		"prod": "∏",
-		"product": "∏",
-		"coprod": "∐",
-		"coproduct": "∐",
-		"int": "∫",
-		"integral": "∫"*/
+		"backslash": "\\"
 	};
-	window.deLaTeX = deLaTeX;
 	function deLaTeX(s){
 		//Converts a latex format equation into a text based one, 
 		//where multi-character names keep a preceeding and required \ character
@@ -115,10 +49,8 @@ Language.prototype._build = function() {
 			switch (type) {
 				case "matrix":
 
-					x=x.replace(/\\\:/g, ",").replace(/\\\\/g, ";");
-					s=s.split("");
-
-					//s.splice(b,b+end_string.length);
+					x = x.replace(/\\\:/g, ",").replace(/\\\\/g, ";");
+					s = s.split("");
 
 					s[i] = "[";
 					s.splice(b, end_string.length - 1);
@@ -135,10 +67,10 @@ Language.prototype._build = function() {
 			var n = s.indexOf("}", i + 6);
 			var text = s.substring(i + 6, n);
 			
-			s=s.split("");
+			s = s.split("");
 			
 			s.splice(i, n - i + 1,"\\" + text);
-			s=s.join("");
+			s = s.join("");
 		}
 		while((i = s.indexOf("\\frac")) !== -1){
 			var n, good = false;
@@ -375,27 +307,6 @@ Language.prototype._build = function() {
 				}
 				next_rpn(token);
 			}
-			// If the token is a function token, then push it onto the stack.
-			if (token.t === token_types.func) {
-				stack.push(token);
-			}
-
-			// If the token is a function argument separator (e.g., a comma):
-			if (0 && token.t === token_types.comma) {
-				// Until the token at the top of the stack is a left parenthesis,
-				while (stack[stack.length - 1].t !== token_types.parenopen) {
-
-					// If no left parentheses are encountered,
-					if (!stack.length) {
-						// either the separator was misplaced or parentheses were mismatched.
-						throw(new SyntaxError("Unexpected EOF"));
-						throw("either the separator was misplaced or parentheses were mismatched.");
-					}
-					// pop operators off the stack onto the output queue.
-					next_rpn(stack.pop());
-				}
-
-			}
 			// If the token is an operator
 			if (token.t === token_types.operator) {
 				//, o1, then:
@@ -451,11 +362,6 @@ Language.prototype._build = function() {
 				// Pop the left parenthesis from the stack, but not onto the output queue.
 				if (stack.pop().t !== token_types.parenopen) {
 					throw ("Pop the left parenthesis from the stack: Not found ! ")
-				}
-
-				// If the token at the top of the stack is a function token, pop it onto the output queue.
-				if (stack.length && stack[stack.length - 1].t === token_types.func) {
-					next_rpn(stack.pop());
 				}
 			}
 		}
