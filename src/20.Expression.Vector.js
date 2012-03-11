@@ -7,27 +7,27 @@ Expression.Vector.prototype = Object.create(Expression.List.prototype);
 Expression.Vector.prototype.apply = function(operator, e) {
 	var l = this.length;
 	switch (operator) {
-		case ",":
+		case ',':
 			//Array.prototype.push.apply(this, [e]);
 			//Faster:
 			//MODIFIES!!!!!!!!!
 			this[l] = e;
 			return this;
 		case undefined:
-		case "*":
+		case '*':
 			if(l != e.length) {
-				throw("Vector Dimension mismatch.");
+				throw('Vector Dimension mismatch.');
 			}
 			var i;
 			var sum = M.Global.Zero;
 			for (i = 0; i < l; i++) {
-				sum = sum.apply("+", this[i].apply("*", e[i]));
+				sum = sum.apply('+', this[i].apply('*', e[i]));
 			}
 			return sum;
-		case "+":
-		case "-":
+		case '+':
+		case '-':
 			if(l != e.length) {
-				throw("Vector Dimension mismatch.");
+				throw('Vector Dimension mismatch.');
 			}
 			var i;
 			var n = new Array(l);
@@ -35,10 +35,10 @@ Expression.Vector.prototype.apply = function(operator, e) {
 				n[i] = this[i].apply(operator, e[i]);
 			}
 			return Expression.Vector(n);
-		case "/":
-		case "^":
+		case '/':
+		case '^':
 		default:
-			throw("Vector operation not allowed.");
+			throw('Vector operation not allowed.');
 	}
 };
 

@@ -1,7 +1,7 @@
 //Define symbolic functions here:
 //The apply has nothing to do with Function.prototype.apply, for now.
 
-Global.sin = {
+Global['sin'] = {
 	apply: function(op, x) {
 		switch (x.constructor) {
 			case Expression.Complex:
@@ -22,43 +22,43 @@ Global.sin = {
 	apply_realimag: function(op, x) {
 		switch (x.constructor) {
 			case Expression.Complex:
-				throw("???");
+				throw('???');
 			case Expression.NumericalReal:
-				throw("???");
+				throw('???');
 			case Expression.List:
 				var ri = x.realimag();
-				var exp_b = Global.e.apply("^", ri[1]);
-				var one_o_exp_b = Global.One.apply("/", exp_b);
+				var exp_b = Global.e.apply('^', ri[1]);
+				var one_o_exp_b = Global.One.apply('/', exp_b);
 				var two = new Expression.NumericalReal(2);
-				var cosh_b = exp_b.apply("+", one_o_exp_b).apply("/", two);
-				var sinh_b = exp_b.apply("-", one_o_exp_b).apply("/", two);
+				var cosh_b = exp_b.apply('+', one_o_exp_b).apply('/', two);
+				var sinh_b = exp_b.apply('-', one_o_exp_b).apply('/', two);
 
-				return [Global.sin.apply(undefined, ri[0]).apply("*", cosh_b),
-					Global.cos.apply(undefined, ri[0]).apply("*", sinh_b)
+				return [Global.sin.apply(undefined, ri[0]).apply('*', cosh_b),
+					Global.cos.apply(undefined, ri[0]).apply('*', sinh_b)
 				];
 			default:
-				console.error("realimag unchecked!");
+				console.error('realimag unchecked!');
 				return [Expression.List([Global.sin, x]), M.Global.Zero];
 		}
 	},
 	apply_differentiate: function(op, x, t) {
-		return Global.cos.apply(undefined, x).apply("*", x.differentiate(t));
+		return Global.cos.apply(undefined, x).apply('*', x.differentiate(t));
 	},
-	"text/latex": "\\sin",
-	"text/javascript": "Math.sin",
-	"x-shader/x-fragment": "sin",
+	'text/latex': '\\sin',
+	'text/javascript': 'Math.sin',
+	'x-shader/x-fragment': 'sin',
 	toTypedString: function(language) {
 		return {
 			s: this[language],
 			t:javascript.Function
 		}
 	},
-	title: "Sine Function",
-	description: "See http://en.wikipedia.org/wiki/Trigonometric_functions#Sine.2C_cosine.2C_and_tangent",
-	examples: ["\\sin (\\pi)"],
-	related: ["cos", "tan"]
+	title: 'Sine Function',
+	description: 'See http://en.wikipedia.org/wiki/Trigonometric_functions#Sine.2C_cosine.2C_and_tangent',
+	examples: ['\\sin (\\pi)'],
+	related: ['cos', 'tan']
 };
-Global.cos = {
+Global['cos'] = {
 	apply: function(op, x) {
 		switch (x.constructor) {
 			case Expression.Complex:
@@ -79,52 +79,52 @@ Global.cos = {
 	apply_realimag: function(op, x) {
 		switch (x.constructor) {
 			case Expression.Complex:
-				throw("???");
+				throw('???');
 			case Expression.NumericalReal:
-				throw("???");
+				throw('???');
 			case Expression.List:
 				var ri = x.realimag();
-				var exp_b = Global.e.apply("^", ri[1]);
-				var one_o_exp_b = Global.One.apply("/", exp_b);
+				var exp_b = Global.e.apply('^', ri[1]);
+				var one_o_exp_b = Global.One.apply('/', exp_b);
 				var two = new Expression.NumericalReal(2);
-				var cosh_b = exp_b.apply("+", one_o_exp_b).apply("/", two);
-				var nsinh_b = one_o_exp_b.apply("-", exp_b).apply("/", two);
+				var cosh_b = exp_b.apply('+', one_o_exp_b).apply('/', two);
+				var nsinh_b = one_o_exp_b.apply('-', exp_b).apply('/', two);
 
-				return [Global.cos.apply(undefined, ri[0]).apply("*", cosh_b),
-					Global.sin.apply(undefined, ri[0]).apply("*", nsinh_b)
+				return [Global.cos.apply(undefined, ri[0]).apply('*', cosh_b),
+					Global.sin.apply(undefined, ri[0]).apply('*', nsinh_b)
 				];
 			default:
-				console.error("realimag unchecked!");
+				console.error('realimag unchecked!');
 				return [Expression.List([Global.cos, x]), M.Global.Zero];
 		}
 	},
 	apply_differentiate: function(op, x, t) {
-		return Global.sin.apply(undefined, x).apply("*", x.differentiate(t)).apply('*', new Expression.NumericalReal(-1));
+		return Global.sin.apply(undefined, x).apply('*', x.differentiate(t)).apply('*', new Expression.NumericalReal(-1));
 	},
-	"text/latex": "\\cos",
-	"text/javascript": "Math.cos",
-	"x-shader/x-fragment": "cos",
+	'text/latex': '\\cos',
+	'text/javascript': 'Math.cos',
+	'x-shader/x-fragment': 'cos',
 	toTypedString: function(language) {
 		return {
 			s: this[language],
 			t:javascript.Function
 		}
 	},
-	title: "Cosine Function",
-	description: "Cosine Function desc",
-	examples: ["\\cos (\\pi)"],
-	related: ["sin", "tan"]
+	title: 'Cosine Function',
+	description: 'Cosine Function desc',
+	examples: ['\\cos (\\pi)'],
+	related: ['sin', 'tan']
 };
-Global.log = {
+Global['log'] = {
 	apply: function (op, x, assumptions) {
 		switch (x.constructor) {
 			case Expression.Complex:
-				throw("Not ready Type!: " + x.constructor);
+				throw('Not ready Type!: ' + x.constructor);
 			case Expression.NumericalReal:
 				if(x.value > 0){
 					return new Expression.NumericalReal(Math.log(x));
 				}
-				throw("-Log");
+				throw('-Log');
 			case Expression.List.Real:
 			case Expression.Symbol.Real:
 				if(assumptions && massumptions.positive) {
@@ -141,46 +141,46 @@ Global.log = {
 				var ri = x.realimag();
 
 			default:
-				console.error("realimag unchecked!");
+				console.error('realimag unchecked!');
 				return [Expression.List([Global.log, x]), M.Global.Zero];
 		}
 	},
 	differentiate: function(x) {
-		return Global.One.apply("/", x);
+		return Global.One.apply('/', x);
 	},
 	apply_differentiate: function(op, x, t) {
-		return Global.One.apply("/", x).apply("*", x.differentiate(t));
-		return Global.cos.apply(undefined, x).apply("*", x.differentiate(t));
+		return Global.One.apply('/', x).apply('*', x.differentiate(t));
+		return Global.cos.apply(undefined, x).apply('*', x.differentiate(t));
 	},
-	"text/latex": "\\log",
-	"text/javascript": "Math.log",
-	"x-shader/x-fragment": "log",
+	'text/latex': '\\log',
+	'text/javascript': 'Math.log',
+	'x-shader/x-fragment': 'log',
 	toTypedString: function(language) {
 		return {
 			s: this[language],
 			t:javascript.Function
 		}
 	},
-	title: "Natural Logarithm",
-	description: "Base e. See http://en.wikipedia.org/wiki/Natural_logarithm",
-	examples: ["\\log (ye^(2x))"],
-	related: ["exp", "Log"]
+	title: 'Natural Logarithm',
+	description: 'Base e. See http://en.wikipedia.org/wiki/Natural_logarithm',
+	examples: ['\\log (ye^(2x))'],
+	related: ['exp', 'Log']
 };
-Global.atan2 = {
+Global['atan2'] = {
 	apply: function(op, x) {
-		console.log("Apply atan2");
+		console.log('Apply atan2');
 		switch (x[0].constructor) {
 			case Expression.Complex:
 				switch (x[1].constructor) {
 					case Expression.Complex:
-						throw("???");
+						throw('???');
 					case Expression.NumericalReal:
-						throw("???");
+						throw('???');
 				}
 			case Expression.NumericalReal:
 				switch (x[1].constructor) {
 					case Expression.Complex:
-						throw("???");
+						throw('???');
 					case Expression.NumericalReal:
 						return new Expression.NumericalReal(Math.atan2(x[0], x[1]));
 				}
@@ -204,21 +204,21 @@ Global.atan2 = {
 		//TODO: DANGER! Assuming real numbers, but it should have some fast way to do this.
 		return [Expression.List([Global.atan2, x]), M.Global.Zero];
 	},
-	"text/latex": "\\atan2",
-	"text/javascript": "Math.atan2",
-	"x-shader/x-fragment": "atan",
+	'text/latex': '\\atan2',
+	'text/javascript': 'Math.atan2',
+	'x-shader/x-fragment': 'atan',
 	toTypedString: function(language) {
 		return {
 			s: this[language],
 			t:javascript.Function
 		}
 	},
-	title: "Two argument arctangent function",
-	description: "Arctan(y, x). Will equal arctan(y / x) except when x and y are both negative. See http://en.wikipedia.org/wiki/Atan2"
+	title: 'Two argument arctangent function',
+	description: 'Arctan(y, x). Will equal arctan(y / x) except when x and y are both negative. See http://en.wikipedia.org/wiki/Atan2'
 };
-Global.atan = Global.atan2;
+Global['atan'] = Global.atan2;
 
-Global.Gamma = {
+Global['Gamma'] = {
 	apply: function(op, x){
 		function gammln(xx) {
 		    var j;
@@ -240,7 +240,7 @@ Global.Gamma = {
 				0.368991826595316234e-5
 			];
 		    if (xx <= 0){
-		        throw("bad arg in gammln");
+		        throw('bad arg in gammln');
 		    }
 		    y = x = xx;
 		    tmp = x + 5.24218750000000000;
@@ -266,29 +266,29 @@ Global.Gamma = {
 				return Expression.List([Global.Gamma, x]);
 		}
 	},
-	"text/latex": "\\Gamma",
-	"text/javascript": "M.Global.Gamma.f",
+	'text/latex': '\\Gamma',
+	'text/javascript': 'M.Global.Gamma.f',
 	toTypedString: function(language) {
 		return {
 			s: this[language],
 			t:javascript.Function
 		}
 	},
-	title: "Gamma Function",
-	description: "See http://en.wikipedia.org/wiki/Gamma_function",
-	examples: ["\\Gamma (x)", "x!"],
-	related: ["Log", "LogGamma"]
+	title: 'Gamma Function',
+	description: 'See http://en.wikipedia.org/wiki/Gamma_function',
+	examples: ['\\Gamma (x)', 'x!'],
+	related: ['Log', 'LogGamma']
 };
-Global.Re = {
+Global['Re'] = {
 	apply: function(op, x) {
 		return x.real();
 	},
 	apply_realimag: function(op, x) {
 		return [x.real(), Global.Zero];
 	},
-	"text/latex": "\\Re"
+	'text/latex': '\\Re'
 };
-Global.Im = {
+Global['Im'] = {
 	apply: function(op, x) {
 		return x.imag();
 	},
@@ -296,9 +296,9 @@ Global.Im = {
 	apply_realimag: function(op, x) {
 		return [x.imag(), Global.Zero];
 	},
-	"text/latex": "\\Im"
+	'text/latex': '\\Im'
 }
-Global.sqrt = {
+Global['sqrt'] = {
 	apply: function (op, x) {
 		switch (x.constructor) {
 			case Expression.Complex:
@@ -318,7 +318,7 @@ Global.sqrt = {
 				return new Expression.RealNumerical(Math.sqrt(x));
 			case Expression.List.Real:
 			case Expression.List:
-				if (x.operator === "^") {
+				if (x.operator === '^') {
 					return Global.abs.apply(undefined, x[0].apply('^', x[1].apply('/', new Expression.NumericalReal(2,0))));
 				}
 			default:
@@ -329,33 +329,33 @@ Global.sqrt = {
 		//TODO: DANGER! Assuming real numbers, but it should have some fast way to do this.
 		
 		//Uses exp, atan2 and log functions. A really bad idea. (square rooting, then squaring, then atan, also [exp(log)])
-		return x.apply("^", new Expression.NumericalReal(0.5,0)).realimag();
+		return x.apply('^', new Expression.NumericalReal(0.5,0)).realimag();
 		//var ri = x.realimag();
 		//return [Expression.List([Global.sqrt, x]), M.Global.Zero];
 	},
-	"text/latex": "\\sqrt",
-	"text/javascript": "Math.sqrt",
-	"x-shader/x-fragment": "sqrt",
+	'text/latex': '\\sqrt',
+	'text/javascript': 'Math.sqrt',
+	'x-shader/x-fragment': 'sqrt',
 	toTypedString: function(language) {
 		return {
 			s: this[language],
 			t:javascript.Function
 		}
 	},
-	title: "Sqrt Function",
-	description: "See http://en.wikipedia.org/wiki/Square_Root",
-	examples: ["\\sqrt (x^4)"],
-	related: ["pow", "abs", "mod"]
+	title: 'Sqrt Function',
+	description: 'See http://en.wikipedia.org/wiki/Square_Root',
+	examples: ['\\sqrt (x^4)'],
+	related: ['pow', 'abs', 'mod']
 };
-Global.abs = {
+Global['abs'] = {
 	apply: function (op, x) {
-		console.warn("ABS IS FOR USER INPUT ONLY. USE .abs()");
+		console.warn('ABS IS FOR USER INPUT ONLY. USE .abs()');
 		//Using abs is better (I think) because it finds the method through the prototype chain,
 		//which is going to be faster than doing an if list / switch case list. TODO: Check the truthfullnes of this!
 		return x.abs();
 	},
-	"text/latex": "\\abs",
-	"text/javascript": "Math.abs",
+	'text/latex': '\\abs',
+	'text/javascript': 'Math.abs',
 	toTypedString: function(language) {
 		return {
 			s: this[language],
@@ -363,66 +363,66 @@ Global.abs = {
 		}
 	},
 	differentiate: function(x) {
-		return x.apply("/", x.abs());
+		return x.apply('/', x.abs());
 	},
 	apply_differentiate: function(op, x, t) {
-		return x.apply("/", x.abs()).apply("*", x.differentiate(t));
+		return x.apply('/', x.abs()).apply('*', x.differentiate(t));
 	},
-	titie: "Absolute Value Function",
-	description: "Abs",
-	examples: ["\\abs (-3)", "\\abs (i+3)"],
-	related: ["arg", "tan"]
+	titie: 'Absolute Value Function',
+	description: 'Abs',
+	examples: ['\\abs (-3)', '\\abs (i+3)'],
+	related: ['arg', 'tan']
 };
-Global.arg = {
+Global['arg'] = {
 	apply: function (op, x) {
-		console.warn("ARG IS FOR USER INPUT ONLY. USE .arg()");
+		console.warn('ARG IS FOR USER INPUT ONLY. USE .arg()');
 		//Using abs is better (I think) because it finds the method through the prototype chain,
 		//which is going to be faster than doing an if list / switch case list. TODO: Check the truthfullnes of this!
 		return x.arg();
 	},
-	"text/latex": "\\arg", //temp
-	"text/javascript": "Math.arg_real",
+	'text/latex': '\\arg', //temp
+	'text/javascript': 'Math.arg_real',
 	toTypedString: function(language) {
 		return {
 			s: this[language],
 			t:javascript.Function
 		}
 	},
-	titie: "Arg Function",
-	description: "Arg",
-	examples: ["\\arg (-3)", "\\arg (3)", "\\arg(3+2i)"],
-	related: ["abs"]
+	titie: 'Arg Function',
+	description: 'Arg',
+	examples: ['\\arg (-3)', '\\arg (3)', '\\arg(3+2i)'],
+	related: ['abs']
 }
 
 
 
-Global.e = new Expression.NumericalReal(Math.E, 0);
-Global.e.title = "e";
-Global.e.description = "The transcendental number that is the base of the natural logarithm, approximately equal to 2.71828.";
+Global['e'] = new Expression.NumericalReal(Math.E, 0);
+Global['e'].title = 'e';
+Global['e'].description = 'The transcendental number that is the base of the natural logarithm, approximately equal to 2.71828.';
 
 
-Global.pi = new Expression.NumericalReal(Math.PI, 0);
-Global.pi.title = "Pi";
-Global.pi.description = "";
+Global['pi'] = new Expression.NumericalReal(Math.PI, 0);
+Global['pi'].title = 'Pi';
+Global['pi'].description = '';
 
 
 
-Global.Infinity = new Expression.NumericalReal(Infinity, 0);
-Global.Infinity.title = "Infinity";
-Global.Infinity.description = "";
+Global['Infinity'] = new Expression.NumericalReal(Infinity, 0);
+Global['Infinity'].title = 'Infinity';
+Global['Infinity'].description = '';
 
-Global.Zero = new Expression.NumericalReal(0, 0);
-Global.Zero.title = "Zero";
-Global.Zero.description = "Additive Identity";
+Global['Zero'] = new Expression.NumericalReal(0, 0);
+Global['Zero'].title = 'Zero';
+Global['Zero'].description = 'Additive Identity';
 
-Global.One = new Expression.NumericalReal(1, 0);
-Global.One.title = "One";
-Global.One.description = "Multiplicative Identity";
+Global['One'] = new Expression.NumericalReal(1, 0);
+Global['One'].title = 'One';
+Global['One'].description = 'Multiplicative Identity';
 
-Global.i = new Expression.Complex(0, 1);
-Global.i.title = "Imaginary Unit";
-Global.i.description = "A number which satisfies the property <m>i^2 = -1</m>.";
-Global.i.realimag = function(){
+Global['i'] = new Expression.NumericalComplex(0, 1);
+Global['i'].title = 'Imaginary Unit';
+Global['i'].description = 'A number which satisfies the property <m>i^2 = -1</m>.';
+Global['i'].realimag = function(){
 	return Expression.List.ComplexCartesian([
 		Global.Zero,
 		Global.One

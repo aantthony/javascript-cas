@@ -1,4 +1,4 @@
 Expression.prototype.valueOf = function() {
-	throw("ValueOf");
+	throw('ValueOf');
 	return this.abs();
 };

@@ -40,7 +40,7 @@ Expression.List.Real.prototype.constructor = Expression.List.Real;
 
 Expression.List.Real.Positive = function List_Real_Positive(list, operator){
 	if(!operator){
-		throw("MUST SUPPLY OPERATOR");
+		throw('MUST SUPPLY OPERATOR');
 	}
 	list.__proto__ = Expression.List.Real.Positive.prototype;
 };

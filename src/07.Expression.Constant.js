@@ -1,5 +1,5 @@
 Expression.Constant = function() {
-	throw new Error("Expression.Scalar created");
+	throw new Error('Expression.Constant created');
 };
 Expression.Constant.prototype = Object.create(Expression.prototype);
 Expression.Constant.prototype.simplify = function() {

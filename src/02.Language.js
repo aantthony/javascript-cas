@@ -5,7 +5,7 @@ function Language(language) {
 	function op(v, assoc,arg_c) {
 		//Register an operator
 		var memsave = [assoc, op_precedence++, arg_c];
-		if (typeof v === "object") {
+		if (typeof v === 'object') {
 			for (var i=0; i<v.length; i++) {
 				operators[v[i]] = memsave;
 			}
@@ -20,9 +20,9 @@ function Language(language) {
 	this._build();
 }
 Language.prototype.precedence = function (v) {
-    //deprecated("Slow");
+    //deprecated('Slow');
 	if (!this.operators[v]) {
-		throw("Precedence of "+v+" not known!");
+		throw('Precedence of ' + v + ' not known!');
 	}
 	return this.operators[v][1];
 };
@@ -32,8 +32,8 @@ Language.prototype.postfix = function (o) {
 	return op[0] === 0 && op[2] === 1;
 };
 Language.prototype.unary = function (o) {
-	var unary_secondarys = ["+", "-", "±"];
-	return (unary_secondarys.indexOf(o) != -1) ? ("@" + o) : false;
+	var unary_secondarys = ['+', '-', '±'];
+	return (unary_secondarys.indexOf(o) != -1) ? ('@' + o) : false;
 };
 
 Language.prototype.assoc = function(o) {

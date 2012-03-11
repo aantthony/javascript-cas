@@ -1,8 +1,8 @@
-/*! 
+/**
  *  Math JavaScript Library v3.0.0
  *  https://github.com/aantthony/javascript-cas
  *  
- *  Copyright 2010 Anthony Foster. All rights reserved.
+ * Copyright 2010 Anthony Foster. All rights reserved.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by

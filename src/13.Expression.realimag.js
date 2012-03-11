@@ -1,22 +1,22 @@
 Expression.prototype.real = function() {
-	console.warn("TODO: don't calculate both parts (Expression.prototype.real)");
+	console.warn('TODO: don\'t calculate both parts (Expression.prototype.real)');
 	return this.realimag()[0];
 };
 Expression.prototype.imag = function() {
-	console.warn("TODO: don't calculate both parts (Expression.prototype.imag)");
+	console.warn('TODO: don\'t calculate both parts (Expression.prototype.imag)');
 	return this.realimag()[1];
 };
 
 
 // ========= List ========= //
 Expression.List.prototype.realimag = function() {
-	console.error("Only the user can call this function");
+	console.error('Only the user can call this function');
 	switch (this.operator) {
 		case undefined:
 			if(this[0].apply_realimag && this.length === 2) {
 				return this[0].apply_realimag(this.operator, this[1]);
 			}
-			//throw(".realimag() method invoked for Expression without operator?");
+			//throw('.realimag() method invoked for Expression without operator?');
 			
 		case '*':
 			var a = this[0].realimag();
@@ -25,8 +25,8 @@ Expression.List.prototype.realimag = function() {
 				a[0].apply('*',b[0]).apply('-', a[1].apply('*',b[1])),
 				a[0].apply('*',b[1]).apply('+',a[1].apply('*',b[0]))
 			]);
-		case "@+":
-		case "@-":
+		case '@+':
+		case '@-':
 			var a = this[0].realimag();
 			return Expression.List.ComplexCartesian([
 				a[0].apply(this.operator),
@@ -79,7 +79,7 @@ Expression.List.prototype.realimag = function() {
 			);
 			*/
 			
-			var e_hmlc_td = Global.e.apply("^",
+			var e_hmlc_td = Global.e.apply('^',
 				hlm.apply('*',
 					b[0]
 				).apply('-',

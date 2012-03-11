@@ -9,20 +9,20 @@ Expression.List.ComplexPolar.prototype.polar = function(){
 Expression.List.ComplexPolar.prototype.realimag = function() {
 	//TODO: Return Expression.List.ComplexCartesian
 	return Expression.List.ComplexCartesian([
-		this[0].apply("*", Global.cos.apply(undefined, this[1])),
-		this[0].apply("*", Global.sin.apply(undefined, this[1])),
+		this[0].apply('*', Global.cos.apply(undefined, this[1])),
+		this[0].apply('*', Global.sin.apply(undefined, this[1]))
 	]);
 };
 Expression.List.ComplexPolar.prototype.real = function() {
-	return this[0].apply("*", Global.cos.apply(undefined, this[1]));
+	return this[0].apply('*', Global.cos.apply(undefined, this[1]));
 };
 Expression.List.ComplexPolar.prototype.imag = function() {
-	return this[0].apply("*", Global.sin.apply(undefined, this[1]));
+	return this[0].apply('*', Global.sin.apply(undefined, this[1]));
 };
 Expression.List.ComplexPolar.prototype.conjugate = function() {
 	return Expression.List.ComplexPolar([
 		this[0],
-		this[1].apply("@-")
+		this[1].apply('@-')
 	]);
 };
 Expression.List.ComplexPolar.prototype.differentiate = function(x){
@@ -31,20 +31,20 @@ Expression.List.ComplexPolar.prototype.differentiate = function(x){
 	//TODO ensure below  f' + if g' part is realimag (f', fg')
 	return Global.e
 	.apply(
-		"^",
+		'^',
 		Global.i
-		.apply("*",
+		.apply('*',
 			this[1]
 		)
 	)
-	.apply("*",
+	.apply('*',
 		this[0].differentiate(x)
-		.apply("+",
+		.apply('+',
 			Global.i
-			.apply("*",
+			.apply('*',
 				this[0]
 			)
-			.apply("*",
+			.apply('*',
 				this[1].differentiate(x)
 			)
 		)
@@ -54,83 +54,83 @@ Expression.List.ComplexPolar.prototype.apply = function(o, x) {
 	if (x.constructor === this.constructor) {
 		switch (o) {
 			case undefined:
-			case "*":
+			case '*':
 				//Fast
 				return Expression.List.ComplexPolar([
-					this[0].apply("*", x[0]),
-					this[1].apply("+", x[1])
+					this[0].apply('*', x[0]),
+					this[1].apply('+', x[1])
 				]);
-			case "/":
+			case '/':
 				//Also fast
 				return Expression.List.ComplexPolar([
-					this[0].apply("/", x[0]),
-					this[1].apply("-", x[1])
+					this[0].apply('/', x[0]),
+					this[1].apply('-', x[1])
 				]);
-			case "+":
-			case "-":
+			case '+':
+			case '-':
 				//Very slow, maybe we should switch to cartesian now?
 			
-			case "^":
+			case '^':
 				//(Ae^(ik)) ^ (Be^(ij))
 				//How slow is this?
 				//Very fast for real numbers though
-			case "!":
+			case '!':
 			default:
 			
 		}
 	} else if (x.constructor === Expression.NumericalReal) {
 		switch (o) {
 			case undefined:
-			case "*":
+			case '*':
 				//Fast
 				return Expression.List.ComplexPolar([
-					this[0].apply("*", x),
+					this[0].apply('*', x),
 					this[1]
 				]);
-			case "/":
+			case '/':
 				//Also fast
 				return Expression.List.ComplexPolar([
-					this[0].apply("/", x),
+					this[0].apply('/', x),
 					this[1]
 				]);
-			case "+":
-			case "-":
+			case '+':
+			case '-':
 				//Very slow, maybe we should switch to cartesian now?
 			
-			case "^":
+			case '^':
 				//Fast:
 				return Expression.List.ComplexPolar([
 					this[0],
-					this[1].apply("*", x)
+					this[1].apply('*', x)
 				]);
-			case "!":
+			case '!':
 			default:
 			
 		}
 	} else if (x.constructor === Expression.Complex) {
 		switch (o) {
 			case undefined:
-			case "*":
+			case '*':
 				//Fast
 				return Expression.List.ComplexPolar([
-					this[0].apply("*", new Expression.NumericalReal(x._real)),
-					this[1].apply("+", new Expression.NumericalReal(x._imag))
+					this[0].apply('*', new Expression.NumericalReal(x._real)),
+					this[1].apply('+', new Expression.NumericalReal(x._imag))
 				]);
-			case "/":
+			case '/':
 				//Also fast
 				return Expression.List.ComplexPolar([
-					this[0].apply("/", new Expression.NumericalReal(x._real)),
-					this[1].apply("-", new Expression.NumericalReal(x._imag))
+					this[0].apply('/', new Expression.NumericalReal(x._real)),
+					this[1].apply('-', new Expression.NumericalReal(x._imag))
 				]);
-			case "+":
-			case "-":
+			case '+':
+			case '-':
 				//Very slow, maybe we should switch to cartesian now?
 			
-			case "^":
+			case '^':
 				//(Ae^(ik)) ^ (Be^(ij))
 				//How slow is this?
 				//Very fast for real numbers though
-			case "!":
+			case '!':
 			default:
 			
 		}

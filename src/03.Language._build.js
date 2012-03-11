@@ -1,33 +1,31 @@
 Language.prototype._build = function() {
 	var latexexprs = {
-		"cdot": "*",
-		"vee": "∨",
-		"wedge": "&&",
-		"neg": "¬",
-		"left": "",
-		"right": "",
-		"pm": "±",
-		"circ": "∘",
-		//"sqrt": "\u221A",
-		"div": "/",
-		"%": "%",
-		
-		'gt': ">",
-		"left|": "\\abs(",
-		"right|": ")",
-		"times": "*",
-		":": "",
-		"left(": "(",
-		"right)": ")",
-		"left[": "[",
-		"right]": "]",
-		'ge': ">=",
-		'lt': "<",
-		'le': "<=",
-		"infty": "∞",
-		"sim": "~",
-		"frac": "",
-		"backslash": "\\"
+		'cdot': '*',
+		'vee': '∨',
+		'wedge': '&&',
+		'neg': '¬',
+		'left': '',
+		'right': '',
+		'pm': '±',
+		'circ': '∘',
+		//'sqrt': '\u221A',
+		'div': '/',
+		'%': '%',
+		'gt': '>',
+		'left|': '\\abs(',
+		'right|': ')',
+		'times': '*',
+		':': '',
+		'left(': '(',
+		'right)': ')',
+		'left[': '[',
+		'right]': ']',
+		'ge': '>=',
+		'lt': '<',
+		'le': '<=',
+		'sim': '~',
+		'frac': '',
+		'backslash': '\\'
 	};
 	function deLaTeX(s){
 		//Converts a latex format equation into a text based one, 
@@ -37,48 +35,48 @@ Language.prototype._build = function() {
 		//O(n)
 		var i, l = s.length;
 		//indexOf is BAD!!! It is fine only when we only have one type of \expr
-		while ((i = s.indexOf("\\begin")) != -1){
-			var n = s.indexOf("}", i+7);
+		while ((i = s.indexOf('\\begin')) != -1){
+			var n = s.indexOf('}', i+7);
 
 			var type=s.substring(i+7,n);
 
-			var end_string="\\end{"+type+"}";
+			var end_string='\\end{'+type+'}';
 
 			var b = s.indexOf(end_string, n);
 			var x = s.substring(n+1,b);
 			switch (type) {
-				case "matrix":
+				case 'matrix':
 
-					x = x.replace(/\\\:/g, ",").replace(/\\\\/g, ";");
-					s = s.split("");
+					x = x.replace(/\\\:/g, ',').replace(/\\\\/g, ';');
+					s = s.split('');
 
-					s[i] = "[";
+					s[i] = '[';
 					s.splice(b, end_string.length - 1);
-					s[b] = "]";
+					s[b] = ']';
 					s.splice(n + 1, b - n - 1, x);
 					s.splice(i + 1, n + 1 - i - 1);
-					s = s.join("");
+					s = s.join('');
 					break;
 				default:
-					throw(new SyntaxError("Latex \\begin{" + type + "} block not understood."))
+					throw(new SyntaxError('Latex \\begin{' + type + '} block not understood.'))
 			}
 		}
-		while((i = s.indexOf("\\text")) !== -1){
-			var n = s.indexOf("}", i + 6);
+		while((i = s.indexOf('\\text')) !== -1){
+			var n = s.indexOf('}', i + 6);
 			var text = s.substring(i + 6, n);
 			
-			s = s.split("");
+			s = s.split('');
 			
-			s.splice(i, n - i + 1,"\\" + text);
-			s = s.join("");
+			s.splice(i, n - i + 1,'\\' + text);
+			s = s.join('');
 		}
-		while((i = s.indexOf("\\frac")) !== -1){
+		while((i = s.indexOf('\\frac')) !== -1){
 			var n, good = false;
 			var deep = 0;
 			for(n = i + 5; n < l; n++){
-				if (s[n] === "{") {
+				if (s[n] === '{') {
 					deep++;
-				} else if(s[n] === "}") {	
+				} else if(s[n] === '}') {	
 					deep--;
 					if (!deep) {
 						good = true;
@@ -91,16 +89,16 @@ Language.prototype._build = function() {
 			}
 			good = false;
 			
-			if(s[n+1] !== "{"){
-				throw(new SyntaxError("Unexpected '" + s[n+1] + "' between \\frac operands"));
+			if(s[n+1] !== '{'){
+				throw(new SyntaxError('Unexpected \'' + s[n+1] + '\' between \\frac operands'));
 			}
 			
 			var i2 = n + 1;
 			var n2;
 			for(n2 = i2; n2 < l; n2++){
-				if (s[n2] === "{") {
+				if (s[n2] === '{') {
 					deep++;
-				} else if(s[n2] === "}") {
+				} else if(s[n2] === '}') {
 					
 					deep--;
 					if (!deep) {
@@ -114,30 +112,30 @@ Language.prototype._build = function() {
 			if (!good) {
 				throw(new SyntaxError(msg.latexParse));
 			}
-			s = s.split("");
+			s = s.split('');
 			
 			//TODO: bad idea. maybe fix requiresParen...
-			s[i+5] = "((";
-			s[n] = ")";
-			s[i2] = "(";
-			s[n2] = "))";
-			s.splice(i2, 0, "/");
+			s[i+5] = '((';
+			s[n] = ')';
+			s[i2] = '(';
+			s[n2] = '))';
+			s.splice(i2, 0, '/');
 			s.splice(i, 5);
-			s=s.join("");
+			s=s.join('');
 			
 		}
-		s = s.replace(/\^([^\{\(])/g, "^{$1}")
-		s = s.replace(/\\left\|/g, "\\abs(");
-		s = s.replace(/\\right\|/g, ")");
-		s = s.replace(/\\\:/g, " ");
+		s = s.replace(/\^([^\{\(])/g, '^{$1}')
+		s = s.replace(/\\left\|/g, '\\abs(');
+		s = s.replace(/\\right\|/g, ')');
+		s = s.replace(/\\\:/g, ' ');
 		s = s.replace(/\\([a-z\%]+)/g, function(u, x) {
 			var s = latexexprs[x];
-			return " "+ ((s !== undefined) ? s : ("\\" + x));
+			return ' '+ ((s !== undefined) ? s : ('\\' + x));
 		});
 
 		//Naughty:
-		s = s.replace(/[\[\{]/g, "(");
-		s = s.replace(/[\]\}]/g, ")");
+		s = s.replace(/[\[\{]/g, '(');
+		s = s.replace(/[\]\}]/g, ')');
 
 		return s;
 	}
@@ -151,15 +149,15 @@ Language.prototype._build = function() {
 		parenclose: 6,
     	symbol: 7
 	};
-	var nummustbe = "1234567890.";
-	var operator_str_list = ["+", "-", "@", "*", "/", "^", "++", "=", "!", ",", "@-", "@+", "_", "#", "<", "<=", ">", ">=", "%"];
-	var parenopenmustbe = "([{";
-	var parenclosemustbe = "}\"])";
-	var varcannotbe = operator_str_list.join("") + parenopenmustbe + parenclosemustbe + nummustbe;
+	var nummustbe = '1234567890.';
+	var operator_str_list = ['+', '-', '@', '*', '/', '^', '++', '=', '!', ',', '@-', '@+', '_', '#', '<', '<=', '>', '>=', '%'];
+	var parenopenmustbe = '([{';
+	var parenclosemustbe = '}\'])';
+	var varcannotbe = operator_str_list.join('') + parenopenmustbe + parenclosemustbe + nummustbe;
 	var default_operator = undefined;
 	var match = [
 	    function none() {
-	        throw("NONE");
+	        throw('NONE');
 	    },
 		function string(x) {
 			return false;
@@ -171,7 +169,7 @@ Language.prototype._build = function() {
 			return operator_str_list.indexOf(x) !== -1;
 		},
 		function comment(x) {
-			return x[x.length-1] === " ";
+			return x[x.length-1] === ' ';
 		},
 		function parenopen(x) {
 			return (x.length == 1) && (parenopenmustbe.indexOf(x) != -1);
@@ -183,13 +181,13 @@ Language.prototype._build = function() {
 		    return /^[A-Za-z]$/.test(x[x.length-1]);
 		},
 		function Error(x) {
-		    throw (new SyntaxError("Invalid character: '" + x + "'"));
+		    throw (new SyntaxError('Invalid character: \'' + x + '\''));
 		}
 	];
 	//Latex:
 	var match = [
 	    function none() {
-	        throw("NONE");
+	        throw('NONE');
 	    },
 		function string(x) {
 			return false;
@@ -202,7 +200,7 @@ Language.prototype._build = function() {
 			return operator_str_list.indexOf(x) !== -1;
 		},
 		function comment(x) {
-			return x[x.length-1] === " ";
+			return x[x.length-1] === ' ';
 		},
 		function parenopen(x) {
 			return (x.length == 1) && (parenopenmustbe.indexOf(x) != -1);
@@ -211,19 +209,19 @@ Language.prototype._build = function() {
 			return (x.length == 1) && (parenclosemustbe.indexOf(x) != -1);
 		},
 		function symbol(x) {
-			if(x[0] === "\\") {
+			if(x[0] === '\\') {
 				return (x.length === 1) || /^[A-Za-z]$/.test(x[x.length-1]);
 			}
 			return x.length === 1 && /^[A-Za-z]$/.test(x[0]);
 		},
 		function Error(x) {
-		    throw (new SyntaxError("Invalid character: '" + x + "'"));
+		    throw (new SyntaxError('Invalid character: \'' + x + '\''));
 		}
 	];
 	
 	var names = match.map(function(e) {return e.name;});
 	this.parse = function (s, context) {
-		if(s === "") {
+		if(s === '') {
 			return undefined;
 		}
 		s = deLaTeX(s);
@@ -238,7 +236,7 @@ Language.prototype._build = function() {
 		function next_rpn(token) {
 			// While there are input tokens left
 			// Read the next token from input.
-			//console.log("rpn: ",token);
+			//console.log('rpn: ',token);
 			// If the token is a value
 			if (token.t === token_types.number || token.t === token_types.symbol) {
 				// Push it onto the stack.
@@ -252,7 +250,7 @@ Language.prototype._build = function() {
 				// If there are fewer than n values on the stack
 				if (rpn_stack.length < n) {
 					// (Error) The user has not input sufficient values in the expression.
-					throw (new SyntaxError("The '" + token.v + "' operator requires exactly " + n + " operands, whereas only " + rpn_stack.length + " " + (rpn_stack.length === 1 ? "was ": "were ") + "supplied, namely "+rpn_stack.toString()));
+					throw (new SyntaxError('The \'' + token.v + '\' operator requires exactly ' + n + ' operands, whereas only ' + rpn_stack.length + ' ' + (rpn_stack.length === 1 ? 'was ': 'were ') + 'supplied, namely '+rpn_stack.toString()));
 					// Else,
 				} else {
 					// Pop the top n values from the stack.
@@ -261,7 +259,7 @@ Language.prototype._build = function() {
 					//TODO: check non-binary operators
 					var values = spliced[0].apply(token.v, spliced.slice(1)[0]);
 					// Evaluate the operator, with the values as arguments.
-					//var evaled=(" ("+values[0]+token.v+values[1]+")");
+					//var evaled=(' ('+values[0]+token.v+values[1]+')');
 					// Push the returned results, if any, back onto the stack.
 					rpn_stack.push(values);
 				}
@@ -275,20 +273,20 @@ Language.prototype._build = function() {
 		//The same applies to the RPN evaluator (above)
 		function next_token(token) {
 		    if (token.t === token_types.symbol) {
-				if (token.v[0] === "\\") {
+				if (token.v[0] === '\\') {
 					//Latex names
 					token.v = token.v.substring(1);
 				}
 				//'Keyword' search: eg. break, if. Stuff like that.
 				if (operators[token.v]) {
 					token.t = token_types.operator;
-				} else if (token.v === "false") {
+				} else if (token.v === 'false') {
 					token.v = false;
-				} else if (token.v === "true") {
+				} else if (token.v === 'true') {
 					token.v = true;
-				} else if (token.v === "Infinity") {
+				} else if (token.v === 'Infinity') {
 					token.v = Infinity;
-				} else if (typeof token.v === "string") {
+				} else if (typeof token.v === 'string') {
 				    if (context[token.v]) {
 				        //Make .v a pointer to the referenced object.
 				        token.v = context[token.v];
@@ -297,7 +295,7 @@ Language.prototype._build = function() {
 				    }
 				}
 			}
-			//console.log("token: ", token.v, names[token.t]);
+			//console.log('token: ', token.v, names[token.t]);
 			//Comments from http://en.wikipedia.org/wiki/Shunting-yard_algorithm
 			// Read a token.
 			// If the token is a number, then add it to the output queue.
@@ -314,7 +312,7 @@ Language.prototype._build = function() {
 				var o1precedence = operators[o1.v][1];
 				//var o1associative=associativity(o1.v);
 				var o1associative = operators[o1.v][0];
-				// ("o2 " is assumed to exist)
+				// ('o2 ' is assumed to exist)
 				var o2;
 				// while
 				while (
@@ -361,7 +359,7 @@ Language.prototype._build = function() {
 
 				// Pop the left parenthesis from the stack, but not onto the output queue.
 				if (stack.pop().t !== token_types.parenopen) {
-					throw ("Pop the left parenthesis from the stack: Not found ! ")
+					throw ('Pop the left parenthesis from the stack: Not found ! ')
 				}
 			}
 		}
@@ -424,14 +422,14 @@ Language.prototype._build = function() {
 			var t__ = (the_operator = stack.pop()).t;
 			if ((t__ === token_types.parenopen) || (t__ === token_types.parenclose)) {
 				//there are mismatched parentheses.
-				throw ("There are mismatched parentheses.");
+				throw ('There are mismatched parentheses.');
 			}
 			//Pop the operator onto the output queue.
 			next_rpn(the_operator);
 		}
 		if (rpn_stack.length !== 1) {
-			console.warn("Stack not the right size! ", rpn_stack);
-			throw("Stack not the right size!");
+			console.warn('Stack not the right size! ', rpn_stack);
+			throw('Stack not the right size!');
 			//who gives?
 			return rpn_stack;
 		}

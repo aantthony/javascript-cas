@@ -53,25 +53,25 @@ Expression.Symbol.Real.prototype.arg = function() {
 	return Expression.List.Real([Global.arg, this]);
 };
 Expression.Symbol.Real.prototype.apply = function(operator, e) {
-	if (operator === ",") {
+	if (operator === ',') {
 		//Maybe this should be a new object type??? Vector?
-		console.log("APPLY: ", this.constructor, this, e);
+		console.log('APPLY: ', this.constructor, this, e);
 		return Expression.Vector([this, e]);
-	} else if (operator === "=") {
+	} else if (operator === '=') {
 		return Expression.Equation([this, e], operator);
 	}
 	if (e === undefined) {
 		//Unary:
 		switch (operator) {
-			case "!":
+			case '!':
 				//TODO: Can't simplify, so why bother! (return a list, since gamma maps all reals to reals?)
-				return Global.Gamma.apply(undefined, this.apply("+", Global.One));
-			case "@+":
-			case "@-":
+				return Global.Gamma.apply(undefined, this.apply('+', Global.One));
+			case '@+':
+			case '@-':
 				return Expression.List.Real([this], operator);
 			default:
 		}
-		throw("Real Symbol("+this.symbol+") could not handle operator "+ operator);
+		throw('Real Symbol('+this.symbol+') could not handle operator '+ operator);
 	} else {
 		// Simplification:
 		switch (e.constructor){
@@ -81,39 +81,39 @@ Expression.Symbol.Real.prototype.apply = function(operator, e) {
 					return Expression.List.Real([this, e], operator);
 				}*/
 				switch(operator) {
-					case "^":
+					case '^':
 						//TODO: Bad idea? This will stay in this form until realimag() is called by user, and user only.
 						//return Expression.List([this, e], operator);
 						return Expression.List.ComplexPolar([
-							Expression.List.Real([Expression.List.Real([Global.abs, this]), e],"^"),
-							Expression.List.Real([e, Expression.List.Real([Global.arg, this])],"*")
+							Expression.List.Real([Expression.List.Real([Global.abs, this]), e],'^'),
+							Expression.List.Real([e, Expression.List.Real([Global.arg, this])],'*')
 						]);
 					case undefined:
-						return Expression.List.Real([this, e], "*");
+						return Expression.List.Real([this, e], '*');
 					default:
 						return Expression.List.Real([this, e], operator);
 				}
 			case Expression.NumericalReal:
 				switch(operator){
-					case "+":
-					case "-":
+					case '+':
+					case '-':
 						if(e.value === 0){
 							return this;
 						}
 						return Expression.List.Real([this, e], operator);
 						break;
 					case undefined:
-					case "*":
+					case '*':
 						if(e.value === 1){
 							return this;
 						} else if(e.value === 0){
 							return Global.Zero;
 						}
-						return Expression.List.Real([this, e], "*");
+						return Expression.List.Real([this, e], '*');
 						break;
-					case "%":
-						return Expression.List.Real([this, e], "%");
-					case "^":
+					case '%':
+						return Expression.List.Real([this, e], '%');
+					case '^':
 						if(e.value === 1){
 							return this;
 						} else if(e.value === 0){
@@ -123,12 +123,12 @@ Expression.Symbol.Real.prototype.apply = function(operator, e) {
 							return Expression.List.Real([this, e], operator);
 						}
 						return Expression.List.ComplexPolar([
-							Expression.List.Real([Expression.List.Real([Global.abs, this]), e],"^"),
-							Expression.List.Real([e, Expression.List.Real([Global.arg, this])],"*")
+							Expression.List.Real([Expression.List.Real([Global.abs, this]), e],'^'),
+							Expression.List.Real([e, Expression.List.Real([Global.arg, this])],'*')
 						]);
 						
 						break;
-					case "/":
+					case '/':
 						if(e.value === 1){
 							return this;
 						} else if(e.value === 0){
@@ -145,31 +145,31 @@ Expression.Symbol.Real.prototype.apply = function(operator, e) {
 				//Maybe there is a way to swap the order? (e.g. a .real = true property for other things to check)
 				//or instance of Expression.Real ?
 				switch(operator) {
-					case "+":
-					case "-":
+					case '+':
+					case '-':
 						return Expression.List.ComplexCartesian([
 							this.apply(operator, e[0]),
 							e[1]
 						]);
 					case undefined:
-						operator = "*";
-					case "*":
+						operator = '*';
+					case '*':
 						return Expression.List.ComplexCartesian([
 							this.apply(operator, e[0]),
-							this.apply(operator, e[1]),
+							this.apply(operator, e[1])
 						]);
-					case "/":
+					case '/':
 						var cc_dd = e[0].apply('*',e[0]).apply('+',e[1].apply('*',e[1]));
 						return Expression.List.ComplexCartesian([
 							(this.apply('*',e[0])).apply('/', cc_dd),
-							this.apply('*',e[1]).apply('/', cc_dd).apply("@-")
+							this.apply('*',e[1]).apply('/', cc_dd).apply('@-')
 						]);
 				}
 			case Expression.List.ComplexPolar:
 				//Maybe there is a way to swap the order?
 				return this.polar().apply(operator, e);
 		}
-		throw("LIST FROM REAL SYMBOL! "+ operator, e.constructor);
+		throw('LIST FROM REAL SYMBOL! '+ operator, e.constructor);
 		return Expression.List([this, e], operator);
 	}
 };

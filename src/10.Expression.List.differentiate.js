@@ -1,11 +1,14 @@
 Expression.List.prototype.differentiate = function(x) {
 	switch (this.operator) {
 		case undefined:
-			if(this[0].apply_differentiate && this.length === 2) {
-				return this[0].apply_differentiate(this.operator, this[1], x);
-			}
 			//TODO: Ensure left expr is not a function, so we know it is scalar multiplication.
-			//throw(".differentiate() method invoked for Expression without operator?");
+			//throw('.differentiate() method invoked for Expression without operator?');
+			
+			// D(f(g(x))) = D(f) * D(g)
+			// d f(g(x))/dx = df/dx = df/dg * dg/dx
+			if(this[0] instanceof Expression.Function) {
+				return this[0].differentiate(x).apply('*', this[1].differentiate(x));
+			}
 		case '*':
 			return this[0]
 				.differentiate(x)
@@ -19,8 +22,8 @@ Expression.List.prototype.differentiate = function(x) {
 						this[0]
 					)
 				);
-		case "@+":
-		case "@-":
+		case '@+':
+		case '@-':
 			return this[0].differentiate(x).apply(this.operator);
 		case '+':
 		case '-':
@@ -32,19 +35,19 @@ Expression.List.prototype.differentiate = function(x) {
 				);
 		case '^':
 			return this[0]
-				.apply("^",
-					this[1].apply("-", Global.One)
+				.apply('^',
+					this[1].apply('-', Global.One)
 				)
-				.apply("*",
+				.apply('*',
 					this[1]
-					.apply("*",
+					.apply('*',
 						this[0].differentiate(x)
 					)
-					.apply("+",
+					.apply('+',
 						this[0]
-						.apply("*",
+						.apply('*',
 							Global.log.apply(undefined, this[0])
-							.apply("*",
+							.apply('*',
 								this[1].differentiate(x)
 							)
 						)
@@ -69,7 +72,7 @@ Expression.List.prototype.differentiate = function(x) {
 					)
 				);
 		default:
-			throw("Cannot differentiate "+this.operator + " operator.");
+			throw('Cannot differentiate '+this.operator + ' operator.');
 	}
 };
 

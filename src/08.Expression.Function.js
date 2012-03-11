@@ -1,9 +1,13 @@
-Expression.LambdaExpression = function (expr, bound_symbols){
+Expression.Function = function (expr, bound_symbols) {
 	this.expr = expr;
 	this.symbols = bound_symbols;
 };
-Expression.LambdaExpression.prototype = Object.create(Expression.prototype);
-
-Expression.LambdaExpression.prototype.apply = function (operator) {
+Expression.Function.prototype = Object.create(Expression.prototype);
+Expression.Function.prototype = {};
+	
+Expression.Function.prototype.apply = function (operator, argument) {
+	return
+};
+Expression.Function.Symbolic = function (application) {
 	
 };

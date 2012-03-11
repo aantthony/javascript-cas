@@ -29,7 +29,7 @@ Expression.List.ComplexCartesian.prototype.imag = function(){
 Expression.List.ComplexCartesian.prototype.conjugate = function () {
 	return Expression.List.ComplexCartesian([
 		this[0],
-		this[1].apply("@-")
+		this[1].apply('@-')
 	]);
 };
 Expression.List.ComplexCartesian.prototype.constructor = Expression.List.ComplexCartesian;
@@ -37,26 +37,26 @@ Expression.List.ComplexCartesian.prototype.apply = function(o, x){
 	//TODO: ensure this has an imaginary part. If it doesn't it is a huge waste of computation
 	if (x.constructor === this.constructor) {
 		switch(o) {
-			case "+":
-			case "-":
+			case '+':
+			case '-':
 				return Expression.List.ComplexCartesian([
 					this[0].apply(o, x[0]),
 					this[1].apply(o, x[1])
 				]);
 			case undefined:
 				//Function evaluation? NO. This is not a function. I think.
-			case "*":
+			case '*':
 				return Expression.List.ComplexCartesian([
 					this[0].apply('*', x[0]).apply('-', this[1].apply('*', x[1])),
 					this[0].apply('*', x[1]).apply('+', this[1].apply('*', x[0]))
 				]);
-			case "/":
+			case '/':
 				var cc_dd = x[0].apply('*', x[0]).apply('+', x[1].apply('*', x[1]));
 				return Expression.List.ComplexCartesian([
 					(this[0].apply('*',x[0]).apply('+',this[1].apply('*',x[1]))).apply('/', cc_dd),
 					(this[1].apply('*',x[0]).apply('-',this[0].apply('*',x[1]))).apply('/', cc_dd)
 				]);
-			case "^":
+			case '^':
 				//The most confusing of them all:
 				var half = new Expression.NumericalReal(0.5, 0);
 				var hlm = half.apply('*',
@@ -85,7 +85,7 @@ Expression.List.ComplexCartesian.prototype.apply = function(o, x){
 				);
 				*/
 
-				var e_hmlc_td = Global.e.apply("^",
+				var e_hmlc_td = Global.e.apply('^',
 					hlm.apply('*',
 						x[0]
 					).apply('-',
@@ -99,36 +99,36 @@ Expression.List.ComplexCartesian.prototype.apply = function(o, x){
 					(e_hmlc_td.apply('*',Global.cos.apply(undefined, hmld_tc))),
 					(e_hmlc_td.apply('*',Global.sin.apply(undefined, hmld_tc)))
 				]);
-			case "!":
+			case '!':
 			default:
 		}
 	} else if (x.constructor === Expression.List.ComplexPolar){
 		switch (o) {
-			case "*":
-			case "/":
+			case '*':
+			case '/':
 				//(x+yi)/A*e^(ik)
-				var cc_dd = x[0].apply("*", x[0]);
+				var cc_dd = x[0].apply('*', x[0]);
 				var b = x.realimag();
 				//Clean this up? Sub?
 				return Expression.List.ComplexCartesian([
 					(this[0].apply('*',b[0]).apply('+',a[1].apply('*',b[1]))).apply('/', cc_dd),
 					(this[1].apply('*',b[0]).apply('-',a[0].apply('*',b[1]))).apply('/', cc_dd)
 				]);
-			case "^":
+			case '^':
 				//http://www.wolframalpha.com/input/?i=Re%28%28x%2Byi%29%5E%28A*e%5E%28ik%29%29%29
 				//(x+yi)^(A*e^(ik))
-			case "+":
-			case "-":
+			case '+':
+			case '-':
 				return this.apply(o, x.realimag());
 		}
 	} else if (x.constructor === Expression.Complex) {
 		return this.apply(o, x.realimag());
 	} else if (x.constructor === Expression.Symbol.Real) {
-		console.error("Duplicated an x! This makes it difficult to solve complex equations, I think");
+		console.error('Duplicated an x! This makes it difficult to solve complex equations, I think');
 		return this.apply(o, x.realimag());
 	} else if (x.constructor === Expression.List.Real) {
-		console.error("Duplicated an x! This makes it difficult to solve complex equations, I think");
+		console.error('Duplicated an x! This makes it difficult to solve complex equations, I think');
 		return this.apply(o, x.realimag());
 	}
-	throw("CMPLX.LIST * " + o);
+	throw('CMPLX.LIST * ' + o);
 };
