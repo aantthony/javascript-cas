@@ -30,20 +30,10 @@ Expression.List.Real.prototype.abs = function (){
 Expression.List.Real.prototype.arg = function (){
 	return Expression.List.Real([Global.arg, this]);
 };
+Expression.List.Real.prototype['+'] = Expression.Symbol.Real.prototype['+'];
+Expression.List.Real.prototype['-'] = Expression.Symbol.Real.prototype['-'];
+Expression.List.Real.prototype['*'] = Expression.Symbol.Real.prototype['*'];
+Expression.List.Real.prototype['/'] = Expression.Symbol.Real.prototype['/'];
+Expression.List.Real.prototype['^'] = Expression.Symbol.Real.prototype['^'];
 
-Expression.List.Real.prototype.apply = Expression.Symbol.Real.prototype.apply;
 Expression.List.Real.prototype.constructor = Expression.List.Real;
-
-
-/*
-
-
-Expression.List.Real.Positive = function List_Real_Positive(list, operator){
-	if(!operator){
-		throw('MUST SUPPLY OPERATOR');
-	}
-	list.__proto__ = Expression.List.Real.Positive.prototype;
-};
-Expression.List.Real.Positive.prototype = Object.create(Expression.List.Real.prototype);
-
-*/

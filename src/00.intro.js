@@ -19,6 +19,6 @@
  */
 
 
-(function(window, undefined){
+(function(undefined){
 	"use strict";
 	

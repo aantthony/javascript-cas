@@ -1,46 +1,18 @@
-Language.prototype._build = function() {
-	var latexexprs = {
-		'cdot': '*',
-		'vee': '∨',
-		'wedge': '&&',
-		'neg': '¬',
-		'left': '',
-		'right': '',
-		'pm': '±',
-		'circ': '∘',
-		//'sqrt': '\u221A',
-		'div': '/',
-		'%': '%',
-		'gt': '>',
-		'left|': '\\abs(',
-		'right|': ')',
-		'times': '*',
-		':': '',
-		'left(': '(',
-		'right)': ')',
-		'left[': '[',
-		'right]': ']',
-		'ge': '>=',
-		'lt': '<',
-		'le': '<=',
-		'sim': '~',
-		'frac': '',
-		'backslash': '\\'
-	};
-	function deLaTeX(s){
+Language.prototype._build = function () {
+	this._build = undefined;
+	function deLaTeX(s) {
 		//Converts a latex format equation into a text based one, 
 		//where multi-character names keep a preceeding and required \ character
 
 		//A mess!!!!
-		//O(n)
 		var i, l = s.length;
 		//indexOf is BAD!!! It is fine only when we only have one type of \expr
-		while ((i = s.indexOf('\\begin')) != -1){
+		while ((i = s.indexOf('\\begin')) != -1) {
 			var n = s.indexOf('}', i+7);
 
-			var type=s.substring(i+7,n);
+			var type = s.substring(i+7,n);
 
-			var end_string='\\end{'+type+'}';
+			var end_string = '\\end{'+type+'}';
 
 			var b = s.indexOf(end_string, n);
 			var x = s.substring(n+1,b);
@@ -61,7 +33,7 @@ Language.prototype._build = function() {
 					throw(new SyntaxError('Latex \\begin{' + type + '} block not understood.'))
 			}
 		}
-		while((i = s.indexOf('\\text')) !== -1){
+		while ((i = s.indexOf('\\text')) !== -1) {
 			var n = s.indexOf('}', i + 6);
 			var text = s.substring(i + 6, n);
 			
@@ -70,7 +42,7 @@ Language.prototype._build = function() {
 			s.splice(i, n - i + 1,'\\' + text);
 			s = s.join('');
 		}
-		while((i = s.indexOf('\\frac')) !== -1){
+		while ((i = s.indexOf('\\frac')) !== -1) {
 			var n, good = false;
 			var deep = 0;
 			for(n = i + 5; n < l; n++){
@@ -85,20 +57,20 @@ Language.prototype._build = function() {
 				}
 			}
 			if (!good) {
-				throw(new SyntaxError(msg.latexParse));
+				throw (new SyntaxError(msg.latexParse));
 			}
 			good = false;
 			
-			if(s[n+1] !== '{'){
-				throw(new SyntaxError('Unexpected \'' + s[n+1] + '\' between \\frac operands'));
+			if (s[n+1] !== '{') {
+				throw (new SyntaxError('Unexpected \'' + s[n+1] + '\' between \\frac operands'));
 			}
 			
 			var i2 = n + 1;
 			var n2;
-			for(n2 = i2; n2 < l; n2++){
+			for (n2 = i2; n2 < l; n2++) {
 				if (s[n2] === '{') {
 					deep++;
-				} else if(s[n2] === '}') {
+				} else if (s[n2] === '}') {
 					
 					deep--;
 					if (!deep) {
@@ -110,7 +82,7 @@ Language.prototype._build = function() {
 				}
 			}
 			if (!good) {
-				throw(new SyntaxError(msg.latexParse));
+				throw (new SyntaxError(msg.latexParse));
 			}
 			s = s.split('');
 			
@@ -121,10 +93,10 @@ Language.prototype._build = function() {
 			s[n2] = '))';
 			s.splice(i2, 0, '/');
 			s.splice(i, 5);
-			s=s.join('');
+			s = s.join('');
 			
 		}
-		s = s.replace(/\^([^\{\(])/g, '^{$1}')
+		s = s.replace(/\^([^\{\(])/g, '^{$1}');
 		s = s.replace(/\\left\|/g, '\\abs(');
 		s = s.replace(/\\right\|/g, ')');
 		s = s.replace(/\\\:/g, ' ');
@@ -139,87 +111,113 @@ Language.prototype._build = function() {
 
 		return s;
 	}
-	var operators = this.operators;
-	var token_types = {
-		string: 1,
-		number: 2,
-		operator: 3,
-		comment: 4,
-		parenopen: 5,
-		parenclose: 6,
-    	symbol: 7
-	};
-	var nummustbe = '1234567890.';
-	var operator_str_list = ['+', '-', '@', '*', '/', '^', '++', '=', '!', ',', '@-', '@+', '_', '#', '<', '<=', '>', '>=', '%'];
-	var parenopenmustbe = '([{';
-	var parenclosemustbe = '}\'])';
-	var varcannotbe = operator_str_list.join('') + parenopenmustbe + parenclosemustbe + nummustbe;
-	var default_operator = undefined;
-	var match = [
-	    function none() {
-	        throw('NONE');
-	    },
-		function string(x) {
-			return false;
+	var latexexprs = {
+			'cdot': '*',
+			'vee': '∨',
+			'wedge': '&&',
+			'neg': '¬',
+			'left': '',
+			'right': '',
+			'pm': '±',
+			'circ': '∘',
+			//'sqrt': '\u221A',
+			'div': '/',
+			'%': '%',
+			'gt': '>',
+			'left|': '\\abs(',
+			'right|': ')',
+			'times': '*',
+			':': '',
+			'left(': '(',
+			'right)': ')',
+			'left[': '[',
+			'right]': ']',
+			'ge': '>=',
+			'lt': '<',
+			'le': '<=',
+			'sim': '~',
+			'frac': '',
+			'backslash': '\\'
 		},
-		function number(x) {
-			return nummustbe.indexOf(x[x.length-1]) !== -1;
+		operators = this.operators,
+		token_types = {
+			string: 1,
+			number: 2,
+			operator: 3,
+			comment: 4,
+			parenopen: 5,
+			parenclose: 6,
+    		symbol: 7
 		},
-		function operator(x) {
-			return operator_str_list.indexOf(x) !== -1;
-		},
-		function comment(x) {
-			return x[x.length-1] === ' ';
-		},
-		function parenopen(x) {
-			return (x.length == 1) && (parenopenmustbe.indexOf(x) != -1);
-		},
-		function parenclose(x) {
-			return (x.length == 1) && (parenclosemustbe.indexOf(x) != -1);
-		},
-		function symbol(x) {
-		    return /^[A-Za-z]$/.test(x[x.length-1]);
-		},
-		function Error(x) {
-		    throw (new SyntaxError('Invalid character: \'' + x + '\''));
-		}
-	];
-	//Latex:
-	var match = [
-	    function none() {
-	        throw('NONE');
-	    },
-		function string(x) {
-			return false;
-		},
-		function number(x) {
-			//Not correct: e.g, 3.2.5
-			return nummustbe.indexOf(x[x.length - 1]) !== -1;
-		},
-		function operator(x) {
-			return operator_str_list.indexOf(x) !== -1;
-		},
-		function comment(x) {
-			return x[x.length-1] === ' ';
-		},
-		function parenopen(x) {
-			return (x.length == 1) && (parenopenmustbe.indexOf(x) != -1);
-		},
-		function parenclose(x) {
-			return (x.length == 1) && (parenclosemustbe.indexOf(x) != -1);
-		},
-		function symbol(x) {
-			if(x[0] === '\\') {
-				return (x.length === 1) || /^[A-Za-z]$/.test(x[x.length-1]);
+		nummustbe = '1234567890.',
+		operator_str_list = ['+', '-', '@', '*', '/', '^', '++', '=', '!', ',', '@-', '@+', '_', '#', '<', '<=', '>', '>=', '%'],
+		parenopenmustbe = '([{',
+		parenclosemustbe = '}\'])',
+		varcannotbe = operator_str_list.join('') + parenopenmustbe + parenclosemustbe + nummustbe,
+		default_operator = undefined,
+		match = [
+	    	function none() {
+	        	throw('NONE');
+	    	},
+			function string(x) {
+				return false;
+			},
+			function number(x) {
+				return nummustbe.indexOf(x[x.length-1]) !== -1;
+			},
+			function operator(x) {
+				return operator_str_list.indexOf(x) !== -1;
+			},
+			function comment(x) {
+				return x[x.length-1] === ' ';
+			},
+			function parenopen(x) {
+				return (x.length == 1) && (parenopenmustbe.indexOf(x) != -1);
+			},
+			function parenclose(x) {
+				return (x.length == 1) && (parenclosemustbe.indexOf(x) != -1);
+			},
+			function symbol(x) {
+		    	return /^[A-Za-z]$/.test(x[x.length-1]);
+			},
+			function Error(x) {
+		    	throw (new SyntaxError('Invalid character: \'' + x + '\''));
 			}
-			return x.length === 1 && /^[A-Za-z]$/.test(x[0]);
-		},
-		function Error(x) {
-		    throw (new SyntaxError('Invalid character: \'' + x + '\''));
-		}
-	];
-	
-	var names = match.map(function(e) {return e.name;});
+		],
+		match = [
+	    	function none() {
+	        	throw('NONE');
+	    	},
+			function string(x) {
+				return false;
+			},
+			function number(x) {
+				//Not correct: e.g, 3.2.5
+				return nummustbe.indexOf(x[x.length - 1]) !== -1;
+			},
+			function operator(x) {
+				return operator_str_list.indexOf(x) !== -1;
+			},
+			function comment(x) {
+				return x[x.length-1] === ' ';
+			},
+			function parenopen(x) {
+				return (x.length == 1) && (parenopenmustbe.indexOf(x) != -1);
+			},
+			function parenclose(x) {
+				return (x.length == 1) && (parenclosemustbe.indexOf(x) != -1);
+			},
+			function symbol(x) {
+				if(x[0] === '\\') {
+					return (x.length === 1) || /^[A-Za-z]$/.test(x[x.length-1]);
+				}
+				return x.length === 1 && /^[A-Za-z]$/.test(x[0]);
+			},
+			function Error(x) {
+		    	throw (new SyntaxError('Invalid character: \'' + x + '\''));
+			}
+		],
+		names = match.map(function(e) {return e.name;});
 	this.parse = function (s, context) {
 		if(s === '') {
 			return undefined;
@@ -232,11 +230,10 @@ Language.prototype._build = function() {
 		//Stack of tokens for RPN notation. ('evaluated' to a tree representation)
 		var rpn_stack = [];
 		
-		//The evelauation part of the shunting yard algorithm inside out.
+		//The evelauation part of the shunting yard algorithm.
 		function next_rpn(token) {
 			// While there are input tokens left
 			// Read the next token from input.
-			//console.log('rpn: ',token);
 			// If the token is a value
 			if (token.t === token_types.number || token.t === token_types.symbol) {
 				// Push it onto the stack.
@@ -256,8 +253,9 @@ Language.prototype._build = function() {
 					// Pop the top n values from the stack.
 					var spliced = rpn_stack.splice( - n, n);
 					//var values = ExpressionWithArray(spliced, token.v);
-					//TODO: check non-binary operators
-					var values = spliced[0].apply(token.v, spliced.slice(1)[0]);
+					// TODO: check non-binary operators
+					// var values = spliced[0].apply(token.v, spliced.slice(1)[0]);
+					var values = spliced[0][token.v](spliced.splice(1)[0]);
 					// Evaluate the operator, with the values as arguments.
 					//var evaled=(' ('+values[0]+token.v+values[1]+')');
 					// Push the returned results, if any, back onto the stack.

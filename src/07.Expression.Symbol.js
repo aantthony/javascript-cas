@@ -14,9 +14,9 @@ Expression.Symbol.prototype.differentiate = function(x) {
 };
 Expression.Symbol.prototype.integrate = function(x) {
     if (this.symbol === x) {
-        return new Expression.NumericalReal(0.5, 0).apply('*', x.apply('^', new Expression.NumericalReal(2,0)));
+		return new Expression.NumericalReal(0.5, 0) ['*'] (x ['^'] (new Expression.NumericalReal(2,0)));
     } else {
-        return this.apply('*', x);
+        return (this) ['*'] (x);
     }
 };
 
@@ -52,7 +52,21 @@ Expression.Symbol.Real.prototype.abs = function() {
 Expression.Symbol.Real.prototype.arg = function() {
 	return Expression.List.Real([Global.arg, this]);
 };
+
+Expression.Symbol.Real.prototype['+'] = function (x) {
+	return Expression.List.Real([this, x], '+');
+};
+Expression.Symbol.Real.prototype['*'] = function (x) {
+	return Expression.List.Real([this, x], '*');
+};
+Expression.Symbol.Real.prototype['/'] = function (x) {
+	return Expression.List.Real([this, x], '/');
+};
+Expression.Symbol.Real.prototype['^'] = function (x) {
+	return Expression.List.Real([this, x], '^');
+};
 Expression.Symbol.Real.prototype.apply = function(operator, e) {
+	throw("Real.apply");
 	if (operator === ',') {
 		//Maybe this should be a new object type??? Vector?
 		console.log('APPLY: ', this.constructor, this, e);

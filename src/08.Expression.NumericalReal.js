@@ -18,6 +18,168 @@ Expression.NumericalReal.prototype.realimag = function() {
 Expression.NumericalReal.prototype.conjugate = function() {
 	return this;
 };
+
+Expression.NumericalReal.prototype['+'] = function (x) {
+	if(this.value === 0) {
+		return x;
+	}
+	if(x.constructor === this.constructor){
+		return new Expression.NumericalReal(this.value + x.value);
+	} else if (x.constructor === Expression.NumericalComplex) {
+		return new Expression.Complex(this.value + x._real, x._imag);
+	} else if(x.constructor === Expression.List.ComplexCartesian) {
+		// commute
+		return (x)['+'](this);
+	} else if(x.constructor === Expression.List.ComplexPolar) {	
+		return (x)['+'](this);
+	} else if(x.constructor === Expression.List.Real) {
+		return (x)['+'](this);
+	} else if(x.constructor === Expression.Symbol.Real) {
+		return (x)['+'](this);
+	} else if(x.constructor === Expression.List) {
+		return (x)['+'](this);
+	} else {
+		throw ('Unknown Type for NumericalReal +');
+	}
+};
+
+Expression.NumericalReal.prototype['@-'] = function (x) {
+	return new Expression.NumericalReal(-this.value);
+}
+Expression.NumericalReal.prototype['-'] = function (x) {
+	if(this.value === 0) {
+		return x['@-']();
+	}
+};
+
+Expression.NumericalReal.prototype['%'] = function (x) {
+	var nonreal = 'The modular arithmetic operator \'%\' is not defined for non-real numbers.';
+	if(this.value === 0) {
+		return Global.Zero;
+	}
+	if(x.constructor === this.constructor){
+		return new Expression.NumericalReal(this.value % x.value);
+	} else if(x.constructor === Expression.List.Real) {
+		return Expression.List.Real([this, x], '%');
+	} else if(x.constructor === Expression.Symbol.Real) {
+		return Expression.List.Real([this, x], '%');
+	} else if(x.constructor === Expression.List) {
+		// Not sure about this
+		return Expression.List.Real([this, x], '%');
+	} else if (x.constructor === Expression.NumericalComplex) {
+		throw(new TypeError(nonreal));
+	} else if (x.constructor === Expression.List.ComplexCartesian) {
+		throw(new TypeError(nonreal));
+	} else if (x.constructor === Expression.List.ComplexPolar) {	
+		throw(new TypeError(nonreal));
+	} else {
+		throw ('Unknown Type for NumericalReal %');
+	}
+};
+Expression.NumericalReal.prototype['*'] = function (x) {
+	if(this.value === 0) {
+		return Global.Zero;
+	}
+	if(this.value === 1) {
+		return x;
+	}
+	if(x.constructor === this.constructor){
+		return new Expression.NumericalReal(this.value * x.value);
+	} else if (x.constructor === Expression.NumericalComplex) {
+		// Same as commuted
+		return new Expression.Complex(this.value * x._real, this.value * x._imag);
+	} else if(x.constructor === Expression.List.ComplexCartesian) {
+		// commute. The problem with this is that the if else... thing will be repeated
+		return (x)['*'](this);
+	} else if(x.constructor === Expression.List.ComplexPolar) {	
+		return (x)['*'](this);
+	} else if(x.constructor === Expression.List.Real) {
+		return (x)['*'](this);
+	} else if(x.constructor === Expression.Symbol.Real) {
+		return (x)['*'](this);
+	} else if(x.constructor === Expression.List) {
+		return (x)['*'](this);
+	} else {
+		throw ('Unknown Type for NumericalReal *');
+	}
+};
+Expression.NumericalReal.prototype['/'] = function (x) {
+	if(this.value === 0) {
+		return Global.Zero;
+	}
+	if(x.constructor === this.constructor){
+		if(x.value === 0) {
+			throw('Division by zero not allowed!');
+		}
+		return new Expression.NumericalReal(this.value / x.value);
+	} else if (x.constructor === Expression.NumericalComplex) {
+		var cc_dd = x._real * x._real + x._imag * x._imag;
+		return new Expression.Complex((this.value * x._real)/cc_dd, (-this.value * x._imag) / cc_dd);
+	} else if(x.constructor === Expression.List.ComplexCartesian) {
+		// commute. The problem with this is that the if else... thing will be repeated
+		return (x)['*'](this);
+	} else if(x.constructor === Expression.List.ComplexPolar) {	
+		return (x)['*'](this);
+	} else if(x.constructor === Expression.List.Real) {
+		return (x)['*'](this);
+	} else if(x.constructor === Expression.Symbol.Real) {
+		return (x)['*'](this);
+	} else if(x.constructor === Expression.List) {
+		return (x)['*'](this);
+	} else {
+		throw ('Unknown Type for NumericalReal *');
+	}
+};
+Expression.NumericalReal.prototype['^'] = function (x) {
+	if(this.value === 0) {
+		return Global.Zero;
+	}
+	if(this.value === 1) {
+		return Global.One;
+	}
+	if(x.constructor === this.constructor){
+		if(this.value > 0) {
+			return new Expression.NumericalReal(Math.pow(this.value, x.value));
+		}
+		// TODO: This will produce ugly decimals. Maybe we should express it in polar form?!
+		//      <- I think no, because why else start with a numerical. Implement a rational/integer type
+		var r = Math.pow(-this.value, x.value);
+		var theta = Math.PI * x.value;
+		return new Expression.Complex(r * Math.cos(theta), r * Math.sin(theta));
+	} else if (x.constructor === Expression.NumericalComplex) {
+		var a = this.value;
+		var c = x._real;
+		var d = x._imag;
+		console.error('Bad implementation ( num ^ complex)');
+		var hlm = 0.5 * Math.log(a*a);
+		var hmld_tc = hlm * d;
+		var e_hmlc_td = Math.exp(hlm * c);
+		return new Expression.Complex(
+			(e_hmlc_td * Math.cos(hmld_tc)),
+			(e_hmlc_td * Math.sin(hmld_tc))
+		);
+	} else if (x.constructor === Expression.List.ComplexCartesian) {
+		return Expression.List([this, x], '^');
+	} else if (x.constructor === Expression.List.ComplexPolar) {
+		return Expression.List([this, x], '^');
+	} else if (x.constructor === Expression.List.Real) {
+		if(this.value > 0) {
+			return Expression.List.Real([this, x], '^');
+		}
+		return Expression.List([this, x], '^');
+	} else if (x.constructor === Expression.Symbol.Real) {
+		if(this.value > 0) {
+			return Expression.List.Real([this, x], '^');
+		}
+		return Expression.List([this, x], '^');
+	} else if (x.constructor === Expression.List) {
+		return Expression.List([this, x], '^');
+	} else {
+		throw ('Unknown Type for NumericalReal ^');
+	}
+};
+
+
 Expression.NumericalReal.prototype.apply = function(operator, x) {
 	switch (operator){
 		case ',':
