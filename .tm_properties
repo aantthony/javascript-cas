@@ -1,0 +1,4 @@
+tabSize          = 4
+projectDirectory = "$CWD"
+windowTitle      = "$TM_DISPLAYNAME — javascript-cas"
+softTabs         = false

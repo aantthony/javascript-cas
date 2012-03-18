@@ -32,6 +32,7 @@ Expression.List.Real.prototype.arg = function (){
 };
 Expression.List.Real.prototype['+'] = Expression.Symbol.Real.prototype['+'];
 Expression.List.Real.prototype['-'] = Expression.Symbol.Real.prototype['-'];
+Expression.List.Real.prototype['@-'] = Expression.Symbol.Real.prototype['@-'];
 Expression.List.Real.prototype['*'] = Expression.Symbol.Real.prototype['*'];
 Expression.List.Real.prototype['/'] = Expression.Symbol.Real.prototype['/'];
 Expression.List.Real.prototype['^'] = Expression.Symbol.Real.prototype['^'];

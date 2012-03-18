@@ -2,16 +2,16 @@
 //The apply has nothing to do with Function.prototype.apply, for now.
 
 Global['sin'] = {
-	apply: function(op, x) {
+	default: function(x) {
 		switch (x.constructor) {
-			case Expression.Complex:
+			case Expression.ComplexNumerical:
 				// sin(a+bi) = sin(a)cosh(b) + i cos(a)sinh(b)
 				var exp_b = Math.exp(x._imag);
 				var cosh_b = (exp_b + 1 / exp_b) / 2;
 				var sinh_b = (exp_b - 1 / exp_b) / 2;
-				return new Expression.Complex(Math.sin(x._real) * cosh_b, Math.cos(x._real) * sinh_b);
+				return new Expression.ComplexNumerical(Math.sin(x._real) * cosh_b, Math.cos(x._real) * sinh_b);
 			case Expression.NumericalReal:
-				return new Expression.NumericalReal(Math.sin(x));
+				return new Expression.NumericalReal(Math.sin(x.value));
 			case Expression.List.Real:
 			case Expression.Symbol.Real:
 				return Expression.List.Real([Global.sin, x]);
@@ -27,11 +27,11 @@ Global['sin'] = {
 				throw('???');
 			case Expression.List:
 				var ri = x.realimag();
-				var exp_b = Global.e.apply('^', ri[1]);
-				var one_o_exp_b = Global.One.apply('/', exp_b);
+				var exp_b = Global.e['^'](ri[1]);
+				var one_o_exp_b = Global.One['/'](exp_b);
 				var two = new Expression.NumericalReal(2);
-				var cosh_b = exp_b.apply('+', one_o_exp_b).apply('/', two);
-				var sinh_b = exp_b.apply('-', one_o_exp_b).apply('/', two);
+				var cosh_b = exp_b['+'](one_o_exp_b)['/'](two);
+				var sinh_b = exp_b['-'](one_o_exp_b)['/'](two);
 
 				return [Global.sin.apply(undefined, ri[0]).apply('*', cosh_b),
 					Global.cos.apply(undefined, ri[0]).apply('*', sinh_b)
@@ -59,7 +59,7 @@ Global['sin'] = {
 	related: ['cos', 'tan']
 };
 Global['cos'] = {
-	apply: function(op, x) {
+	default: function(x) {
 		switch (x.constructor) {
 			case Expression.Complex:
 				// cos(a+bi) = sin(a)cosh(b) + i cos(a)sinh(b)
@@ -116,7 +116,7 @@ Global['cos'] = {
 	related: ['sin', 'tan']
 };
 Global['log'] = {
-	apply: function (op, x, assumptions) {
+	default: function (x, assumptions) {
 		switch (x.constructor) {
 			case Expression.Complex:
 				throw('Not ready Type!: ' + x.constructor);
@@ -167,7 +167,7 @@ Global['log'] = {
 	related: ['exp', 'Log']
 };
 Global['atan2'] = {
-	apply: function(op, x) {
+	default: function(x) {
 		console.log('Apply atan2');
 		switch (x[0].constructor) {
 			case Expression.Complex:
@@ -219,7 +219,7 @@ Global['atan2'] = {
 Global['atan'] = Global.atan2;
 
 Global['Gamma'] = {
-	apply: function(op, x){
+	default: function(x){
 		function gammln(xx) {
 		    var j;
 		    var x, tmp, y, ser;
@@ -280,7 +280,7 @@ Global['Gamma'] = {
 	related: ['Log', 'LogGamma']
 };
 Global['Re'] = {
-	apply: function(op, x) {
+	default: function(x) {
 		return x.real();
 	},
 	apply_realimag: function(op, x) {
@@ -289,7 +289,7 @@ Global['Re'] = {
 	'text/latex': '\\Re'
 };
 Global['Im'] = {
-	apply: function(op, x) {
+	default: function(x) {
 		return x.imag();
 	},
 	distributed_under_differentiation: true,
@@ -299,7 +299,7 @@ Global['Im'] = {
 	'text/latex': '\\Im'
 }
 Global['sqrt'] = {
-	apply: function (op, x) {
+	default: function (x) {
 		switch (x.constructor) {
 			case Expression.Complex:
 				//http://www.mathpropress.com/stan/bibliography/complexSquareRoot.pdf
@@ -348,7 +348,7 @@ Global['sqrt'] = {
 	related: ['pow', 'abs', 'mod']
 };
 Global['abs'] = {
-	apply: function (op, x) {
+	default: function (x) {
 		console.warn('ABS IS FOR USER INPUT ONLY. USE .abs()');
 		//Using abs is better (I think) because it finds the method through the prototype chain,
 		//which is going to be faster than doing an if list / switch case list. TODO: Check the truthfullnes of this!
@@ -374,7 +374,7 @@ Global['abs'] = {
 	related: ['arg', 'tan']
 };
 Global['arg'] = {
-	apply: function (op, x) {
+	default: function (x) {
 		console.warn('ARG IS FOR USER INPUT ONLY. USE .arg()');
 		//Using abs is better (I think) because it finds the method through the prototype chain,
 		//which is going to be faster than doing an if list / switch case list. TODO: Check the truthfullnes of this!

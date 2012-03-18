@@ -13,7 +13,7 @@ M.toString = function() {
 // M.fn = Expression.prototype;
 
 //Allow creation of new Context externally
-M['Context'] = Global;
+M['Context'] = Context;
 
 //Allow modification of global context
 M['Global'] = Global;
@@ -26,7 +26,7 @@ M.register = function (name, installer){
 	extensions[name] = installer;
 };
 M.load = function(name, config) {
-	Expression.prototype[name] = extensions[name](config);
+	extensions[name](M, Expression, config);
 	delete extensions[name];
 };
 

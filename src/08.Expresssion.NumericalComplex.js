@@ -19,7 +19,110 @@ Expression.NumericalComplex.prototype.realimag = function() {
 Expression.NumericalComplex.prototype.conjugate = function() {
 	return new Expression.NumericalComplex(this._real, -this._imag);
 };
+Expression.NumericalComplex.prototype['+'] = function (x) {
+	if(this._real === 0 && this._imag === 0) {
+		return x;
+	}
+	if(x.constructor === this.constructor){
+		return new Expression.NumericalComplex(this._real + x._real, this._imag + x._imag);
+	} else if (x.constructor === Expression.NumericalReal) {
+		return new Expression.NumericalComplex(this._real + x.value, this._imag);
+	} else if(x.constructor === Expression.List.ComplexCartesian) {
+		return (x)['+'](this);
+	} else if(x.constructor === Expression.List.ComplexPolar) {	
+		return (x)['+'](this);
+	} else if(x.constructor === Expression.List.Real) {
+		return (x)['+'](this);
+	} else if(x.constructor === Expression.Symbol.Real) {
+		return (x)['+'](this);
+	} else if(x.constructor === Expression.List) {
+		return (x)['+'](this);
+	} else {
+		throw ('Unknown Type for NumericalComplex +');
+	}
+};
+Expression.NumericalComplex.prototype['-'] = function (x) {
+	if(this._real === 0 && this._imag === 0) {
+		return x['@-']();
+	}
+	if(x.constructor === this.constructor){
+		return new Expression.NumericalComplex(this._real - x._real, this._imag - x._imag);
+	} else if (x.constructor === Expression.NumericalReal) {
+		return new Expression.NumericalComplex(this._real - x.value, this._imag);
+	} else if(x.constructor === Expression.List.ComplexCartesian) {
+		return (x['@-']())['+'](this);
+	} else if(x.constructor === Expression.List.ComplexPolar) {	
+		return (x['@-']())['+'](this);
+	} else if(x.constructor === Expression.List.Real) {
+		return (x['@-']())['+'](this);
+	} else if(x.constructor === Expression.Symbol.Real) {
+		return (x['@-']())['+'](this);
+	} else if(x.constructor === Expression.List) {
+		return (x['@-']())['+'](this);
+	} else {
+		throw ('Unknown Type for NumericalComplex -');
+	}
+};
+Expression.NumericalComplex.prototype['*'] = function (x) {
+	if(this._imag === 0) {
+		if(this._real === 0) {
+			return Global.Zero;
+		}
+		if(this._real === 1) {
+			return x;
+		}
+	}
+	
+	if(x.constructor === this.constructor){
+		return new Expression.NumericalComplex(this._real * x._real - this._imag * x._imag, this._real * x._imag + this._imag * x._real);
+	} else if (x.constructor === Expression.NumericalReal) {
+		return new Expression.NumericalComplex(this._real * x.value, this._imag * x.value);
+	} else if(x.constructor === Expression.List.ComplexCartesian) {
+		return (x)['*'](this);
+	} else if(x.constructor === Expression.List.ComplexPolar) {	
+		return (x)['*'](this);
+	} else if(x.constructor === Expression.List.Real) {
+		return (x)['*'](this);
+	} else if(x.constructor === Expression.Symbol.Real) {
+		return (x)['*'](this);
+	} else if(x.constructor === Expression.List) {
+		return (x)['*'](this);
+	} else {
+		throw ('Unknown Type for NumericalComplex *');
+	}
+};
+
+Expression.NumericalComplex.prototype['/'] = function (x) {
+	if(this._imag === 0 && this._real === 0) {
+		// TODO: Provided x != 0
+		return Global.Zero;
+	}
+	
+	if(x.constructor === this.constructor){
+		var cc_dd = x._real * x._real + x._imag * x._imag;
+		return new Expression.NumericalComplex((this._real * x._real + this._imag * x._imag)/cc_dd, (this._imag * x._real - this._real * x._imag) / cc_dd);
+	} else if (x.constructor === Expression.NumericalReal) {
+		return new Expression.NumericalComplex(this._real / x.value, this._imag / x.value);
+	} else if(x.constructor === Expression.List.ComplexCartesian) {
+		return this.realimag()['/'](x);
+	} else if(x.constructor === Expression.List.ComplexPolar) {	
+		return this.polar()['/'](x);
+	} else if(x.constructor === Expression.List.Real) {
+		return Expression.List([this, x], '/');
+	} else if(x.constructor === Expression.Symbol.Real) {
+		return Expression.List([this, x], '/');
+	} else if(x.constructor === Expression.List) {
+		return Expression.List([this, x], '/');
+	} else {
+		throw ('Unknown Type for NumericalComplex /');
+	}
+};
+
+Expression.NumericalComplex.prototype['!'] = function (){
+	return Global.Gamma.default(this);
+};
 (function(){
+	return;
 	var one_on_rt2 = 1/Math.sqrt(2);
 	Expression.NumericalComplex.prototype.apply = function(operator, x) {
 		switch (operator){

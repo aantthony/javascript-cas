@@ -22,31 +22,31 @@ Expression.List.prototype.realimag = function() {
 			var a = this[0].realimag();
 			var b = this[1].realimag();
 			return Expression.List.ComplexCartesian([
-				a[0].apply('*',b[0]).apply('-', a[1].apply('*',b[1])),
-				a[0].apply('*',b[1]).apply('+',a[1].apply('*',b[0]))
+				a[0]['*'](b[0])['-'](a[1]['*'](b[1])),
+				a[0]['*'](b[1])['+'](a[1]['*'](b[0]))
 			]);
 		case '@+':
 		case '@-':
 			var a = this[0].realimag();
 			return Expression.List.ComplexCartesian([
-				a[0].apply(this.operator),
-				a[1].apply(this.operator)
+				a[0][this.operator](),
+				a[1][this.operator]()
 			]);
 		case '+':
 		case '-':
 			var a = this[0].realimag();
 			var b = this[1].realimag();
 			return Expression.List.ComplexCartesian([
-				a[0].apply(this.operator,b[0]),
-				a[1].apply(this.operator,b[1])
+				a[0][this.operator](b[0]),
+				a[1][this.operator](b[1])
 			]);
 		case '/':
 			var a = this[0].realimag();
 			var b = this[1].realimag();
-			var cc_dd = b[0].apply('*',b[0]).apply('+',b[1].apply('*',b[1]));
+			var cc_dd = b[0]['*'](b[0])['+'](b[1]['*'](b[1]));
 			return Expression.List.ComplexCartesian([
-				(a[0].apply('*',b[0]).apply('+',a[1].apply('*',b[1]))).apply('/', cc_dd),
-				(a[1].apply('*',b[0]).apply('-',a[0].apply('*',b[1]))).apply('/', cc_dd)
+				(a[0]['*'](b[0])['+'](a[1]['*'](b[1])))['/'](cc_dd),
+				(a[1]['*'](b[0])['-'](a[0]['*'](b[1])))['/'](cc_dd)
 			]);
 		case '^':
 			//TODO: simplify in case of real numbers only, or some zeros
@@ -54,19 +54,19 @@ Expression.List.prototype.realimag = function() {
 			var b = this[1].realimag();
 
 			var half = new Expression.NumericalReal(0.5, 0);
-			var hlm = half.apply('*',
-				Global.log.apply(undefined,
-					a[0].apply('*',
+			var hlm = half['*'](
+				Global.log.default(
+					a[0]['*'](
 						a[0]
-					).apply('+',
-						a[1].apply('*',
+					)['+'](
+						a[1]['*'](
 							a[1]
 						)
 					)
 				)
 			);
-			var theta = Global.atan2.apply(undefined, Expression.Vector([a[1], a[0]]));
-			var hmld_tc = hlm.apply('*', b[1]).apply('+', theta.apply('*', b[0]));
+			var theta = Global.atan2.default(Expression.Vector([a[1], a[0]]));
+			var hmld_tc = hlm['*'](b[1])['+'](theta['*'](b[0]));
 			/*
 			var e_hmlc_td = Global.exp.apply(undefined,
 				hlm.apply('*',
@@ -79,19 +79,19 @@ Expression.List.prototype.realimag = function() {
 			);
 			*/
 			
-			var e_hmlc_td = Global.e.apply('^',
-				hlm.apply('*',
+			var e_hmlc_td = Global.e['^'](
+				hlm['*'](
 					b[0]
-				).apply('-',
-					theta.apply('*',
+				)['-'](
+					theta['*'](
 						b[1]
 					)
 				)
 			);
 
 			return Expression.List.ComplexCartesian([
-				(e_hmlc_td.apply('*',Global.cos.apply(undefined, hmld_tc))),
-				(e_hmlc_td.apply('*',Global.sin.apply(undefined, hmld_tc)))
+				(e_hmlc_td['*'](Global.cos.default(hmld_tc))),
+				(e_hmlc_td['*'](Global.sin.default(hmld_tc)))
 			]);
 	}
 };

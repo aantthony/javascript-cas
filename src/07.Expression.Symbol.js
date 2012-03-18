@@ -4,27 +4,21 @@ Expression.Symbol = function Symbol(str) {
 };
 
 Expression.Symbol.prototype = Object.create(Expression.prototype);
-
-Expression.Symbol.prototype.differentiate = function(x) {
-    if (this.symbol === x.symbol) {
-        return M.Global.One;
-    } else {
-        return M.Global.Zero;
-    }
-};
-Expression.Symbol.prototype.integrate = function(x) {
-    if (this.symbol === x) {
-		return new Expression.NumericalReal(0.5, 0) ['*'] (x ['^'] (new Expression.NumericalReal(2,0)));
-    } else {
-        return (this) ['*'] (x);
-    }
-};
-
-Expression.Symbol.prototype.toString = function() {
-	return this.symbol;
-};
-
 Expression.Symbol.prototype.constructor = Expression.Symbol;
+
+Expression.Symbol.prototype.differentiate = function (x) {
+	return this === x ? Global.One : Global.Zero;
+};
+Expression.Symbol.prototype.integrate = function (x) {
+    if (this === x) {
+		return new Expression.NumericalReal(0.5, 0) ['*'] (x ['^'] (new Expression.NumericalReal(2,0)));
+    }
+	return (this) ['*'] (x);
+};
+Expression.Symbol.prototype.sub = function (x, y) {
+	// TODO: Ensure it is real (for Expression.Symbol.Real)
+	return this === x ? y : this;
+};
 
 // ============= Real Number ================ //
 Expression.Symbol.Real = function Symbol_Real(str) {
@@ -32,7 +26,7 @@ Expression.Symbol.Real = function Symbol_Real(str) {
 };
 Expression.Symbol.Real.prototype = Object.create(Expression.Symbol.prototype);
 Expression.Symbol.Real.prototype.realimag = function() {
-    return Expression.List.ComplexCartesian([this, M.Global.Zero]);
+    return Expression.List.ComplexCartesian([this, Global.Zero]);
 };
 Expression.Symbol.Real.prototype.real = function() {
     return this;
@@ -54,11 +48,24 @@ Expression.Symbol.Real.prototype.arg = function() {
 };
 
 Expression.Symbol.Real.prototype['+'] = function (x) {
+	if (x == Global.Zero) {
+		return this;
+	}
 	return Expression.List.Real([this, x], '+');
 };
+Expression.Symbol.Real.prototype['-'] = function (x) {
+	if(this === x) {
+		return Global.Zero;
+	}
+	return Expression.List.Real([this, x], '-');
+};
 Expression.Symbol.Real.prototype['*'] = function (x) {
+	if (x === Global.One) {
+		return this;
+	}
 	return Expression.List.Real([this, x], '*');
 };
+Expression.Symbol.Real.prototype.default = Expression.Symbol.Real.prototype['*'];
 Expression.Symbol.Real.prototype['/'] = function (x) {
 	return Expression.List.Real([this, x], '/');
 };
@@ -80,7 +87,6 @@ Expression.Symbol.Real.prototype.apply = function(operator, e) {
 			case '!':
 				//TODO: Can't simplify, so why bother! (return a list, since gamma maps all reals to reals?)
 				return Global.Gamma.apply(undefined, this.apply('+', Global.One));
-			case '@+':
 			case '@-':
 				return Expression.List.Real([this], operator);
 			default:

@@ -39,6 +39,8 @@ Expression.NumericalReal.prototype['+'] = function (x) {
 	} else if(x.constructor === Expression.List) {
 		return (x)['+'](this);
 	} else {
+		console.warn('Swapped operator order for + with NumericalReal');
+		return (x)['+'](this);
 		throw ('Unknown Type for NumericalReal +');
 	}
 };
@@ -100,6 +102,8 @@ Expression.NumericalReal.prototype['*'] = function (x) {
 	} else if(x.constructor === Expression.List) {
 		return (x)['*'](this);
 	} else {
+		console.warn('Swapped operator order for * with NumericalReal');
+		return (x)['*'](this);
 		throw ('Unknown Type for NumericalReal *');
 	}
 };
@@ -116,18 +120,30 @@ Expression.NumericalReal.prototype['/'] = function (x) {
 		var cc_dd = x._real * x._real + x._imag * x._imag;
 		return new Expression.Complex((this.value * x._real)/cc_dd, (-this.value * x._imag) / cc_dd);
 	} else if(x.constructor === Expression.List.ComplexCartesian) {
-		// commute. The problem with this is that the if else... thing will be repeated
-		return (x)['*'](this);
-	} else if(x.constructor === Expression.List.ComplexPolar) {	
-		return (x)['*'](this);
+		// a/(x+yi) = a/(x+yi) (x-yi)/(x-yi) = a(x-yi) / (x^2 + y^2)
+		var x_conj = Expression.List.ComplexCartesian([
+			x[0],
+			x[1]['@-']()
+		]);
+		var two = Expression.NumericalReal(2);
+		return x_conj['*'](this)['/'](
+			(x[0]['^'])(two)
+			['+'] (
+				(x[1]['^'])(two)
+			)
+		);
+	} else if(x.constructor === Expression.List.ComplexPolar) {
+		
 	} else if(x.constructor === Expression.List.Real) {
-		return (x)['*'](this);
+		// TODO: given x != 0
+		return Expression.List.Real([this, x], '/');
 	} else if(x.constructor === Expression.Symbol.Real) {
-		return (x)['*'](this);
-	} else if(x.constructor === Expression.List) {
-		return (x)['*'](this);
+		// TODO: given x != 0
+		return Expression.List.Real([this, x], '/');
+	} else if(x.constructor === Expression.List) {	
+		return Expression.List([this, x], '/');
 	} else {
-		throw ('Unknown Type for NumericalReal *');
+		throw ('Unknown Type for NumericalReal /');
 	}
 };
 Expression.NumericalReal.prototype['^'] = function (x) {
@@ -154,7 +170,7 @@ Expression.NumericalReal.prototype['^'] = function (x) {
 		var hlm = 0.5 * Math.log(a*a);
 		var hmld_tc = hlm * d;
 		var e_hmlc_td = Math.exp(hlm * c);
-		return new Expression.Complex(
+		return new Expression.NumericalComplex(
 			(e_hmlc_td * Math.cos(hmld_tc)),
 			(e_hmlc_td * Math.sin(hmld_tc))
 		);

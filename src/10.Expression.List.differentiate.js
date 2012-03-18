@@ -7,47 +7,37 @@ Expression.List.prototype.differentiate = function(x) {
 			// D(f(g(x))) = D(f) * D(g)
 			// d f(g(x))/dx = df/dx = df/dg * dg/dx
 			if(this[0] instanceof Expression.Function) {
-				return this[0].differentiate(x).apply('*', this[1].differentiate(x));
+				return this[0].differentiate(x)['*'](this[1].differentiate(x));
 			}
 		case '*':
 			return this[0]
-				.differentiate(x)
-				.apply('*',
+				.differentiate(x)['*'](
 					this[1]
-				)
-				.apply('+',
+				)['+'](
 					this[1]
-					.differentiate(x)
-					.apply('*',
+					.differentiate(x)['*'](
 						this[0]
 					)
 				);
 		case '@+':
 		case '@-':
-			return this[0].differentiate(x).apply(this.operator);
+			return this[0].differentiate(x)[this.operator]();
 		case '+':
 		case '-':
 			return this[0]
-				.differentiate(x)
-				.apply(this.operator,
+				.differentiate(x)[this.operator](
 					this[1]
 					.differentiate(x)
 				);
 		case '^':
-			return this[0]
-				.apply('^',
+			return this[0]['^'](
 					this[1].apply('-', Global.One)
-				)
-				.apply('*',
-					this[1]
-					.apply('*',
+				)['*'](
+					this[1]['*'](
 						this[0].differentiate(x)
-					)
-					.apply('+',
-						this[0]
-						.apply('*',
-							Global.log.apply(undefined, this[0])
-							.apply('*',
+					)['+'](
+						this[0]['*'](
+							Global.log.apply(undefined, this[0])['*'](
 								this[1].differentiate(x)
 							)
 						)
@@ -55,24 +45,20 @@ Expression.List.prototype.differentiate = function(x) {
 				);
 		case '/':
 			return this[0]
-				.differentiate(x)
-				.apply('*',
+				.differentiate(x)['*'](
 					this[1]
-				)
-				.apply('-',
+				)['-'](
 					this[0]
-					.differentiate(x)
-					.apply('*',
+					.differentiate(x)['*'](
 						this[1]
 					)
-				)
-				.apply('/',
-					this[1].apply('^',
+				)['/'](
+					this[1]['^'](
 						new Expression.NumericalReal(2,0)
 					)
 				);
 		default:
-			throw('Cannot differentiate '+this.operator + ' operator.');
+			throw('Cannot differentiate ' + this.operator + ' operator.');
 	}
 };
 

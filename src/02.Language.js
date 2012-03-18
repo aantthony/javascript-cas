@@ -39,3 +39,12 @@ Language.prototype.unary = function (o) {
 Language.prototype.assoc = function(o) {
 	return this.operators[o][1] === true;
 };
+
+Language.prototype.Number = function(o) {
+	// Support for integers
+	var predefined = {
+		'0': Global.Zero,
+		'1': Global.One
+	};
+	return predefined[o] || new Expression.NumericalReal(Number(o));
+};
