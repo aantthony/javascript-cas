@@ -53,10 +53,12 @@ MultiSet.prototype.intersect = function (x) {
 	throw ('What is multiset intersection?');
 };
 MultiSet.prototype.map = function (x) {
+	// Assumes x has no side effects and is not many to one
 	// TODO: Should this supply m(A) ?
-	return Multiset(Array.prototype.map.call(this.A, x), this.m);
+	return MultiSet(Array.prototype.map.call(this.A, x), this.m);
 };
 MultiSet.fromArray = function (arr) {
+	throw ('NYI');
 	// O(n^2 ?)
 	var A = [];
 	var m = [];

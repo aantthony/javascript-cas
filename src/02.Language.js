@@ -17,7 +17,7 @@ function Language(language) {
 		op(o[0], o[1] || L, (o[2] === undefined) ? 2 : o[2]);
 	});
 	this.operators = operators;
-	this._build();
+	Language.build.call(this);
 }
 Language.prototype.precedence = function (v) {
     //deprecated('Slow');
@@ -46,5 +46,18 @@ Language.prototype.Number = function(o) {
 		'0': Global.Zero,
 		'1': Global.One
 	};
+	
+	if (/^[\d]+$/.test(o)) {
+		return new Expression.Integer(Number(o));
+	} else if(/^[\d]*\.[\d]+$/.test(o)){
+		var d_place = o.indexOf(".");
+		// 12.345 -> 12345 / 1000
+		// 00.5 -> 5/10
+		var denom_p = o.length - d_place - 1;
+		var d = Math.pow(10, denom_p);
+		var n = Number(o.replace(".", ""));
+		
+		return new Expression.Rational(n, d);
+	}
 	return predefined[o] || new Expression.NumericalReal(Number(o));
 };

@@ -29,8 +29,8 @@ var exportLanguages={
 		function _(x){
 			return '('+x+')';
 		}
-		
-		var p = language.precedence(o);
+		// TODO: Fails on f(x)^2
+		var p = o === undefined ? language.precedence('default') : language.precedence(o);
 		function S_(x){
 			if(x.p<=p){
 				return _(x.s);
@@ -101,7 +101,8 @@ var exportLanguages={
 		function _(x) {
 			return '(' + x + ')';
 		}
-		var p = language.precedence(o);
+		// TODO: Fails on f(x)^2
+		var p = o === undefined ? language.precedence('default') : language.precedence(o);
 		function S_(x) {
 			if(x.p <= p){
 				return _(x.s);
@@ -198,7 +199,8 @@ var exportLanguages={
 		function _(x){
 			return '\\left('+x+'\\right)';
 		}
-		var p = language.precedence(o);
+		// TODO: Fails on f(x)^2
+		var p = o === undefined ? language.precedence('default') : language.precedence(o);
 		function S_(x, e){
 			if(e){
 				if(x.p < p){
@@ -261,8 +263,51 @@ var exportLanguages={
 		};
 	}
 };
+var defLang = language;
+Expression.List.Real.prototype.toTypedString = function(language) {
 
+	if(this.operator === '^') {
+
+		if(language === 'x-shader/x-fragment') {
+		
+			if(this[1] instanceof Expression.Rational) {
+				// a^2, 3, 4, 5, 6 
+				var sign_p = this[1].a > 0 ? 1 : -1;
+				var ex = this[1].toTypedString(language);
+				var ba = this[0].toTypedString(language);
+				
+				if(sign_p === +1) {
+					return {
+						s: 'pow(' + ex.s + ',' + ba.s + ')',
+						t: javascript.Number,
+						p: defLang.precedence('^')
+					};
+				} else {
+					return {
+						s: '-pow(' + ex.s + ',' + ba.s + ')',
+						t: javascript.Number,
+						p: defLang.precedence('^')
+					};
+				
+					
+				}
+			} else {
+				// Needs a new function, dependent on power.
+				
+			}
+		} 
+	}
+	return exportLanguages[language](
+		this.operator,
+		Array.prototype.map.call(this, function(x) {
+			return x.toTypedString(language);
+		})
+	);
+	
+	
+}
 Expression.List.prototype.toTypedString = function(language) {
+	throw('Not Real!');
 	return exportLanguages[language](
 		this.operator,
 		Array.prototype.map.apply(this, [function(x) {
@@ -319,6 +364,14 @@ Expression.NumericalComplex.prototype.toTypedString = function(language) {
 		return {s: n[0] + ' + ' + n[1].toTypedString(language).s + 'i', t: javascript.Number};
 	}
 	throw('Please use x.realimag()[0 /* or 1 */].toTypedString() to generate code.');
+};
+Expression.Integer.prototype.toTypedString = function (language) {
+	if(language === 'x-shader/x-fragment') {
+
+		return {s: this.a.toString() + '.0', t: javascript.Number};
+		
+	}
+	return {s: this.a.toString(), t: javascript.Number};
 };
 Expression.NumericalReal.prototype.toTypedString = function(language) {
 	switch(language){

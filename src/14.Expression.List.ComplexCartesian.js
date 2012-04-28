@@ -32,6 +32,18 @@ Expression.List.ComplexCartesian.prototype.conjugate = function () {
 		this[1].apply('@-')
 	]);
 };
+
+
+Expression.List.ComplexCartesian.prototype['*'] = function (x) {
+	
+};
+Expression.List.ComplexCartesian.prototype['+'] = function (x) {
+	if (x instanceof this.constructor) {
+		return new Expression.List.ComplexCartesian([
+			this[0]
+		]);
+	}
+};
 Expression.List.ComplexCartesian.prototype.constructor = Expression.List.ComplexCartesian;
 Expression.List.ComplexCartesian.prototype.apply = function(o, x){
 	//TODO: ensure this has an imaginary part. If it doesn't it is a huge waste of computation

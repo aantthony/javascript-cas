@@ -5,6 +5,7 @@ Expression.Symbol.prototype.roots = function (vars) {
 	if(vars.indexOf(this) !== -1) {
 		return Set([new Statement(this, Global.Zero, '=')]);
 	}
+	return Set([]);
 };
 Expression.prototype.dep = function (vars) {
 	return false;
@@ -27,7 +28,7 @@ Expression.List.prototype.dep = function (vars) {
 	//vars.influcenes.false(this);
 	return false;
 };
-Expression.Function.Symbolic.prototype.inverse() {
+Expression.Function.Symbolic.prototype.inverse = function() {
 	// x -> x^2
 	// f(x) = x^2
 	// f(x) - x^2 = 0
@@ -52,12 +53,14 @@ Expression.List.Real.prototype.roots = function (vars) {
 		*/
 		var factorised = Global.One;
 		this.factors(vars,
-			function (x) {
+			function (x, r) {
+				// TODO: Find roots in here? (However, this (in its current form) would re invoke the current function, )
 				factorised = factorised['*'](x);
 			},
 			function () {
 				
-			}
+			},
+			false
 		);
 		if(factorised.operator === '*') {
 			return factorised.roots(vars);
@@ -67,7 +70,7 @@ Expression.List.Real.prototype.roots = function (vars) {
 				/*
 				// equivalent to a move onto right side of equation
 				// f(x) + b = 0
-				// f(x) = b
+				// f(x) = - b
 				// E.g. x^3 + x + 1 = 0 -> 		... ?
 				// E.g. x^3 + 1 = 0 -> x^3 = -1 (only because N(x) <= 1)
 				// E.g. x^x + 1 = 0 -> x^x = -1 ... ?
@@ -75,14 +78,17 @@ Expression.List.Real.prototype.roots = function (vars) {
 					x*x = 1
 					x^2 = 1
 						-> x = 1
+				// E.g x^2 + x - 1 = 0
+				x(x + 1) = 1
 				
 				*/
 				
-			}
-			if (!this[0].dep(vars)) {
+			} else if (!this[0].dep(vars)) {
 				// b + f(x) = 0
 				
 				// repeat above (but swap)
+			} else {
+				throw ('Cannot solve');
 			}
 		}
 		var a_zero = this[0].roots(vars);

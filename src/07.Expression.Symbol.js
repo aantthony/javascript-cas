@@ -59,6 +59,15 @@ Expression.Symbol.Real.prototype['-'] = function (x) {
 	}
 	return Expression.List.Real([this, x], '-');
 };
+
+Expression.Symbol.Real.prototype['@+'] = function (x) {
+	return Expression.List.Real([this], '@+');
+};
+
+Expression.Symbol.Real.prototype['@-'] = function (x) {
+	return Expression.List.Real([this], '@-');
+};
+
 Expression.Symbol.Real.prototype['*'] = function (x) {
 	if (x === Global.One) {
 		return this;

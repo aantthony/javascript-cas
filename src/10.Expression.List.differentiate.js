@@ -31,13 +31,13 @@ Expression.List.prototype.differentiate = function(x) {
 				);
 		case '^':
 			return this[0]['^'](
-					this[1].apply('-', Global.One)
+					this[1]['-'](Global.One)
 				)['*'](
 					this[1]['*'](
 						this[0].differentiate(x)
 					)['+'](
 						this[0]['*'](
-							Global.log.apply(undefined, this[0])['*'](
+							Global.log.default(this[0])['*'](
 								this[1].differentiate(x)
 							)
 						)

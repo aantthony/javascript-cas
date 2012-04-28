@@ -32,14 +32,14 @@ Set.prototype.union = function (set) {
 	return Set(Array.prototype.concat.call(this, set));
 }
 Set.prototype.remove = function (x) {
-	// O(1 + lookup)
+	// O(1 + lookup[n])
 	var i = this.indexOf(x);
 	this[i] = this[this.length - 1];
 	this.length--;
 	return this;
 }
 Set.prototype.add = function (x) {
-	// O(1 + lookup)
+	// O(1 + lookup[n])
 	if (this.indexOf(x) === -1) {
 		this[this.length] = x;
 	}

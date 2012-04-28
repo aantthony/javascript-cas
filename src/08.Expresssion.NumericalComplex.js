@@ -23,9 +23,9 @@ Expression.NumericalComplex.prototype['+'] = function (x) {
 	if(this._real === 0 && this._imag === 0) {
 		return x;
 	}
-	if(x.constructor === this.constructor){
+	if(x instanceof this.constructor){
 		return new Expression.NumericalComplex(this._real + x._real, this._imag + x._imag);
-	} else if (x.constructor === Expression.NumericalReal) {
+	} else if (x instanceof Expression.NumericalReal) {
 		return new Expression.NumericalComplex(this._real + x.value, this._imag);
 	} else if(x.constructor === Expression.List.ComplexCartesian) {
 		return (x)['+'](this);

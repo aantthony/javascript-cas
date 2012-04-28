@@ -13,25 +13,19 @@ Expression.prototype.identity = function () {
 
 Expression.prototype.toString = null;
 Expression.prototype.imageURL = function () {
-	return 'http://latex.codecogs.com/gif.latex?' + encodeURIComponent(this.toString());
+	return 'http://latex.codecogs.com/gif.latex?' + encodeURIComponent(this.toTypedString('text/latex').s);
 };
 Expression.prototype.image = function () {
 	var image = new Image();
 	image.src = this.imageURL();
 	return image;
 };
-Expression.prototype.apply = function () {
-	console.error(".apply");
-};
 Expression.prototype.sub = function () {
 	return this;
 };
-
-
 Expression.prototype.lim = function (x, y) {
 	return this.sub(x, y);
 };
-
 // Global Root operators:
 Expression.prototype[','] = function (x) {
 	return Expression.Vector([this, x]);
@@ -79,3 +73,27 @@ Expression.List.prototype.sub = function (x, y) {
 		return t.sub(x, y);
 	}), this.operator);
 };
+Expression.prototype['*'] = function (x) {
+	return new Expression.List([this, x], '*');
+};
+
+Expression.prototype['/'] = function (x) {
+	return new Expression.List([this, x], '/');
+};
+
+Expression.prototype['+'] = function (x) {
+	return new Expression.List([this, x], '+');
+};
+
+Expression.prototype['-'] = function (x) {
+	return new Expression.List([this, x], '-');
+};
+
+Expression.prototype['^'] = function (x) {
+	return new Expression.List([this, x], '^');
+};
+
+Expression.prototype['%'] = function (x) {
+	return new Expression.List([this, x], '%');
+};
+

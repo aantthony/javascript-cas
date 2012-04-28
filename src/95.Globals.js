@@ -115,25 +115,30 @@ Global['cos'] = {
 	examples: ['\\cos (\\pi)'],
 	related: ['sin', 'tan']
 };
+Global['tan'] = new Expression.Function({
+	symbolic: function () {
+		
+	}
+});
 Global['log'] = {
 	default: function (x, assumptions) {
-		switch (x.constructor) {
-			case Expression.Complex:
-				throw('Not ready Type!: ' + x.constructor);
-			case Expression.NumericalReal:
-				if(x.value > 0){
-					return new Expression.NumericalReal(Math.log(x));
-				}
-				throw('-Log');
-			case Expression.List.Real:
-			case Expression.Symbol.Real:
-				if(assumptions && massumptions.positive) {
-					return Expression.List.Real([Global.log, x]);
-				}
-			default:
-				
-				return Expression.List([Global.log, x]);
+
+		if(x instanceof Expression.Integer && x.a === 1) {
+			return Global.Zero;
+		} else if(x instanceof Expression.Integer && x.a === 0) {
+			return Global.Infinity['@-']();
+		} else if(x instanceof Expression.NumericalReal) {
+			if(x.value > 0){
+				return new Expression.NumericalReal(Math.log(x));
+			}
+			
 		}
+
+		if(assumptions && assumptions.positive) {
+			return Expression.List.Real([Global.log, x]);
+		}
+		
+		return Expression.List([Global.log, x]);
 	},
 	apply_realimag: function(op, x) {
 		switch (x.constructor) {
@@ -168,7 +173,6 @@ Global['log'] = {
 };
 Global['atan2'] = {
 	default: function(x) {
-		console.log('Apply atan2');
 		switch (x[0].constructor) {
 			case Expression.Complex:
 				switch (x[1].constructor) {
@@ -251,20 +255,32 @@ Global['Gamma'] = {
 		    }
 		    return tmp + Math.log(2.5066282746310005 * ser / x);
 		}
-		switch(x.constructor) {
-			case Expression.Complex:
-				return new Expression.Complex(5,3);
-			case Expression.NumericalReal:
-				x += 0;
-				if (x === 0) {
-			        return Global.Infinity;
-			    } else if(x < 0) {
-					return new Expression.NumericalReal(-Math.PI / (x * Math.sin(Math.PI * x) * Math.exp(gammln(-x))));
-			    }
-				return new Expression.NumericalReal(Math.exp(gammln(x)));
-			default:
-				return Expression.List([Global.Gamma, x]);
+		if (x instanceof Expression.Integer) {
+			var v = x.a;
+			if(v < 0) {
+				return Global.ComplexInfinity;
+			}
+			if(v < 15) {
+				var p = 1;
+				var i = 0;
+				for(i = 1; i < v; i++) {
+					p *= i;
+				}
+				return new Expression.Integer(p);
+			}
+			return Expression.List.Real([Global.Gamma, x]);
+		} else if (x instanceof Expression.NumericalReal) {
+			var v = x.value;
+			if (v === 0) {
+		        return Global.Infinity;
+		    } else if(v < 0) {
+				return new Expression.NumericalReal(-Math.PI / (v * Math.sin(Math.PI * v) * Math.exp(gammln(-v))));
+		    }
+			return new Expression.NumericalReal(Math.exp(gammln(v)));
+		} else if(x instanceof Expression.NumericalComplex) {
+			
 		}
+		return Expression.List([Global.Gamma, x]);
 	},
 	'text/latex': '\\Gamma',
 	'text/javascript': 'M.Global.Gamma.f',
@@ -411,15 +427,15 @@ Global['Infinity'] = new Expression.NumericalReal(Infinity, 0);
 Global['Infinity'].title = 'Infinity';
 Global['Infinity'].description = '';
 
-Global['Zero'] = new Expression.NumericalReal(0, 0);
+Global['Zero'] = new Expression.Integer(0);
 Global['Zero'].title = 'Zero';
 Global['Zero'].description = 'Additive Identity';
 
-Global['One'] = new Expression.NumericalReal(1, 0);
+Global['One'] = new Expression.Integer(1);
 Global['One'].title = 'One';
 Global['One'].description = 'Multiplicative Identity';
 
-Global['i'] = new Expression.NumericalComplex(0, 1);
+Global['i'] = new Expression.List.ComplexCartesian([Global['Zero'], Global['One']]);
 Global['i'].title = 'Imaginary Unit';
 Global['i'].description = 'A number which satisfies the property <m>i^2 = -1</m>.';
 Global['i'].realimag = function(){

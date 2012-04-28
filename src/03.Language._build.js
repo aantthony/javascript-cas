@@ -1,5 +1,4 @@
-Language.prototype._build = function () {
-	this._build = undefined;
+Language.build = function () {
 	function deLaTeX(s) {
 		//Converts a latex format equation into a text based one, 
 		//where multi-character names keep a preceeding and required \ character

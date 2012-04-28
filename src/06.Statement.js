@@ -1,7 +1,8 @@
 function Statement(x, y, operator) {
-	this.a = x;
-	this.b = y;
-	this.operator = operator;
+	var arr = [x,y];
+	arr.operator = operator;
+	arr.__proto__ = Statement.prototype;
+	return arr;
 }
 Statement.prototype = Object.create(Expression.prototype);
 Statement.prototype.constructor = Statement;
@@ -9,7 +10,13 @@ Statement.prototype['='] = function () {
 	
 };
 Statement.prototype['<'] = function () {
+	// a < b < c
+	// (a < b) = b
+	// b < c
 	
+	// a < (b < c)
+	// a < b .. (b < c) = b
+	// (a < b) = a.
 };
 Statement.prototype.solve = function (vars) {
 	// a = b

@@ -1,5 +1,8 @@
 Expression.prototype.factors = function (vars, yes, no) {
-	no(this);
+	no(this, false);
+};
+Expression.prototype.terms = function (vars, yes, no) {
+	no(this, false);
 };
 Expression.prototype.factorize = function (vars) {
 	throw('Inefficent');
@@ -21,9 +24,16 @@ Expression.prototype.factorize = function (vars) {
 };
 Expression.Symbol.Real.prototype.factors = function (vars, yes, no) {
 	if (vars.indexOf(this) !== -1) {
-		yes(this);
+		yes(this, false);
 	} else {
-		no(this);
+		no(this, false);
+	}
+};
+Expression.Symbol.Real.prototype.terms = function (vars, yes, no) {
+	if (vars.indexOf(this) !== -1) {
+		yes(this, false);
+	} else {
+		no(this, false);
 	}
 };
 
@@ -34,14 +44,21 @@ Expression.List.Real.prototype.terms = function (vars, yes, no) {
 			this[1].terms(vars, yes, no);
 			return;
 		case '-':
-		
+			
 		case '*':
 			return this.expand(vars).terms(vars, yes, no);
 		case '/':
-			return this.expand(vars).terms(vars, yes, no);
+			return this.expand(vars).terms(vars,
+				function (y){
+				
+				},
+				function (n){
+					
+				}
+			);
 	}
 };
-Expression.List.Real.prototype.factors = function (vars, yes, no) {
+Expression.List.Real.prototype.factors = function (vars, yes, no, collect_recip) {
 	var id = ~~(1000*Math.random());
 	console.log("("+ id+") Attempt to find factors of: ", this);
 	switch (this.operator) {
@@ -132,12 +149,15 @@ Expression.List.Real.prototype.factors = function (vars, yes, no) {
 			return;
 		case '/':
 			this[0].factors(vars, yes, no);
+			if(collect_recip === false) {
+				return;
+			}
 			this[1].factors(vars,
-				function (x){
-					yes(Global.One['/'](x))
+				function (x, r){
+					yes(x, !r)
 				},
-				function (x){
-					no(Global.One['/'](x))
+				function (x, r){
+					no(x, !r);
 				}
 			);
 			return;
