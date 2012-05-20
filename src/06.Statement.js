@@ -1,15 +1,15 @@
-function Statement(x, y, operator) {
+Expression.Statement = function (x, y, operator) {
 	var arr = [x,y];
 	arr.operator = operator;
-	arr.__proto__ = Statement.prototype;
+	arr.__proto__ = Expression.Statement.prototype;
 	return arr;
-}
-Statement.prototype = Object.create(Expression.prototype);
-Statement.prototype.constructor = Statement;
-Statement.prototype['='] = function () {
+};
+Expression.Statement.prototype = Object.create(Expression.prototype);
+Expression.Statement.prototype.constructor = Expression.Statement;
+Expression.Statement.prototype['='] = function () {
 	
 };
-Statement.prototype['<'] = function () {
+Expression.Statement.prototype['<'] = function () {
 	// a < b < c
 	// (a < b) = b
 	// b < c
@@ -18,7 +18,7 @@ Statement.prototype['<'] = function () {
 	// a < b .. (b < c) = b
 	// (a < b) = a.
 };
-Statement.prototype.solve = function (vars) {
+Expression.Statement.prototype.solve = function (vars) {
 	// a = b
 	// If b has an additive inverse?
 	

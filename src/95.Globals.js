@@ -100,37 +100,19 @@ Global['log'] = new Expression.Function({
 	examples: ['\\log (ye^(2x))'],
 	related: ['exp', 'Log']
 });
-Global['atan2'] = {
+Global['atan2'] = new Expression.Function({
 	default: function(x) {
-		switch (x[0].constructor) {
-			case Expression.Complex:
-				switch (x[1].constructor) {
-					case Expression.Complex:
-						throw('???');
-					case Expression.NumericalReal:
-						throw('???');
-				}
-			case Expression.NumericalReal:
-				switch (x[1].constructor) {
-					case Expression.Complex:
-						throw('???');
-					case Expression.NumericalReal:
-						return new Expression.NumericalReal(Math.atan2(x[0], x[1]));
-				}
-			case Expression.List.Real:
-				return Expression.List.Real([Global.atan2, x]);
-			default:
-				switch(x[1].constructor) {
-					case Expression.Complex:
-						if(x[1]._real === 0 && x[1]._imag === 0) {
-							
-						}
-					case Expression.NumericalReal:
-						if(x[1].value === 0) {
-							
-						}
-				}
+		if(! (x instanceof Expression.Vector)) {
+			throw ('atan only takes vector arguments');
 		}
+		if(x[0] instanceof Expression.NumericalReal) {
+			if(x[1] instanceof Expression.NumericalReal) {
+				return new Expression.NumericalReal(Math.atan2(x[0].value, x[1].value));
+			}
+		}
+		
+		return new Expression.List.Real([Global.atan2, x]);
+		
 		return Expression.List([Global.atan2, x]);
 	},
 	apply_realimag: function(op, x) {
@@ -148,7 +130,8 @@ Global['atan2'] = {
 	},
 	title: 'Two argument arctangent function',
 	description: 'Arctan(y, x). Will equal arctan(y / x) except when x and y are both negative. See http://en.wikipedia.org/wiki/Atan2'
-};
+});
+
 Global['atan'] = Global.atan2;
 
 Global['Gamma'] = {
@@ -411,8 +394,6 @@ Global.pi.s = function (lang) {
 	return new Code('3.141592653589793');
 };
 
-
-
 Global['Infinity'] = new Expression.NumericalReal(Infinity, 0);
 Global['Infinity'].title = 'Infinity';
 Global['Infinity'].description = '';
@@ -429,7 +410,6 @@ Global['Zero']['+'] = function (x) {
 Global['Zero']['-'] = function (x) {
 	return x['@-']();
 };
-
 
 Global['One'] = new Expression.Integer(1);
 Global['One'].title = 'One';
@@ -451,3 +431,60 @@ Global['i'].realimag = function(){
 Global['i']['*[TODO]'] = function (x) {
 	
 };
+
+function Infinitesimal(x) {
+	this.x = x;
+}
+Infinitesimal.prototype['+'] = function (x) {
+	if(x instanceof Infinitesimal) {
+		throw('Infinitesimal addition');
+	}
+	return x;
+};
+Infinitesimal.prototype['/'] = function (x) {
+	if(x instanceof Infinitesimal) {
+		if(x.x instanceof Expression.Symbol) {
+			return this.x.differentiate(x.x);
+		}
+		throw('Confusing infitesimal division');
+	}
+	this.x = this.x['/'](x);
+	return this;
+};
+Infinitesimal.prototype['*'] = function (x) {
+	// d^2 = 0
+	if(x instanceof Infinitesimal) {
+		return Global.Zero;
+	}
+	this.x = this.x['*'](x);
+};
+
+function Derivative(x) {
+	// technically should be a function / operator
+	this.x = x;
+}
+Derivative.prototype.default = function (x) {
+	return x.differentiate(this.x);
+};
+Global['d'] = new Expression.Function({
+	default: function(x) {
+		return new Infinitesimal(x);
+	}
+});
+
+Global.d['/'] = function (x) {
+	if(x instanceof Infinitesimal) {
+		if(x.x instanceof Expression.Symbol) {
+	
+			// Derivative operator
+			
+			return new Derivative(x.x);
+		}
+		throw('Confusing infitesimal division');
+	}
+
+	throw('Dividing d by some large number.');
+	
+};
+
+

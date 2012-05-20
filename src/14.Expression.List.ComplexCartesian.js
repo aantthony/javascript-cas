@@ -17,6 +17,7 @@ Expression.List.ComplexCartesian = function ComplexCartesian(x){
 	return x;
 };
 Expression.List.ComplexCartesian.prototype = Object.create(Expression.prototype);
+Expression.List.ComplexCartesian.prototype.constructor = Expression.List.ComplexCartesian;
 Expression.List.ComplexCartesian.prototype.realimag = function(){
 	return this;
 };
@@ -56,12 +57,19 @@ Expression.List.ComplexCartesian.prototype['*'] = function (x) {
 };
 Expression.List.ComplexCartesian.prototype['^'] = function (x) {
 	if(x instanceof Expression.Integer) {
-		if(x === Global.One) {
-			return this;
+
+		if(x instanceof Expression.Rational) {
+			if(x.a === x.b) {
+				return this;
+			}
 		}
-		if(x === Global.Zero) {
-			return Global.One;
+
+		if(x instanceof Expression.Rational) {
+			if(x.a === 0) {
+				return Global.One;
+			}
 		}
+		
 		// Binomial expansion
 		// (a+b)^N
 		var n  = x.a;
@@ -140,7 +148,15 @@ Expression.List.ComplexCartesian.prototype['+'] = function (x) {
 	}
 	
 };
-Expression.List.ComplexCartesian.prototype.constructor = Expression.List.ComplexCartesian;
+
+Expression.List.ComplexCartesian.prototype.differentiate = function (x) {
+	return Expression.List.ComplexCartesian([
+		this[0].differentiate(x),
+		this[1].differentiate(x)
+	]);
+};
+
+
 Expression.List.ComplexCartesian.prototype.apply = function(o, x){
 	//TODO: ensure this has an imaginary part. If it doesn't it is a huge waste of computation
 	if (x.constructor === this.constructor) {

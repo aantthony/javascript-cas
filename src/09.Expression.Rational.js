@@ -91,24 +91,42 @@ Expression.Rational.prototype['/'] = function (x) {
 		}
 		return new Expression.Rational(this.a * x.b, this.b * x.a).reduce();
 	}
-	return this.__proto__.__proto__['/'].call(this, x);
+	return Expression.NumericalReal.prototype['/'].call(this, x);
 };
 Expression.Rational.prototype['^'] = function (x) {
+	if(x === Global.Zero) {
+		return Global.One;
+	}
+	if(x === Global.One) {
+		return this;
+	}
 	if(this.a === 0) {
 		return Global.Zero;
 	}
-	if(this.a === 1) {
-		if(this.b === 1) {
-			return this;
-		} else {
-			if (x.constructor === this.constructor) {
-				/*
-				(1/x) ^(a/b)
-				*/
-				return Expression.List.Real([new Expression.Rational(1, Math.pow(this.b, x.a)), new Expression.Rational(1, x.b)], '^');
-			}
-		}
+	if(this.a === this.b) {
+		return Global.One;
 	}
+	if(x instanceof Expression.Integer) {
+		return new Expression.Rational(
+			Math.pow(this.a, x.a),
+			Math.pow(this.b, x.a)
+		);
+	} else if (x instanceof Expression.Rational) {
+		
+		var f = x.reduce();
+		if(f.a % 2 == 0) {
+			return new Expression.NumericalReal(Math.pow(Math.pow(this.a, f.a), 1 / f.b));
+		}
+
+		return Expression.NumericalReal.prototype['^'].call(
+			this,
+			x
+		);
+		
+	}
+
+	return Expression.List([this, x], '^');
+	
 };
 Expression.Rational.prototype.reduce = function () {
 	function gcd(a, b) {

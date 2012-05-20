@@ -229,6 +229,13 @@ Language.build = function () {
 		//Stack of tokens for RPN notation. ('evaluated' to a tree representation)
 		var rpn_stack = [];
 		
+		var free_context = {};
+		function bind(x) {
+			var j = free_context[x];
+			delete free_context[x];
+			return j;
+		}
+		
 		//The evelauation part of the shunting yard algorithm.
 		function next_rpn(token) {
 			// While there are input tokens left
@@ -287,8 +294,10 @@ Language.build = function () {
 				    if (context[token.v]) {
 				        //Make .v a pointer to the referenced object.
 				        token.v = context[token.v];
+					} else if (free_context[token.v]) {
+						token.v = free_context[token.v];
 				    } else {
-    				    token.v = new Expression.Symbol.Real(token.v);
+    				    token.v = free_context[token.v] = new Expression.Symbol.Real(token.v);
 				    }
 				}
 			}

@@ -304,10 +304,24 @@ Expression.List.Real.prototype.s = function(lang) {
 		return '('+ x + ')';
 	}
 	if (this.operator === undefined) {
-		if(this[0] instanceof Expression.Function) {
+		if (this[0] instanceof Expression.Function) {
 			var c0 = this[0].s(lang);
+			if (this[1] instanceof Expression.Vector) {
+				var c1s = Array.prototype.map.call(this[1], function (c) {
+					return c.s(lang);
+				});
+				var i;
+				var t_s = c1s.map(function (e){
+					return e.s;
+				});
+				var c0_s = c0.s;
+				for (i = 0; i < c1s.length; i++) {
+					c0.merge(c1s[i]);
+				}
+				return c0.update(c0_s + '(' + t_s + ')', language.precedence('default'));
+			}
 			var c1 = this[1].s(lang);
-			return c0.merge(c1, c0.s + '(' + c1.s + ')', p);
+			return c0.merge(c1, c0.s + '(' + c1.s + ')', language.precedence('default'));
 		} else {
 			this.operator = '*';
 		}
@@ -409,9 +423,19 @@ Expression.List.Real.prototype.s = function(lang) {
 	}
 
 	var c1 = this[1].s(lang);
+	
+	if(lang === 'text/latex') {
+		if(this.operator === '/') {
+			return c0.merge(c1, '\\frac{' + c0.s + '}{' + c1.s + '}')
+		}
+		if(this.operator === '*') {
+			return c0.merge(c1, _(c0) + _(c1), p);
+		}
+	}
 
 	return c0.merge(c1, _(c0) + this.operator + _(c1), p);
-}
+};
+Expression.Statement.prototype.s = Expression.List.Real.prototype.s;
 Expression.Symbol.prototype.s = function () {
 	return new Code(this.symbol);
 };
@@ -495,7 +519,8 @@ Expression.Integer.prototype.s = function (lang) {
 	}
 	return new Code(this.a.toString());
 };
-Expression.Vector.prototype.toTypedString = function(language) {
+
+Expression.Vector.prototype.ede = function(language) {
 	var l = this.length;
 	var open = '[';
 	var close = ']';

@@ -30,26 +30,10 @@ Expression.NumericalReal.prototype['+'] = function (x) {
 	if(this.value === 0) {
 		return x;
 	}
-	if(x.constructor === this.constructor){
+	if(x instanceof Expression.NumericalReal){
 		return new Expression.NumericalReal(this.value + x.value);
-	} else if (x.constructor === Expression.NumericalComplex) {
-		return new Expression.NumericalComplex(this.value + x._real, x._imag);
-	} else if(x.constructor === Expression.List.ComplexCartesian) {
-		// commute
-		return (x)['+'](this);
-	} else if(x.constructor === Expression.List.ComplexPolar) {	
-		return (x)['+'](this);
-	} else if(x.constructor === Expression.List.Real) {
-		return (x)['+'](this);
-	} else if(x.constructor === Expression.Symbol.Real) {
-		return (x)['+'](this);
-	} else if(x.constructor === Expression.List) {
-		return (x)['+'](this);
-	} else {
-		console.warn('Swapped operator order for + with NumericalReal');
-		return (x)['+'](this);
-		throw ('Unknown Type for NumericalReal +');
 	}
+	return x['+'](this);
 };
 
 Expression.NumericalReal.prototype['@-'] = function (x) {
@@ -60,26 +44,10 @@ Expression.NumericalReal.prototype['-'] = function (x) {
 	if(this.value === 0) {
 		return x;
 	}
-	if(x.constructor === this.constructor){
+	if(x instanceof Expression.NumericalReal) {
 		return new Expression.NumericalReal(this.value - x.value);
-	} else if (x.constructor === Expression.NumericalComplex) {
-		return new Expression.NumericalComplex(this.value - x._real, x._imag);
-	} else if(x.constructor === Expression.List.ComplexCartesian) {
-		// commute
-		return (x['@-']())['+'](this);
-	} else if(x.constructor === Expression.List.ComplexPolar) {	
-		return (x['@-']())['+'](this);
-	} else if(x.constructor === Expression.List.Real) {
-		return (x['@-']())['+'](this);
-	} else if(x.constructor === Expression.Symbol.Real) {
-		return (x['@-']())['+'](this);
-	} else if(x.constructor === Expression.List) {
-		return (x['@-']())['+'](this);
-	} else {
-		console.warn('Swapped operator order for - with NumericalReal');
-		return (x['@-']())['+'](this);
-		throw ('Unknown Type for NumericalReal -');
 	}
+	return x['@-']()['+'](this);
 };
 
 
@@ -161,6 +129,12 @@ Expression.NumericalReal.prototype['^'] = function (x) {
 	if (this.value === 1) {
 		return Global.One;
 	}
+	if(x === Global.Zero) {
+		return Global.One;
+	}
+	if(x === Global.One) {
+		return this;
+	}
 	if (x instanceof Expression.Integer) {
 		return new Expression.NumericalReal(Math.pow(this.value, x.a));
 	} else if(x instanceof Expression.NumericalReal){
@@ -171,7 +145,10 @@ Expression.NumericalReal.prototype['^'] = function (x) {
 		//      <- I think no, because why else start with a numerical. Implement a rational/integer type
 		var r = Math.pow(-this.value, x.value);
 		var theta = Math.PI * x.value;
-		return new Expression.Complex(r * Math.cos(theta), r * Math.sin(theta));
+		return new Expression.List.ComplexPolar([
+			new Expression.NumericalReal(r),
+			new Expression.NumericalReal(theta)
+		]);
 	} else if (x.constructor === Expression.NumericalComplex) {
 		var a = this.value;
 		var c = x._real;

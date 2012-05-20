@@ -34,10 +34,7 @@ Expression.List.prototype.differentiate = function(x) {
 					.differentiate(x)
 				);
 		case '^':
-			return this[0]['^'](
-					this[1]['-'](Global.One)
-				)['*'](
-					this[1]['*'](
+			return this[1]['*'](
 						this[0].differentiate(x)
 					)['+'](
 						this[0]['*'](
@@ -45,6 +42,9 @@ Expression.List.prototype.differentiate = function(x) {
 								this[1].differentiate(x)
 							)
 						)
+					)['*'](
+					this[0]['^'](
+						this[1]['-'](Global.One)
 					)
 				);
 		case '/':

@@ -49,8 +49,19 @@ Expression.Integer.prototype['^'] = function (x) {
 				x
 			);
 		}
+	} else if (x.constructor === Expression.List.Real || x.constructor === Expression.Symbol.Real) {
+		if(this.a > 0) {
+			return Expression.List.Real([
+				this,
+				x
+			], '^');
+		}
 	}
-	return this.__proto__.__proto__['^'].call(this, x);
+	return Expression.NumericalReal.prototype['^'].call(
+		this,
+		x
+	);
+	
 };
 Expression.Integer.prototype['%'] = function (x) {
 	if(x instanceof Expression.Integer) {

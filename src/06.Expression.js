@@ -13,7 +13,7 @@ Expression.prototype.identity = function () {
 
 Expression.prototype.toString = null;
 Expression.prototype.imageURL = function () {
-	return 'http://latex.codecogs.com/gif.latex?' + encodeURIComponent(this.toTypedString('text/latex').s);
+	return 'http://latex.codecogs.com/gif.latex?' + encodeURIComponent(this.s('text/latex').s);
 };
 Expression.prototype.image = function () {
 	var image = new Image();
@@ -31,22 +31,22 @@ Expression.prototype[','] = function (x) {
 	return Expression.Vector([this, x]);
 };
 Expression.prototype['='] = function (x) {
-	return new Statement(this, x, '=');
+	return new Expression.Statement(this, x, '=');
 };
 Expression.prototype['!='] = function (x) {
-	return new Statement(this, x, '!=');
+	return new Expression.Statement(this, x, '!=');
 };
 Expression.prototype['>'] = function (x) {
-	return new Statement(this, x, '>');
+	return new Expression.Statement(this, x, '>');
 };
 Expression.prototype['>='] = function (x) {
-	return new Statement(this, x, '>=');
+	return new Expression.Statement(this, x, '>=');
 };
 Expression.prototype['<'] = function (x) {
-	return new Statement(this, x, '<');
+	return new Expression.Statement(this, x, '<');
 };
 Expression.prototype['<='] = function (x) {
-	return new Statement(this, x, '<=');
+	return new Expression.Statement(this, x, '<=');
 };
 
 
@@ -81,6 +81,9 @@ Expression.prototype['*'] = function (x) {
 		return this;
 	}
 	return new Expression.List([this, x], '*');
+};
+Expression.prototype.default = function (x) {
+	return this['*'](x);
 };
 
 Expression.List.prototype['@-'] = function () {
