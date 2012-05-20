@@ -15,3 +15,8 @@ uglifyjs build/math.js \
 #cat ./src/00.intro.js build/compressed_tmp.js build/selfexec.js > build/jscas-production.js
 #rm ./build/selfexec.js
 #rm ./build/compressed_tmp.js
+
+if [ "$(whoami)" = "anthony" ];
+then
+	cp build/math.js ../graph/lib/math.js
+fi
