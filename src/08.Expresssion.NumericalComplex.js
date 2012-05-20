@@ -23,7 +23,7 @@ Expression.NumericalComplex.prototype['+'] = function (x) {
 	if(this._real === 0 && this._imag === 0) {
 		return x;
 	}
-	if(x instanceof this.constructor){
+	if(x instanceof Expression.NumericalComplex){
 		return new Expression.NumericalComplex(this._real + x._real, this._imag + x._imag);
 	} else if (x instanceof Expression.NumericalReal) {
 		return new Expression.NumericalComplex(this._real + x.value, this._imag);
@@ -45,7 +45,7 @@ Expression.NumericalComplex.prototype['-'] = function (x) {
 	if(this._real === 0 && this._imag === 0) {
 		return x['@-']();
 	}
-	if(x.constructor === this.constructor){
+	if(x instanceof Expression.NumericalComplex){
 		return new Expression.NumericalComplex(this._real - x._real, this._imag - x._imag);
 	} else if (x.constructor === Expression.NumericalReal) {
 		return new Expression.NumericalComplex(this._real - x.value, this._imag);

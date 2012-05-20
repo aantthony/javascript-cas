@@ -17,7 +17,7 @@ Expression.NumericalReal.prototype.imag = function() {
 	return Global.Zero;
 };
 Expression.NumericalReal.prototype.realimag = function() {
-	return Expression.ComplexCartesian([
+	return Expression.List.ComplexCartesian([
 		this,
 		Global.Zero
 	]);
@@ -109,33 +109,11 @@ Expression.NumericalReal.prototype['%'] = function (x) {
 	}
 };
 Expression.NumericalReal.prototype['*'] = function (x) {
-	if(this.value === 0) {
-		return Global.Zero;
-	}
-	if(this.value === 1) {
-		return x;
-	}
+	console.log('NR * ..', this);
 	if(x instanceof this.constructor){
 		return new Expression.NumericalReal(this.value * x.value);
-	} else if (x.constructor === Expression.NumericalComplex) {
-		// Same as commuted
-		return new Expression.NumericalComplex(this.value * x._real, this.value * x._imag);
-	} else if(x.constructor === Expression.List.ComplexCartesian) {
-		// commute. The problem with this is that the if else... thing will be repeated
-		return (x)['*'](this);
-	} else if(x.constructor === Expression.List.ComplexPolar) {	
-		return (x)['*'](this);
-	} else if(x.constructor === Expression.List.Real) {
-		return (x)['*'](this);
-	} else if(x.constructor === Expression.Symbol.Real) {
-		return (x)['*'](this);
-	} else if(x.constructor === Expression.List) {
-		return (x)['*'](this);
-	} else {
-		console.warn('Swapped operator order for * with NumericalReal');
-		return (x)['*'](this);
-		throw ('Unknown Type for NumericalReal *');
 	}
+	return x['*'](this);
 };
 Expression.NumericalReal.prototype['/'] = function (x) {
 	if(this.value === 0) {
@@ -177,13 +155,15 @@ Expression.NumericalReal.prototype['/'] = function (x) {
 	}
 };
 Expression.NumericalReal.prototype['^'] = function (x) {
-	if(this.value === 0) {
+	if (this.value === 0) {
 		return Global.Zero;
 	}
-	if(this.value === 1) {
+	if (this.value === 1) {
 		return Global.One;
 	}
-	if(x.constructor === this.constructor){
+	if (x instanceof Expression.Integer) {
+		return new Expression.NumericalReal(Math.pow(this.value, x.a));
+	} else if(x instanceof Expression.NumericalReal){
 		if(this.value > 0) {
 			return new Expression.NumericalReal(Math.pow(this.value, x.value));
 		}
@@ -221,7 +201,7 @@ Expression.NumericalReal.prototype['^'] = function (x) {
 	} else if (x.constructor === Expression.List) {
 		return Expression.List([this, x], '^');
 	} else {
-		throw ('Unknown Type for NumericalReal ^');
+		throw console.error ('Unknown Type for NumericalReal ^', x, x instanceof Expression.NumericalReal);
 	}
 };
 

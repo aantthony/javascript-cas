@@ -68,15 +68,27 @@ Expression.List.prototype.sub = function (x, y) {
 	if(this.length !== 2) {
 		console.error('TODO: Simplify after (i.e., [0].apply(...))');
 	}
-	return a[this.operator](b);
+	return a[this.operator || 'default'](b);
 	return Expression.List(Array.prototype.map.call(this, function (t) {
 		return t.sub(x, y);
 	}), this.operator);
 };
 Expression.prototype['*'] = function (x) {
+	if(x === Global.Zero) {
+		return x;
+	}
+	if(x === Global.One) {
+		return this;
+	}
 	return new Expression.List([this, x], '*');
 };
 
+Expression.List.prototype['@-'] = function () {
+	if(this.operator === '@-') {
+		return this[0];
+	}
+	return new Expression.List([this], '@-');
+};
 Expression.prototype['/'] = function (x) {
 	return new Expression.List([this, x], '/');
 };

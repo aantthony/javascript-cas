@@ -30,11 +30,53 @@ Expression.List.Real.prototype.abs = function (){
 Expression.List.Real.prototype.arg = function (){
 	return Expression.List.Real([Global.arg, this]);
 };
-Expression.List.Real.prototype['+'] = Expression.Symbol.Real.prototype['+'];
-Expression.List.Real.prototype['-'] = Expression.Symbol.Real.prototype['-'];
-Expression.List.Real.prototype['@-'] = Expression.Symbol.Real.prototype['@-'];
-Expression.List.Real.prototype['*'] = Expression.Symbol.Real.prototype['*'];
-Expression.List.Real.prototype['/'] = Expression.Symbol.Real.prototype['/'];
+Expression.List.Real.prototype['+'] = function (x) {
+	if(this === x) {
+		return x['*'](new Expression.Integer(2));
+	}
+	if(x === Global.Zero) {
+		return this;
+	}
+	return Expression.List.Real([this, x], '+');
+};
+Expression.List.Real.prototype['-'] = function (x) {
+	if(x === Global.Zero) {
+		return this;
+	}
+	if(x === this) {
+		return Global.Zero;
+	}
+	return Expression.List.Real([this, x], '-');
+};
+Expression.List.Real.prototype['*'] = function (x) {
+	if(x === Global.Zero) {
+		return x;
+	}
+
+	if(x === Global.One) {
+		return this;
+	}
+	return Expression.List.Real([this, x], '*');
+};
+Expression.List.Real.prototype['/'] = function (x) {
+
+	if(x === Global.One) {
+		return this;
+	}
+
+	if(x === this) {
+		return Global.One;
+	}
+	
+	return Expression.List.Real([this, x], '/');
+};
+
+Expression.List.Real.prototype['@-'] = function () {
+	if(this.operator === '@-') {
+		return this[0];
+	}
+	return Expression.List.Real([this], '@-');
+};
 Expression.List.Real.prototype['^'] = Expression.Symbol.Real.prototype['^'];
 
 Expression.List.Real.prototype.constructor = Expression.List.Real;

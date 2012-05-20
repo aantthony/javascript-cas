@@ -11,13 +11,13 @@ Expression.Rational.prototype['+'] = function (x) {
 	if(this.a === 0) {
 		return x;
 	}
-	if(x.constructor === this.constructor){
+	if(x instanceof Expression.Rational){
 		/*
 			a   c     ad   cb    ad + bc
 		    - + -  =  -- + -- =  -------
 			b   d     bd   bd      b d
 		*/
-		return new Expression.Rational(this.a * x.b + this.b + x.a, this.b * x.b);
+		return new Expression.Rational(this.a * x.b + this.b * x.a, this.b * x.b);
 	} else if (x.constructor === Expression.NumericalComplex) {
 		return new Expression.NumericalComplex(this.value + x._real, x._imag);
 	} else if(x.constructor === Expression.List.ComplexCartesian) {
@@ -43,13 +43,13 @@ Expression.Rational.prototype['-'] = function (x) {
 	if(this.a === 0) {
 		return x['@-']();
 	}
-	if(x.constructor === this.constructor){
+	if(x instanceof Expression.Rational){
 		/*
 			a   c     ad   cb    ad + bc
 		    - + -  =  -- + -- =  -------
 			b   d     bd   bd      b d
 		*/
-		return new Expression.Rational(this.a * x.b - this.b + x.a, this.b * x.b);
+		return new Expression.Rational(this.a * x.b - this.b * x.a, this.b * x.b);
 	} else if (x.constructor === Expression.NumericalComplex) {
 		return new Expression.NumericalComplex(this.value - x._real, x._imag);
 	} else if(x.constructor === Expression.List.ComplexCartesian) {
@@ -77,7 +77,7 @@ Expression.Rational.prototype['*'] = function (x) {
 	if (x instanceof this.constructor){
 		return new Expression.Rational(this.a * x.a, this.b * x.b);
 	}
-	return this.__proto__['*'](x);
+	return this.__proto__.__proto__['*'].call(this, x);
 };
 
 
@@ -91,7 +91,7 @@ Expression.Rational.prototype['/'] = function (x) {
 		}
 		return new Expression.Rational(this.a * x.b, this.b * x.a).reduce();
 	}
-	return this.__proto__['*'](x);
+	return this.__proto__.__proto__['/'].call(this, x);
 };
 Expression.Rational.prototype['^'] = function (x) {
 	if(this.a === 0) {
@@ -120,5 +120,8 @@ Expression.Rational.prototype.reduce = function () {
 	var g = gcd(this.b, this.a);
 	this.a /= g;
 	this.b /= g;
+	if(this.b === 1) {
+		return new Expression.Integer(this.a);
+	}
 	return this;
 };

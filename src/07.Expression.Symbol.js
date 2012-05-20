@@ -51,13 +51,33 @@ Expression.Symbol.Real.prototype['+'] = function (x) {
 	if (x == Global.Zero) {
 		return this;
 	}
-	return Expression.List.Real([this, x], '+');
+
+	if(x instanceof Expression.NumericalReal) {
+		return new Expression.List.Real([this, x], '+');
+	}
+	if(x instanceof Expression.Symbol.Real) {
+		return new Expression.List.Real([this, x], '+');
+	}
+	if(x instanceof Expression.Symbol) {
+		return new Expression.List([this, x], '+');
+	}
+	return x['+'](this);
 };
 Expression.Symbol.Real.prototype['-'] = function (x) {
 	if(this === x) {
 		return Global.Zero;
 	}
-	return Expression.List.Real([this, x], '-');
+	if(x instanceof Expression.Symbol.Real) {
+		return new Expression.List.Real([this, x], '-');
+	}
+	if(x instanceof Expression.List.Real) {
+		return new Expression.List.Real([this, x], '-');
+	}
+	if(x instanceof Expression.Symbol) {
+		return new Expression.List([this, x], '-');
+	}
+	
+	return x['@-']()['+'](this);
 };
 
 Expression.Symbol.Real.prototype['@+'] = function (x) {
@@ -72,13 +92,40 @@ Expression.Symbol.Real.prototype['*'] = function (x) {
 	if (x === Global.One) {
 		return this;
 	}
-	return Expression.List.Real([this, x], '*');
+	if (x === Global.Zero) {
+		return x;
+	}
+	if(x instanceof Expression.Symbol.Real) {
+		return new Expression.List.Real([this, x], '*');
+	}
+	if(x instanceof Expression.List.Real) {
+		return x['*'](this);
+	}
+	if(x instanceof Expression.Symbol) {
+		return new Expression.List([this, x], '*');
+	}
+	if(x instanceof Expression.NumericalReal) {
+		return new Expression.List.Real([this, x], '*');
+	}
+	if(x instanceof Expression.NumericalComplex) {
+		return new Expression.List.Real([this, x], '*');
+	}
+	if(x instanceof Expression.List.ComplexCartesian) {
+		return x['*'](this);
+	}
 };
 Expression.Symbol.Real.prototype.default = Expression.Symbol.Real.prototype['*'];
 Expression.Symbol.Real.prototype['/'] = function (x) {
 	return Expression.List.Real([this, x], '/');
 };
 Expression.Symbol.Real.prototype['^'] = function (x) {
+	if(x === Global.Zero) {
+		// Danger?
+		return Global.One;
+	}
+	if(x === Global.One) {
+		return this;
+	}
 	return Expression.List.Real([this, x], '^');
 };
 Expression.Symbol.Real.prototype.apply = function(operator, e) {

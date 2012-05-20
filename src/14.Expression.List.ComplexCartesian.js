@@ -33,16 +33,112 @@ Expression.List.ComplexCartesian.prototype.conjugate = function () {
 	]);
 };
 
-
+Expression.List.ComplexCartesian.prototype['@-'] = function (x) {
+	return new Expression.List.ComplexCartesian([
+		this[0]['@-'](),
+		this[1]['@-']()
+	]);
+};
 Expression.List.ComplexCartesian.prototype['*'] = function (x) {
-	
+	if (x instanceof Expression.List.ComplexCartesian) {
+		// (a+bi) * (A+Bi) = aA + aBi + bA - bB
+		return new Expression.List.ComplexCartesian([
+			this[0]['*'](x[0])['+'](this[1]['*'](x[0])),
+			this[0]['*'](x[1])['-'](this[1]['*'](x[1]))
+		]);
+	}
+	if (x instanceof Expression.List.Real || x instanceof Expression.Symbol.Real || x instanceof Expression.NumericalReal) {
+		return new Expression.List.ComplexCartesian([
+			this[0]['*'](x),
+			this[1]['*'](x)
+		]);
+	}
+};
+Expression.List.ComplexCartesian.prototype['^'] = function (x) {
+	if(x instanceof Expression.Integer) {
+		if(x === Global.One) {
+			return this;
+		}
+		if(x === Global.Zero) {
+			return Global.One;
+		}
+		// Binomial expansion
+		// (a+b)^N
+		var n  = x.a;
+		var k;
+		var x = this[0];
+		var y = this[1];
+		var negone = new Expression.Integer(-1);
+		var imag_part = Global.Zero;
+		
+		var real_part = x['^'](
+			new Expression.Integer(n)
+		);
+		
+		var ci = 1;
+		
+		for (k = 1;; k++) {
+			if(k === n) {
+				var expr = (
+					y['^'](
+						new Expression.Integer(k)
+					)
+				);
+				
+				if (ci === 0) {
+					real_part = real_part['+'](expr);
+				} else if (ci === 1) {
+					imag_part = imag_part['+'](expr);
+				} else if (ci === 2) {
+					real_part = real_part['-'](expr);
+				} else if (ci === 3) {
+					imag_part = imag_part['-'](expr);
+					ci = -1;
+				}
+			
+				
+				break;
+			}
+			var expr = x['^'](
+				new Expression.Integer(n - k)
+			)['*'](
+				y['^'](
+					new Expression.Integer(k)
+				)
+			);
+			if (ci === 0) {
+				real_part = real_part['+'](expr);
+			} else if (ci === 1) {
+				imag_part = imag_part['+'](expr);
+			} else if (ci === 2) {
+				real_part = real_part['-'](expr);
+			} else if (ci === 3) {
+				imag_part = imag_part['-'](expr);
+				ci = -1;
+			}
+			
+			ci++;
+		}
+		return new Expression.List.ComplexCartesian([
+			real_part,
+			imag_part
+		]);
+	}
+	return new Expression.List([this, x], '^');
 };
 Expression.List.ComplexCartesian.prototype['+'] = function (x) {
-	if (x instanceof this.constructor) {
+	if (x instanceof Expression.List.ComplexCartesian) {
 		return new Expression.List.ComplexCartesian([
 			this[0]
 		]);
 	}
+	if (x instanceof Expression.List.Real || x instanceof Expression.Symbol.Real || x instanceof Expression.NumericalReal) {
+		return new Expression.List.ComplexCartesian([
+			this[0]['+'](x),
+			this[1]
+		]);
+	}
+	
 };
 Expression.List.ComplexCartesian.prototype.constructor = Expression.List.ComplexCartesian;
 Expression.List.ComplexCartesian.prototype.apply = function(o, x){

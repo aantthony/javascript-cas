@@ -7,7 +7,11 @@ Expression.List.prototype.differentiate = function(x) {
 			// D(f(g(x))) = D(f) * D(g)
 			// d f(g(x))/dx = df/dx = df/dg * dg/dx
 			if(this[0] instanceof Expression.Function) {
-				return this[0].differentiate(x)['*'](this[1].differentiate(x));
+				var da = this[1].differentiate(x);
+				if(da === Global.Zero) {
+					return da;
+				}
+				return this[0].differentiate().default(this[1])['*'](da);
 			}
 		case '*':
 			return this[0]

@@ -46,6 +46,9 @@ Language.prototype.Number = function(o) {
 		'0': Global.Zero,
 		'1': Global.One
 	};
+	if(predefined[o]) {
+		return predefined[o];
+	}
 	
 	if (/^[\d]+$/.test(o)) {
 		return new Expression.Integer(Number(o));
@@ -57,7 +60,7 @@ Language.prototype.Number = function(o) {
 		var d = Math.pow(10, denom_p);
 		var n = Number(o.replace(".", ""));
 		
-		return new Expression.Rational(n, d);
+		return new Expression.Rational(n, d).reduce();
 	}
 	return predefined[o] || new Expression.NumericalReal(Number(o));
 };

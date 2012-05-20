@@ -5,3 +5,5 @@ function deprecated(message){
 	}
     console.warn(err.replace(/^Error\: /, 'Deprecated: '));
 }
+
+var startTime = new Date();

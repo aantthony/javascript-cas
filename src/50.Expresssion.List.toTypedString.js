@@ -264,152 +264,237 @@ var exportLanguages={
 	}
 };
 var defLang = language;
-Expression.List.Real.prototype.toTypedString = function(language) {
+function Code (s, pre){
+	this.pre = [] || pre;
+	this.s = '' || s;
+	this.vars = 0;
+	this.p = Infinity;
+}
+Code.prototype.var = function () {
+	return 't' + (this.vars++).toString(36);
+}
+Code.prototype.merge = function (o, str, p, pre) {
+	this.s = str;
+	if (pre) {
+		this.pre.push(pre);
+	}
+	var i;
+	this.pre.push.apply(this.pre, o.pre);
+	this.vars += o.vars;
+	this.p = p;
+	return this;
+};
+Code.prototype.update = function (str, p, pre) {
+	this. p = p;
+	if(pre) {
+		this.pre.push(pre);
+	}
+	this.s = str;
+	return this;
+}
+Code.prototype.compile = function (x) {
+	return Function(x, this.pre.join('\n') + 'return ' + this.s);
+};
+Expression.List.Real.prototype.s = function(lang) {
+
+	function paren(x) {
+		if(lang === 'text/latex') {
+			return '\\left(' + x + '\\right)'; 
+		}
+		return '('+ x + ')';
+	}
+	if (this.operator === undefined) {
+		if(this[0] instanceof Expression.Function) {
+			var c0 = this[0].s(lang);
+			var c1 = this[1].s(lang);
+			return c0.merge(c1, c0.s + '(' + c1.s + ')', p);
+		} else {
+			this.operator = '*';
+		}
+	}
+	var p = language.precedence(this.operator);
+	function _(x) {
+		if(p > x.p){
+			return paren(x.s);
+		}
+		return x.s;
+	}
 
 	if(this.operator === '^') {
 
-		if(language === 'x-shader/x-fragment') {
-		
+		if(lang === 'x-shader/x-fragment') {
+			if(this[0] === Global.e) {
+				var c1 = this[1].s(lang);
+				return c1.update('exp(' + c1.s + ')');
+			}
+			if(this[1] instanceof Expression.Integer && this[1].a < 5) {
+				var c0 = this[0].s(lang);
+				var cs = c0.s;
+				var j = language.precedence('*');
+				if (j > c0.p) {
+					cs = '(' + cs + ')';
+				}
+				var s = cs;
+				var i;
+				for(i = 1; i < this[1].a; i++) {
+					s+= '*' + cs;
+				}
+				return c0.update('(' + s + ')');
+			}
 			if(this[1] instanceof Expression.Rational) {
 				// a^2, 3, 4, 5, 6 
-				var sign_p = this[1].a > 0 ? 1 : -1;
-				var ex = this[1].toTypedString(language);
-				var ba = this[0].toTypedString(language);
-				
-				if(sign_p === +1) {
-					return {
-						s: 'pow(' + ex.s + ',' + ba.s + ')',
-						t: javascript.Number,
-						p: defLang.precedence('^')
-					};
-				} else {
-					return {
-						s: '-pow(' + ex.s + ',' + ba.s + ')',
-						t: javascript.Number,
-						p: defLang.precedence('^')
-					};
-				
+				var even = this[1].a %2 ? false : true;
+				if(even) {
+
+					var c1 = this[1].s(lang);
+					var c0 = this[0].s(lang);
 					
+					return c0.merge(c1, 'pow(' + c0.s + ',' + c1.s  + ')');
+				} else {
+
+					var c1 = this[1]['-'](Global.One).s(lang);
+					var c0 = this[0].s(lang);
+					
+					return c0.merge(c1, '((' + c0.s + ') * pow(' + c0.s + ',' + c1.s + '))');
+				}
+			} else if (this[0] instanceof Expression.NumericalReal) {
+
+				// Neg or pos.
+				var c1 = this[1]['-'](Global.One).s(lang);
+				var c0 = this[0].s(lang);
+				
+				return c0.merge(c1, '((' + c0.s + ') * pow(' + c0.s + ','+c1.s+'))');
+				
+			} else {
+
+				var c1 = this[1]['-'](Global.One).s(lang);
+				var c0 = this[0].s(lang);
+				
+				// Needs a new function, dependent on power.
+				return c0.merge(c1, '((' + c0.s + ') * pow(' + c0.s + ','+c1.s+'))');
+			}
+		}
+		if(lang === 'text/javascript') {
+			if(this[1] instanceof Expression.Rational) {
+				// a^2, 3, 4, 5, 6 
+				var even = this[1].a % 2 ? false : true;
+				if(even) {
+					var c1 = this[1].s(lang);
+					var c0 = this[0].s(lang);
+					
+					return c0.merge(c1, 'Math.pow(' + c0.s + ',' + c1.s  + ')');
+				} else {
+
+					var c1 = this[1].s(lang);
+					var c0 = this[0].s(lang);
+					
+					return c0.merge(c1, 'Math.pow(' + c0.s + ',' + c1.s + ')');
 				}
 			} else {
-				// Needs a new function, dependent on power.
-				
-			}
-		} 
-	}
-	return exportLanguages[language](
-		this.operator,
-		Array.prototype.map.call(this, function(x) {
-			return x.toTypedString(language);
-		})
-	);
-	
-	
-}
-Expression.List.prototype.toTypedString = function(language) {
-	throw('Not Real!');
-	return exportLanguages[language](
-		this.operator,
-		Array.prototype.map.apply(this, [function(x) {
-			return x.toTypedString(language);
-		}])
-	);
-};
 
-Expression.List.ComplexPolar.prototype.toTypedString = function(language) {
-	if(language !== 'text/latex') {
-		throw('Exporting not supported for complex values.');
-	}
-	return {
-		s: this[0].toTypedString(language).s + '\\cdot e^{i' + this[1].toTypedString(language).s + '}',
-		t: javascript.Number
-	};
-};
-Expression.List.ComplexCartesian.prototype.toTypedString = function(language) {
-	if(language !== 'text/latex') {
-		throw('Exporting not supported for complex values.');
-	}
-	return {
-		s: this[0].toTypedString(language).s + '+ i(' + this[1].toTypedString(language).s + ')',
-		t: javascript.Number
-	};
-};
-Expression.NumericalComplex.prototype.toTypedString = function(language) {
-	deprecated('NumericalComplex.toTypedString????');
-	if (language === 'text/latex') {
-		if(this === Global.i) {
-			return {s: 'i', t: javascript.Number};
+				var c1 = this[1].s(lang);
+				var c0 = this[0].s(lang);
+				
+				// Needs a new function, dependent on power.
+				return c0.merge(c1, 'Math.pow(' + c1.s + ')');
+			}
+			
 		}
+	}
+
+	var c0 = this[0].s(lang);
+
+	if(this.operator[0] === '@') {
+		return c0.update(this.operator[1] + _(c0), p);
+	}
+
+	var c1 = this[1].s(lang);
+
+	return c0.merge(c1, _(c0) + this.operator + _(c1), p);
+}
+Expression.Symbol.prototype.s = function () {
+	return new Code(this.symbol);
+};
+Expression.NumericalReal.prototype.s = function (lang){
+	if(lang === 'x-shader/x-fragment') {
+		var num = this.value.toExponential();
+		if(num.indexOf('.') === -1){
+			num = num.replace('e','.e');
+		}
+		return new Code(num);
+	}
+	return new Code(this.value.toString());
+};
+Expression.List.ComplexPolar.prototype.s = function(lang) {
+	if(lang !== 'text/latex') {
+		throw('Exporting not supported for complex values.');
+	}
+
+	var pP = language.precedence('+');
+	var pM = language.precedence('*');
+	function _(x, o) {
+		if(o > x.p){
+			return '\\left(' + x.s + '\\right)';
+		}
+		return x.s;
+	}
+
+	var c0 = this[0].s(lang);
+	var c1 = this[1].s(lang);
+	return c0.merge(c1, _(c0, pM) + '' + 'e^{i' + _(c1, pM));
+	
+};
+Expression.List.ComplexCartesian.prototype.s = function(lang) {
+	if(lang !== 'text/latex') {
+		throw('Exporting not supported for complex values.');
+	}
+	var pP = language.precedence('+');
+	
+	function _(x, o) {
+		if(o > x.p){
+			return '\\left(' + x.s + '\\right)';
+		}
+		return x.s;
+	}
+
+	var c0 = this[0].s(lang);
+	var c1 = this[1].s(lang);
+	return c0.merge(c1, _(c0) + '+' +_(c1, pP)+'i', language.precedence('+'));
+};
+Expression.NumericalComplex.prototype.s = function(lang) {
+	deprecated('NumericalComplex.toTypedString????');
+	if (lang === 'text/latex') {
 		
 		var n = this.realimag();
 
 		if (this._real === 0) {
 			if (this._imag === 1) {
-				return {s: 'i', t: javascript.Number};
+				return new Code('i');
 			} else if (this._imag === -1) {
-				return {s: '-i', t: javascript.Number};
+				return new Code('-i');
 			}
-			return {s: n[1].toTypedString(language).s + 'i', t: javascript.Number};
+			return new Code(n[1].s(language).s + 'i');
 		} else if(this._imag === 0) {
-			return {s: n[0].toTypedString(language).s, t: javascript.Number};
+			return new Code(n[0].s(language).s);
 		}
 		if(this._imag === 1) {
-			return {s: n[0].toTypedString(language).s + ' + i', t: javascript.Number};
+			return new Code(n[0].s(language).s + ' + i');
 			
 		} else if(this._imag === -1) {
-			return {s: n[0].toTypedString(language).s + ' - i', t: javascript.Number};
+			return new Code(n[0].s(language).s + ' - i');
 		} else if(this._imag < 0) {
-			return {s: n[0].toTypedString(language).s + ' + ' + n[1].toTypedString(language).s + 'i', t: javascript.Number};
+			return new Code(n[0].s(language).s + ' + ' + n[1].s(language).s + 'i');
 		}
-		return {s: n[0] + ' + ' + n[1].toTypedString(language).s + 'i', t: javascript.Number};
+		return new Code(n[0] + ' + ' + n[1].s(language).s + 'i');
 	}
 	throw('Please use x.realimag()[0 /* or 1 */].toTypedString() to generate code.');
 };
-Expression.Integer.prototype.toTypedString = function (language) {
-	if(language === 'x-shader/x-fragment') {
-
-		return {s: this.a.toString() + '.0', t: javascript.Number};
-		
+Expression.Integer.prototype.s = function (lang) {
+	if(lang === 'x-shader/x-fragment') {
+		return new Code(this.a.toString() + '.0');
 	}
-	return {s: this.a.toString(), t: javascript.Number};
+	return new Code(this.a.toString());
 };
-Expression.NumericalReal.prototype.toTypedString = function(language) {
-	switch(language){
-		case 'text/javascript':
-			if (this === Global.e) {
-				return {s: 'Math.E', t:javascript.Number};
-			} else if(this === Global.pi) {
-				return {s: 'Math.PI', t:javascript.Number};
-			}
-			if(this.value === Infinity){
-				return 'Infinity';
-			}
-			return {s:this.value.toString(), t:javascript.Number};
-		case 'x-shader/x-fragment':
-			var num = this.value.toExponential();
-			if(num.indexOf('.') === -1){
-				num = num.replace('e','.e');
-			}
-			return {s:num, t:glsl.fp};
-		case 'text/latex':
-			var s;
-			if (this === Global.e) {
-				s = 'e';
-			} else if(this === Global.pi) {
-				s = '\\pi';
-			} else if(this === Global.Infinity) {
-				s = '\\infty';
-			}
-			
-			return {
-				s:s || this.value.toString()
-				.replace(/e([\d\.]+)/, '\\cdot 10^{$1}')
-				.replace(/e-([\d\.]+)/, '\\cdot 10^{-$1}'),
-				t:javascript.Number};
-			
-	}
-};
-
 Expression.Vector.prototype.toTypedString = function(language) {
 	var l = this.length;
 	var open = '[';
@@ -426,29 +511,8 @@ Expression.Vector.prototype.toTypedString = function(language) {
 	};
 };
 
-Expression.Symbol.prototype.toTypedString=function(language) {
-	var s = this.symbol;
-	var t = javascript.ref;
-	if(language === 'text/javascript'){
-		
-	}else if(language==='x-shader/x-fragment'){
-		t=glsl.fp;
-		if(Math[s]){
-			t=glsl.func;
-		}
-	}else{
-		//latex
-		if(s.length>1){
-			s='\\'+s;
-		}
-	}
-	
-	return {s:s, t:t};
-};
-
 
 
 Expression.prototype.compile = function(x){
-	var e = this.toTypedString('text/javascript');
-	return new Function(x, 'return ' + e.s);
+	return this.s('text/javascript').compile(x);
 };
