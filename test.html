@@ -5,5 +5,8 @@ function log(math) {
   document.body.appendChild(document.createElement("br"));
 }
 var c = new M.Context();
+M.Expression.prototype.glsl = function () {
+	return this.s('x-shader/x-fragment').s;
+}
 c.x = M('x', c);
 </script>
