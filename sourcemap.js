@@ -1,5 +1,5 @@
 var fs = require('fs');
-var sys = require('sys');
+var sys = require('util');
 var exec = require('child_process').exec;
 var child;
 if(isNaN(process.argv[2])){
