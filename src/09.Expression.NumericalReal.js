@@ -77,7 +77,6 @@ Expression.NumericalReal.prototype['%'] = function (x) {
 	}
 };
 Expression.NumericalReal.prototype['*'] = function (x) {
-	console.log('NR * ..', this);
 	if(x instanceof Expression.NumericalReal){
 		return new Expression.NumericalReal(this.value * x.value);
 	}
@@ -87,7 +86,7 @@ Expression.NumericalReal.prototype['/'] = function (x) {
 	if(this.value === 0) {
 		return Global.Zero;
 	}
-	if(x.constructor === this.constructor){
+	if(x instanceof Expression.NumericalReal){
 		if(x.value === 0) {
 			throw('Division by zero not allowed!');
 		}
@@ -95,7 +94,7 @@ Expression.NumericalReal.prototype['/'] = function (x) {
 	} else if (x.constructor === Expression.NumericalComplex) {
 		var cc_dd = x._real * x._real + x._imag * x._imag;
 		return new Expression.Complex((this.value * x._real)/cc_dd, (-this.value * x._imag) / cc_dd);
-	} else if(x.constructor === Expression.List.ComplexCartesian) {
+	} else if(x instanceof Expression.List.ComplexCartesian) {
 		// a/(x+yi) = a/(x+yi) (x-yi)/(x-yi) = a(x-yi) / (x^2 + y^2)
 		var x_conj = Expression.List.ComplexCartesian([
 			x[0],
@@ -108,17 +107,18 @@ Expression.NumericalReal.prototype['/'] = function (x) {
 				(x[1]['^'])(two)
 			)
 		);
-	} else if(x.constructor === Expression.List.ComplexPolar) {
+	} else if(x instanceof Expression.List.ComplexPolar) {
 		
-	} else if(x.constructor === Expression.List.Real) {
+	} else if(x instanceof Expression.List.Real) {
 		// TODO: given x != 0
 		return Expression.List.Real([this, x], '/');
-	} else if(x.constructor === Expression.Symbol.Real) {
+	} else if(x instanceof Expression.Symbol.Real) {
 		// TODO: given x != 0
 		return Expression.List.Real([this, x], '/');
-	} else if(x.constructor === Expression.List) {	
+	} else if(x instanceof Expression.List) {	
 		return Expression.List([this, x], '/');
 	} else {
+		console.log('Unknown type: ', this, x);
 		throw ('Unknown Type for NumericalReal /');
 	}
 };

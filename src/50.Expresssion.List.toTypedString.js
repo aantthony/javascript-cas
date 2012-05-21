@@ -295,6 +295,13 @@ Code.prototype.update = function (str, p, pre) {
 Code.prototype.compile = function (x) {
 	return Function(x, this.pre.join('\n') + 'return ' + this.s);
 };
+
+Expression.List.prototype.s = function (lang) {
+	// TODO: remove this (debug code)
+	if(lang === 'text/latex') {
+		return Expression.List.Real.prototype.s.call(this, lang);
+	}
+};
 Expression.List.Real.prototype.s = function(lang) {
 
 	function paren(x) {
@@ -305,6 +312,10 @@ Expression.List.Real.prototype.s = function(lang) {
 	}
 	if (this.operator === undefined) {
 		if (this[0] instanceof Expression.Function) {
+			if(this[0] === Global.abs) {
+				var c1 = this[1].s(lang);
+				return c1.update('\\left|' + c1.s + '\\right|', Infinity);
+			}
 			var c0 = this[0].s(lang);
 			if (this[1] instanceof Expression.Vector) {
 				var c1s = Array.prototype.map.call(this[1], function (c) {
@@ -388,6 +399,10 @@ Expression.List.Real.prototype.s = function(lang) {
 				return c0.merge(c1, '((' + c0.s + ') * pow(' + c0.s + ','+c1.s+'))');
 			}
 		} else if(lang === 'text/javascript') {
+			if(this[0] === Global.e) {
+				var c1 = this[1].s(lang);
+				return c1.update('Math.exp(' + c1.s + ')');
+			}
 			if(this[1] instanceof Expression.Rational) {
 				// a^2, 3, 4, 5, 6 
 				var even = this[1].a % 2 ? false : true;
@@ -409,7 +424,7 @@ Expression.List.Real.prototype.s = function(lang) {
 				var c0 = this[0].s(lang);
 				
 				// Needs a new function, dependent on power.
-				return c0.merge(c1, 'Math.pow(' + c1.s + ')');
+				return c0.merge(c1, 'Math.pow(' + c0.s + ',' + c1.s + ')');
 			}
 			
 		} else if (lang === 'text/latex'){

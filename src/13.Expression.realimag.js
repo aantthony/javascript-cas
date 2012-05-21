@@ -53,31 +53,14 @@ Expression.List.prototype.realimag = function() {
 			var a = this[0].realimag();
 			var b = this[1].realimag();
 
-			var half = new Expression.NumericalReal(0.5, 0);
-			var hlm = half['*'](
-				Global.log.default(
-					a[0]['*'](
-						a[0]
-					)['+'](
-						a[1]['*'](
-							a[1]
-						)
-					)
-				)
-			);
-			var theta = Global.atan2.default(Expression.Vector([a[1], a[0]]));
+			var half = new Expression.Rational(1, 2);
+			var two = new Expression.Integer(2);
+			
+			var hlmtheta = Global.log.realimag().default(a);
+			var hlm = hlmtheta[0];
+			var theta = hlmtheta[1];
 			var hmld_tc = hlm['*'](b[1])['+'](theta['*'](b[0]));
-			/*
-			var e_hmlc_td = Global.exp.apply(undefined,
-				hlm.apply('*',
-					b[0]
-				).apply('-',
-					theta.apply('*',
-						b[1]
-					)
-				)
-			);
-			*/
+			
 			
 			var e_hmlc_td = Global.e['^'](
 				hlm['*'](

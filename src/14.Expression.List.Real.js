@@ -108,10 +108,10 @@ Expression.List.Real.prototype['/'] = function (x) {
 	}
 
 	if(x instanceof Expression.NumericalReal) {
-		if(this.operator === '*' || this.operator === '/' && this[0] instanceof Expression.NumericalReal) {
+		if(this.operator === '*' || this.operator === '/') {
 			return Expression.List.Real([this[0]['/'](x), this[1]], this.operator);
 		}
-		return Expression.List.Real([x, this], '/');
+		return Expression.List.Real([this, x], '/');
 	}
 
 	if(x instanceof Expression.List.Real || x instanceof Expression.Symbol.Real) {

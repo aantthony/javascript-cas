@@ -382,10 +382,14 @@ Global.pi.s = function (lang) {
 	}
 	return new Code('3.141592653589793');
 };
+// The real circle constant:
+Global.tau = Global['pi']['*'](new Expression.Integer(2));
 
 Global['Infinity'] = new Expression.NumericalReal(Infinity, 0);
 Global['Infinity'].title = 'Infinity';
 Global['Infinity'].description = '';
+Global['infty'] = Global.Infinity;
+
 
 Global['Zero'] = new Expression.Integer(0);
 Global['Zero'].title = 'Zero';
@@ -444,3 +448,14 @@ Global.d['/'] = function (x) {
 };
 
 
+Global['Sum'] = new Expression.Function({
+	default: function (x) {
+		return 3;
+	}
+});
+Global.Sum['_'] = function (eq) {
+	// start: 
+	var t = eq[0];
+	var v = eq[1];
+	return new Expression.Sum(t, v);
+}

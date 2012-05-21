@@ -44,18 +44,66 @@ Expression.List.Real.prototype.terms = function (vars, yes, no) {
 			this[1].terms(vars, yes, no);
 			return;
 		case '-':
-			
-		case '*':
-			return this.expand(vars).terms(vars, yes, no);
-		case '/':
-			return this.expand(vars).terms(vars,
-				function (y){
-				
+			this[0].terms(vars, yes, no);
+			this[1].terms(vars,
+				function (y) {
+					yes(y['@-']());
 				},
-				function (n){
-					
+				function (n) {
+					no(n['@-']());
 				}
 			);
+			return;
+		case '*':
+			var Ay = [];
+			var An = Global.Zero;
+			var By = [];
+			var Bn = Global.Zero;
+		
+			this[0].terms(vars,
+				function (y) {
+					Ay.push(y);
+				},
+				function (n) {
+					An = An['*'](n);
+				}
+			);
+			this[1].terms(vars,
+				function (y) {
+					By.push(y);
+				},
+				function (n) {
+					Bn = Bn['*'](n);
+				}
+			);
+			/* 
+			(AN + a1 + a2 + ... + an) * (BN + b1 + b2 + ... + bn)
+			= a1b1 + a1b2 + ...
+			*/
+			no(An['*'](Bn));
+			var i = 0;
+			for (i = 0; i < Ay.length; i++) {
+				var j;
+				for (j = 0; j < By.length; j++) {
+					yes(Ay[i]['*'](By[j]));
+				}
+			}
+			return;
+		case '/':
+			var self = this;
+			if(this[1] instanceof Expression.Constant) {
+				this[0].terms(vars,
+					function (y) {
+						yes(y['/'](self[1]));
+					},
+					function (n) {
+						no(n['/'](self[1]));
+					}
+				);
+				return;
+				
+			}
+			throw('Expansion in denominator required');
 	}
 };
 Expression.List.Real.prototype.factors = function (vars, yes, no, collect_recip) {
