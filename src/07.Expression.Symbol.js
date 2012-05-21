@@ -118,6 +118,7 @@ Expression.Symbol.Real.prototype['*'] = function (x) {
 	if(x instanceof Expression.List.ComplexCartesian) {
 		return x['*'](this);
 	}
+	return x['*'](this);
 };
 Expression.Symbol.Real.prototype.default = Expression.Symbol.Real.prototype['*'];
 Expression.Symbol.Real.prototype['/'] = function (x) {

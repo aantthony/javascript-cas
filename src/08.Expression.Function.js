@@ -4,6 +4,7 @@ Expression.Function = function (p) {
 	this['x-shader/x-fragment'] = (p['x-shader/x-fragment']);
 	this['text/javascript'] = (p['text/javascript']);
 	this.derivative = p.derivative;
+	this.realimag = p.realimag;
 };
 Expression.Function.prototype = Object.create(Expression.prototype);
 Expression.Function.prototype.constructor = Expression.Function;

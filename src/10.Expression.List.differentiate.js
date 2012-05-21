@@ -34,6 +34,22 @@ Expression.List.prototype.differentiate = function(x) {
 					.differentiate(x)
 				);
 		case '^':
+			var d_a = this[0].differentiate(x);
+			var d_b = this[1].differentiate(x);
+			if(d_a === Global.Zero) {
+				if(d_b === Global.Zero) {
+					return Global.Zero;
+				}
+				return d_b['*'](Global.log.default(this[0]))['*'](this);
+			}
+
+			var f_a = this[0]['^'](this[1]['-'](Global.One));
+			return f_a['*'](
+				d_a['*'](this[1])
+				['+'](
+					this[0]['*'](Global.log.default(this[0]))['*'](d_b)
+				)
+			);
 			return this[1]['*'](
 						this[0].differentiate(x)
 					)['+'](

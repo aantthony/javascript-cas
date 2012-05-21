@@ -13,8 +13,8 @@ Expression.List.prototype.realimag = function() {
 	console.error('Only the user can call this function');
 	switch (this.operator) {
 		case undefined:
-			if(this[0].apply_realimag && this.length === 2) {
-				return this[0].apply_realimag(this.operator, this[1]);
+			if (this[0] instanceof Expression.Function) {
+				return this[0].realimag().default(this[1]);
 			}
 			//throw('.realimag() method invoked for Expression without operator?');
 			

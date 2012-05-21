@@ -318,10 +318,10 @@ Expression.List.Real.prototype.s = function(lang) {
 				for (i = 0; i < c1s.length; i++) {
 					c0.merge(c1s[i]);
 				}
-				return c0.update(c0_s + '(' + t_s + ')', language.precedence('default'));
+				return c0.update(c0_s + paren(t_s), language.precedence('default'));
 			}
 			var c1 = this[1].s(lang);
-			return c0.merge(c1, c0.s + '(' + c1.s + ')', language.precedence('default'));
+			return c0.merge(c1, c0.s + paren(c1.s), language.precedence('default'));
 		} else {
 			this.operator = '*';
 		}
@@ -387,8 +387,7 @@ Expression.List.Real.prototype.s = function(lang) {
 				// Needs a new function, dependent on power.
 				return c0.merge(c1, '((' + c0.s + ') * pow(' + c0.s + ','+c1.s+'))');
 			}
-		}
-		if(lang === 'text/javascript') {
+		} else if(lang === 'text/javascript') {
 			if(this[1] instanceof Expression.Rational) {
 				// a^2, 3, 4, 5, 6 
 				var even = this[1].a % 2 ? false : true;
@@ -413,6 +412,10 @@ Expression.List.Real.prototype.s = function(lang) {
 				return c0.merge(c1, 'Math.pow(' + c1.s + ')');
 			}
 			
+		} else if (lang === 'text/latex'){
+			var c0 = this[0].s(lang);
+			var c1 = this[1].s(lang);
+			return c0.merge(c1, _(c0) + '^' + '{' + c1.s + '}')
 		}
 	}
 

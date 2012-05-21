@@ -38,7 +38,7 @@ Expression.NumericalReal.prototype['+'] = function (x) {
 
 Expression.NumericalReal.prototype['@-'] = function (x) {
 	return new Expression.NumericalReal(-this.value);
-}
+};
 
 Expression.NumericalReal.prototype['-'] = function (x) {
 	if(this.value === 0) {
@@ -78,7 +78,7 @@ Expression.NumericalReal.prototype['%'] = function (x) {
 };
 Expression.NumericalReal.prototype['*'] = function (x) {
 	console.log('NR * ..', this);
-	if(x instanceof this.constructor){
+	if(x instanceof Expression.NumericalReal){
 		return new Expression.NumericalReal(this.value * x.value);
 	}
 	return x['*'](this);

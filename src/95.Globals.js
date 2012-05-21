@@ -79,27 +79,27 @@ Global['log'] = new Expression.Function({
 		
 		return Expression.List([Global.log, x]);
 	},
-	differentiate: function(x) {
-		return Global.One.apply('/', x);
-	},
-	apply_differentiate: function(op, x, t) {
-		return Global.One.apply('/', x).apply('*', x.differentiate(t));
-		return Global.cos.apply(undefined, x).apply('*', x.differentiate(t));
+	realimag: function (x) {
+		return CartLog;
 	},
 	'text/latex': '\\log',
 	'text/javascript': 'Math.log',
 	'x-shader/x-fragment': 'log',
-	toTypedString: function(language) {
-		return {
-			s: this[language],
-			t:javascript.Function
-		}
-	},
 	title: 'Natural Logarithm',
 	description: 'Base e. See http://en.wikipedia.org/wiki/Natural_logarithm',
 	examples: ['\\log (ye^(2x))'],
 	related: ['exp', 'Log']
 });
+var Half = new Expression.Rational(1, 2);
+var CartLog = new Expression.Function({
+	default: function (x) {
+		return new Expression.ComplexCartesian([
+			Global.log.default(x.abs()),
+			x.arg()
+		])['*'](Half);
+	}
+});
+CartLog.__proto__ = Global.log;
 Global['atan2'] = new Expression.Function({
 	default: function(x) {
 		if(! (x instanceof Expression.Vector)) {
@@ -119,7 +119,7 @@ Global['atan2'] = new Expression.Function({
 		//TODO: DANGER! Assuming real numbers, but it should have some fast way to do this.
 		return [Expression.List([Global.atan2, x]), M.Global.Zero];
 	},
-	'text/latex': '\\atan2',
+	'text/latex': '\\tan^{-1}',
 	'text/javascript': 'Math.atan2',
 	'x-shader/x-fragment': 'atan',
 	toTypedString: function(language) {
@@ -318,32 +318,21 @@ Global['sqrt'] = new Expression.Function({
 	examples: ['\\sqrt (x^4)'],
 	related: ['pow', 'abs', 'mod']
 });
-Global['abs'] = {
+Global['abs'] = new Expression.Function({
 	default: function (x) {
 		console.warn('ABS IS FOR USER INPUT ONLY. USE .abs()');
 		//Using abs is better (I think) because it finds the method through the prototype chain,
-		//which is going to be faster than doing an if list / switch case list. TODO: Check the truthfullnes of this!
+		//which is going to be faster than doing an if list / switch case list.
 		return x.abs();
 	},
 	'text/latex': '\\abs',
 	'text/javascript': 'Math.abs',
-	toTypedString: function(language) {
-		return {
-			s: this[language],
-			t:javascript.Function
-		}
-	},
-	differentiate: function(x) {
-		return x.apply('/', x.abs());
-	},
-	apply_differentiate: function(op, x, t) {
-		return x.apply('/', x.abs()).apply('*', x.differentiate(t));
-	},
+	'derivative': new Expression.Function.Symbolic('x/\\abs(x)'),
 	titie: 'Absolute Value Function',
 	description: 'Abs',
 	examples: ['\\abs (-3)', '\\abs (i+3)'],
 	related: ['arg', 'tan']
-};
+});
 Global['arg'] = {
 	default: function (x) {
 		console.warn('ARG IS FOR USER INPUT ONLY. USE .arg()');
@@ -418,6 +407,7 @@ Global['One']['*'] = function (x) {
 	return x;
 };
 
+Global.log.derivative = new Expression.Function.Symbolic(Global.One['/'](new Expression.Symbol.Real()));
 
 Global['i'] = new Expression.List.ComplexCartesian([Global['Zero'], Global['One']]);
 Global['i'].title = 'Imaginary Unit';
@@ -432,40 +422,6 @@ Global['i']['*[TODO]'] = function (x) {
 	
 };
 
-function Infinitesimal(x) {
-	this.x = x;
-}
-Infinitesimal.prototype['+'] = function (x) {
-	if(x instanceof Infinitesimal) {
-		throw('Infinitesimal addition');
-	}
-	return x;
-};
-Infinitesimal.prototype['/'] = function (x) {
-	if(x instanceof Infinitesimal) {
-		if(x.x instanceof Expression.Symbol) {
-			return this.x.differentiate(x.x);
-		}
-		throw('Confusing infitesimal division');
-	}
-	this.x = this.x['/'](x);
-	return this;
-};
-Infinitesimal.prototype['*'] = function (x) {
-	// d^2 = 0
-	if(x instanceof Infinitesimal) {
-		return Global.Zero;
-	}
-	this.x = this.x['*'](x);
-};
-
-function Derivative(x) {
-	// technically should be a function / operator
-	this.x = x;
-}
-Derivative.prototype.default = function (x) {
-	return x.differentiate(this.x);
-};
 Global['d'] = new Expression.Function({
 	default: function(x) {
 		return new Infinitesimal(x);
