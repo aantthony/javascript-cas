@@ -435,11 +435,14 @@ Language.build = function () {
 			next_rpn(the_operator);
 		}
 		if (rpn_stack.length !== 1) {
-			console.warn('Stack not the right size! ', rpn_stack);
 			throw('Stack not the right size!');
 			//who gives?
 			return rpn_stack;
 		}
+		
+		// Free variables: (these could be used to quickly check which variables an equation has).
+		// Perhaps every expression should have such a context, but maybe that would take too much ram.
+		rpn_stack[0].unbound = free_context;
 		return rpn_stack[0];
 	};
 };
