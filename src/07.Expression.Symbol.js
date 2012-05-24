@@ -122,6 +122,18 @@ Expression.Symbol.Real.prototype['*'] = function (x) {
 };
 Expression.Symbol.Real.prototype.default = Expression.Symbol.Real.prototype['*'];
 Expression.Symbol.Real.prototype['/'] = function (x) {
+
+	if(x instanceof Expression.Rational) {
+		if(x.a === x.b) {
+			return this;
+		}
+	}
+	if(x instanceof Expression.Rational) {
+		if(x.a === 0) {
+			throw('Division by zero');
+		}
+	}
+	
 	return Expression.List.Real([this, x], '/');
 };
 Expression.Symbol.Real.prototype['^'] = function (x) {
