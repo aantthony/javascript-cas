@@ -246,6 +246,9 @@ Expression.List.Real.prototype.positive = function () {
 	}
 	return false;
 };
+Expression.NumericalReal.prototype.positive = function () {
+	return this.value > 0;
+};
 Global['sqrt'] = new Expression.Function({
 	default: function (x) {
 		if (x instanceof Expression.NumericalReal) {
