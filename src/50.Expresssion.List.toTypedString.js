@@ -538,20 +538,23 @@ Expression.Integer.prototype.s = function (lang) {
 	return new Code(this.a.toString());
 };
 
-Expression.Vector.prototype.ede = function(language) {
+Expression.Vector.prototype.s = function(lang) {
 	var l = this.length;
 	var open = '[';
 	var close = ']';
-	if(language === 'x-shader/x-fragment') {
+	if(lang === 'x-shader/x-fragment') {
 		open = 'vec' + this.length + '(';
 		close = ')';
 	}
-	return {
-		s: open+Array.prototype.map.apply(this, [function(component){
-			return component.toTypedString(language).s;
-		}]).join(', ')+close,
-		t:  javascript.Array
-	};
+	var c = this[0].s(lang);
+	var i;
+	var t_s = [];
+	for (i = 0; i < l; i++) {
+		var c_i = this[i].s(lang);
+		t_s.push(c_i.s);
+		c = c.merge(c_i);
+	}
+	return c.update(open + t_s.join(',') + close, Infinity);
 };
 
 
