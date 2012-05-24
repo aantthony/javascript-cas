@@ -64,14 +64,12 @@ Expression.List.prototype.constructor = Expression.List;
 
 Expression.List.prototype.sub = function (x, y) {
 	var a = this[0].sub(x, y);
-	var b = this[1].sub(x, y);
-	if(this.length !== 2) {
-		console.error('TODO: Simplify after (i.e., [0].apply(...))');
+	if(this.length === 1) {
+		return a;
 	}
+	var b = this[1].sub(x, y);
+	
 	return a[this.operator || 'default'](b);
-	return Expression.List(Array.prototype.map.call(this, function (t) {
-		return t.sub(x, y);
-	}), this.operator);
 };
 Expression.prototype['*'] = function (x) {
 	if(x === Global.Zero) {
