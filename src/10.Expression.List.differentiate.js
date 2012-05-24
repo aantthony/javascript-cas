@@ -64,19 +64,14 @@ Expression.List.prototype.differentiate = function(x) {
 					)
 				);
 		case '/':
-			return this[0]
-				.differentiate(x)['*'](
-					this[1]
-				)['-'](
-					this[0]
-					.differentiate(x)['*'](
-						this[1]
-					)
-				)['/'](
-					this[1]['^'](
-						new Expression.NumericalReal(2,0)
-					)
-				);
+			var da = this[0].differentiate(x);
+			var db = this[1].differentiate(x);
+			if(db === Global.Zero) {
+				return da['/'](this[1]);
+			}
+			return this[1]['*'](da)['-'](this[0]['*'](db))['/'](
+				this[1]['^'](new Expression.Integer(2))
+			);
 		default:
 			throw('Cannot differentiate ' + this.operator + ' operator.');
 	}
