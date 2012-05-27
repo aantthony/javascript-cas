@@ -71,6 +71,9 @@ Expression.Symbol.Real.prototype['-'] = function (x) {
 		return new Expression.List.Real([this, x], '-');
 	}
 	if(x instanceof Expression.List.Real) {
+		if (x.operator === '@-') {
+			return new Expression.List.Real([this, x[0]], '+');
+		}
 		return new Expression.List.Real([this, x], '-');
 	}
 	if(x instanceof Expression.Symbol) {
