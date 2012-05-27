@@ -65,7 +65,7 @@ Expression.List.prototype.constructor = Expression.List;
 Expression.List.prototype.sub = function (x, y) {
 	var a = this[0].sub(x, y);
 	if(this.length === 1) {
-		return a;
+		return a[this.operator]();
 	}
 	var b = this[1].sub(x, y);
 	
