@@ -93,7 +93,7 @@ Global['log'] = new Expression.Function({
 var Half = new Expression.Rational(1, 2);
 var CartLog = new Expression.Function({
 	default: function (x) {
-		return new Expression.ComplexCartesian([
+		return new Expression.List.ComplexCartesian([
 			Global.log.default(x.abs()),
 			x.arg()
 		])['*'](Half);
@@ -273,6 +273,7 @@ Global['sqrt'] = new Expression.Function({
 		} else if (x instanceof Expression.List.ComplexCartesian) {
 			return new Expression.List([Global.sqrt, x]);
 		}
+		return Expression.List([Global.sqrt, x]);
 		throw('SQRT: ???');
 		switch (x.constructor) {
 			case Expression.Complex:
@@ -323,19 +324,25 @@ Global['sqrt'] = new Expression.Function({
 });
 Global['abs'] = new Expression.Function({
 	default: function (x) {
-		console.warn('ABS IS FOR USER INPUT ONLY. USE .abs()');
 		//Using abs is better (I think) because it finds the method through the prototype chain,
 		//which is going to be faster than doing an if list / switch case list.
 		return x.abs();
 	},
 	'text/latex': '\\abs',
 	'text/javascript': 'Math.abs',
-	'derivative': new Expression.Function.Symbolic('x/\\abs(x)'),
+	'x-shader/x-fragment': 'abs',
 	titie: 'Absolute Value Function',
 	description: 'Abs',
 	examples: ['\\abs (-3)', '\\abs (i+3)'],
 	related: ['arg', 'tan']
 });
+
+// It is self-referential
+Global.abs.derivative = (function () {
+		var s = new Expression.Symbol.Real();
+		var y = s['/'](s.abs());
+		return new Expression.Function.Symbolic(y, [s]);
+}());
 Global['arg'] = {
 	default: function (x) {
 		console.warn('ARG IS FOR USER INPUT ONLY. USE .arg()');
@@ -443,13 +450,17 @@ Global.d['/'] = function (x) {
 			
 			return new Derivative(x.x);
 		}
+		if(x.x instanceof Expression.Vector) {
+			return Expression.Vector(Array.prototype.map.call(x.x, function (x) {
+				return new Derivative(x);
+			}));
+		}
 		throw('Confusing infitesimal division');
 	}
 
 	throw('Dividing d by some large number.');
 	
 };
-
 
 Global['Sum'] = new Expression.Function({
 	default: function (x) {
