@@ -63,10 +63,16 @@ Expression.List.Real.prototype['-'] = function (x) {
 		}
 	}
 	
-	if(x === this) {
+	if (x === this) {
 		return Global.Zero;
 	}
-	if(x instanceof Expression.List.Real || x instanceof Expression.Symbol.Real || x instanceof Expression.NumericalReal) {
+	if (x instanceof Expression.List.Real) {
+		if (x.operator === '@-') {
+			return Expression.List.Real([this, x[0]], '+');
+		}
+		return Expression.List.Real([this, x], '-');
+	}
+	if (x instanceof Expression.Symbol.Real || x instanceof Expression.NumericalReal) {
 		return Expression.List.Real([this, x], '-');
 	}
 	return this.realimag()['-'](x);
