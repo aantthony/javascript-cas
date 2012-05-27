@@ -26,7 +26,7 @@ Expression.Function.prototype.s = function (lang) {
 };
 
 
-Expression.Function.Symbolic = function (expr, vars) {
+Expression.Function.Symbolic = function SymbolicFunction(expr, vars) {
 	this.expr = expr;
 	this.symbols = vars;
 	
