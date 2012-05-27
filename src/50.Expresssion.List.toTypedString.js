@@ -301,6 +301,7 @@ Expression.List.prototype.s = function (lang) {
 	if(lang === 'text/latex') {
 		return Expression.List.Real.prototype.s.call(this, lang);
 	}
+	throw('Use real(), imag(), or abs(), or arg() first.');
 };
 Expression.List.Real.prototype.s = function(lang) {
 
@@ -313,8 +314,14 @@ Expression.List.Real.prototype.s = function(lang) {
 	if (this.operator === undefined) {
 		if (this[0] instanceof Expression.Function) {
 			if(this[0] === Global.abs) {
+
 				var c1 = this[1].s(lang);
-				return c1.update('\\left|' + c1.s + '\\right|', Infinity);
+
+				if(lang === 'text/latex') {
+					return c1.update('\\left|' + c1.s + '\\right|', Infinity);
+				}
+				var c0 = this[0].s(lang);
+				return c1.update(c0.s + '(' + c1.s + ')', Infinity);
 			}
 			var c0 = this[0].s(lang);
 			if (this[1] instanceof Expression.Vector) {
@@ -455,7 +462,7 @@ Expression.List.Real.prototype.s = function(lang) {
 };
 Expression.Statement.prototype.s = Expression.List.Real.prototype.s;
 Expression.Symbol.prototype.s = function () {
-	return new Code(this.symbol);
+	return new Code(this.symbol || 'x_{free}');
 };
 Expression.NumericalReal.prototype.s = function (lang){
 	if(lang === 'x-shader/x-fragment') {
