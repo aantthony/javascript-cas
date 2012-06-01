@@ -462,7 +462,7 @@ Global.d['/'] = function (x) {
 	
 };
 
-Global['Sum'] = new Expression.Function({
+Global['sum'] = new Expression.Function({
 	default: function (x) {
 		return 3;
 	}
