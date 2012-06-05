@@ -467,7 +467,7 @@ Global['sum'] = new Expression.Function({
 		return 3;
 	}
 });
-Global.Sum['_'] = function (eq) {
+Global['sum']['_'] = function (eq) {
 	// start: 
 	var t = eq[0];
 	var v = eq[1];
