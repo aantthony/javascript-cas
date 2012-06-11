@@ -31,7 +31,8 @@ function MultiSet(A, m) {
 	this.A = A || [];
 	this.m = m || [];
 }
-MultiSet.prototype.add = function (x) {
+_ = MultiSet.prototype;
+_.add = function (x) {
 	// CHeck if it already exists
 	var i = this.A.indexOf(x);
 	if (i === -1) {
@@ -43,16 +44,16 @@ MultiSet.prototype.add = function (x) {
 	}
 	return this;
 };
-MultiSet.prototype.remove = function (x) {
+_.remove = function (x) {
 	var i = this.A.indexOf(x);
 	this.m[i]--;
 	return this;
 };
-MultiSet.prototype.intersect = function (x) {
+_.intersect = function (x) {
 	// -> Multiset
 	throw ('What is multiset intersection?');
 };
-MultiSet.prototype.map = function (x) {
+_.map = function (x) {
 	// Assumes x has no side effects and is not many to one
 	// TODO: Should this supply m(A) ?
 	return MultiSet(Array.prototype.map.call(this.A, x), this.m);

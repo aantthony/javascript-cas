@@ -1,31 +1,32 @@
 Expression.List.ComplexPolar = function (x){
-	x.__proto__ = Expression.List.ComplexPolar.prototype;
+	x.__proto__ = _;
 	return x;
 }
-Expression.List.ComplexPolar.prototype = Object.create(Expression.prototype);
-Expression.List.ComplexPolar.prototype.polar = function(){
+_ = Expression.List.ComplexPolar.prototype = Object.create(Expression.prototype);
+_.constructor = Expression.List.ComplexPolar;
+_.polar = function(){
 	return this;
 };
-Expression.List.ComplexPolar.prototype.realimag = function() {
+_.realimag = function() {
 	//TODO: Return Expression.List.ComplexCartesian
 	return Expression.List.ComplexCartesian([
 		this[0].apply('*', Global.cos.apply(undefined, this[1])),
 		this[0].apply('*', Global.sin.apply(undefined, this[1]))
 	]);
 };
-Expression.List.ComplexPolar.prototype.real = function() {
+_.real = function() {
 	return this[0].apply('*', Global.cos.apply(undefined, this[1]));
 };
-Expression.List.ComplexPolar.prototype.imag = function() {
+_.imag = function() {
 	return this[0].apply('*', Global.sin.apply(undefined, this[1]));
 };
-Expression.List.ComplexPolar.prototype.conjugate = function() {
+_.conjugate = function() {
 	return Expression.List.ComplexPolar([
 		this[0],
 		this[1].apply('@-')
 	]);
 };
-Expression.List.ComplexPolar.prototype.differentiate = function(x){
+_.differentiate = function(x){
 	// d/dx a(x) * e^(ib(x))
 	
 	//TODO ensure below  f' + if g' part is realimag (f', fg')
@@ -50,7 +51,7 @@ Expression.List.ComplexPolar.prototype.differentiate = function(x){
 		)
 	);
 };
-Expression.List.ComplexPolar.prototype.apply = function(o, x) {
+_.apply = function(o, x) {
 	if (x.constructor === this.constructor) {
 		switch (o) {
 			case undefined:
@@ -137,10 +138,9 @@ Expression.List.ComplexPolar.prototype.apply = function(o, x) {
 	}
 	
 };
-Expression.List.ComplexPolar.prototype.abs = function (){
+_.abs = function (){
 	return this[0];
 };
-Expression.List.ComplexPolar.prototype.arg = function (){
+_.arg = function (){
 	return this[1];
 };
-Expression.List.ComplexPolar.prototype.constructor = Expression.List.ComplexPolar;

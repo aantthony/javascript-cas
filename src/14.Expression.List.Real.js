@@ -1,36 +1,37 @@
 Expression.List.Real = function List_Real(x, operator) {
-	x.__proto__ = Expression.List.Real.prototype;
+	x.__proto__ = _;
 	if(operator !== undefined) {
 		x.operator = operator;
 	}
 	return x;
 };
-Expression.List.Real.prototype = Object.create(Expression.List.prototype);
-Expression.List.Real.prototype.realimag = function (){
+_ = Expression.List.Real.prototype = Object.create(Expression.List.prototype);
+_.constructor = Expression.List.Real;
+_.realimag = function (){
 	return Expression.List.ComplexCartesian([
 		this,
 		Global.Zero
 	]);
 };
-Expression.List.Real.prototype.real = function (){
+_.real = function (){
 	return this;
 };
-Expression.List.Real.prototype.imag = function (){
+_.imag = function (){
 	return Global.Zero;
 };
-Expression.List.Real.prototype.polar = function () {
+_.polar = function () {
 	return Expression.List.ComplexPolar([
 		Expression.List.Real([Global.abs, this]),
 		Expression.List.Real([Global.arg, this])
 	]);
 };
-Expression.List.Real.prototype.abs = function (){
+_.abs = function (){
 	return Expression.List.Real([Global.abs, this]);
 };
-Expression.List.Real.prototype.arg = function (){
+_.arg = function (){
 	return Expression.List.Real([Global.arg, this]);
 };
-Expression.List.Real.prototype['+'] = function (x) {
+_['+'] = function (x) {
 	if(this === x) {
 		return x['*'](new Expression.Integer(2));
 	}
@@ -56,7 +57,7 @@ Expression.List.Real.prototype['+'] = function (x) {
 	return x['+'](this);
 	
 };
-Expression.List.Real.prototype['-'] = function (x) {
+_['-'] = function (x) {
 	if(x instanceof Expression.Rational) {
 		if(x.a === 0) {
 			return this;
@@ -77,7 +78,7 @@ Expression.List.Real.prototype['-'] = function (x) {
 	}
 	return this.realimag()['-'](x);
 };
-Expression.List.Real.prototype['*'] = function (x) {
+_['*'] = function (x) {
 	
 	if(x instanceof Expression.Rational) {
 		if(x.a === x.b) {
@@ -104,7 +105,7 @@ Expression.List.Real.prototype['*'] = function (x) {
 	return x['*'](this);
 	
 };
-Expression.List.Real.prototype['/'] = function (x) {
+_['/'] = function (x) {
 
 	if(x instanceof Expression.Rational) {
 		if(x.a === x.b) {
@@ -129,13 +130,13 @@ Expression.List.Real.prototype['/'] = function (x) {
 	return this.realimag()['/'](x);
 };
 
-Expression.List.Real.prototype['@-'] = function () {
+_['@-'] = function () {
 	if(this.operator === '@-') {
 		return this[0];
 	}
 	return Expression.List.Real([this], '@-');
 };
-Expression.List.Real.prototype['^'] = function (x) {
+_['^'] = function (x) {
 	if(x instanceof Expression.NumericalReal) {
 		if(this.operator === '*' || this.operator === '/' && this[0] instanceof Expression.NumericalReal) {
 			return Expression.List.Real([this[0]['^'](x), this[1]['^'](x)], this.operator);
@@ -144,5 +145,3 @@ Expression.List.Real.prototype['^'] = function (x) {
 	return Expression.Symbol.Real.prototype['^'].call(this, x);
 	
 };
-
-Expression.List.Real.prototype.constructor = Expression.List.Real;

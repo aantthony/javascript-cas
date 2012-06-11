@@ -1,13 +1,13 @@
 function Context() {
 	
 }
-Context.prototype = Object.create(Global);
-Context.prototype.reset = function() {
+_ = Context.prototype = Object.create(Global);
+_.reset = function() {
 	this.splice(0);
 };
-Context.prototype.impliesExpression = function(expr) {
+_.impliesExpression = function(expr) {
 	return false;
 };
-Context.prototype.learn = function(expr) {
+_.learn = function(expr) {
 	this.equations.push(expr);
 };

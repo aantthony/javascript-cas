@@ -1,20 +1,20 @@
 Expression.Vector = function (e) {
-	e.__proto__ = Expression.Vector.prototype;
+	e.__proto__ = _;
 	return e;
 };
 
-Expression.Vector.prototype = Object.create(Expression.prototype);
-Expression.Vector.prototype.constructor = Expression.Vector;
-Expression.Vector.prototype[','] = function (x) {
+_ = Expression.Vector.prototype = Object.create(Expression.prototype);
+_.constructor = Expression.Vector;
+_[','] = function (x) {
 	this[this.length] = x;
 	return this;
 };
-Expression.Vector.prototype.differentiate = function (x) {
+_.differentiate = function (x) {
 	return Expression.Vector(Array.prototype.map.call(this, function (c) {
 		return c.differentiate(x);
 	}));
 };
-Expression.Vector.prototype.cross = function (x) {
+_.cross = function (x) {
 	if (this.length !== 3 || x.length !== 3) {
 		throw('Cross product only defined for 3D vectors.');
 	}
@@ -32,7 +32,7 @@ Expression.Vector.prototype.cross = function (x) {
 		this[0]['*'](x[1])['-'](this[1]['*'](x[0]))
 	]);
 };
-Expression.Vector.prototype.default = function (x) {
+_.default = function (x) {
 	var l = this.length;
 	if (x instanceof Expression.Vector) {
 		// Dot product
@@ -55,8 +55,8 @@ Expression.Vector.prototype.default = function (x) {
 		}));
 	}
 };
-Expression.Vector.prototype['*'] = Expression.Vector.prototype.default;
-Expression.Vector.prototype['+'] = function (x, op) {
+_['*'] = _.default;
+_['+'] = function (x, op) {
 	var l = this.length;
 	if(l != x.length) {
 		throw('Vector Dimension mismatch.');
@@ -68,10 +68,10 @@ Expression.Vector.prototype['+'] = function (x, op) {
 	}
 	return Expression.Vector(n);
 };
-Expression.Vector.prototype['-'] = function (x) {
-	return Expression.Vector.prototype.call(this, x, '-');
+_['-'] = function (x) {
+	return _.call(this, x, '-');
 };
-Expression.Vector.prototype['/'] = function (x) {
+_['/'] = function (x) {
 	if (x instanceof Expression.Vector) {
 		throw('Vector division not defined');
 	}
@@ -80,7 +80,7 @@ Expression.Vector.prototype['/'] = function (x) {
 	}));
 	
 };
-Expression.Vector.prototype['^'] = function (x) {
+_['^'] = function (x) {
 	if(x instanceof Expression.Integer) {
 		if(x.a === 0) {
 			throw('Raised to zero power');
@@ -118,7 +118,7 @@ Expression.Vector.prototype['^'] = function (x) {
 	}
 	return this.default(this['^'](x['-'](Global.One)));
 };
-Expression.Vector.prototype.apply = function(operator, e) {
+_.apply = function(operator, e) {
 	var l = this.length;
 	switch (operator) {
 		case ',':
@@ -156,7 +156,7 @@ Expression.Vector.prototype.apply = function(operator, e) {
 	}
 };
 
-Expression.Vector.prototype.realimag = function(){
+_.realimag = function(){
 	var l = this.length;
 	var _x = new Array(l);
 	var _y = new Array(l);

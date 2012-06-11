@@ -1,14 +1,13 @@
 Expression.Matrix = function (e, r, c) {
-	e.__proto__ = Expression.Matrix.prototype;
+	e.__proto__ = _;
 	e.rows = r;
 	e.cols = c;
 	return e;
 };
 
-window.M4 = Expression.Matrix;
-Expression.Matrix.prototype = Object.create(Expression.prototype);
-Expression.Matrix.prototype.constructor = Expression.Matrix;
-Expression.Matrix.prototype.default = Expression.Matrix.prototype['*'] = function (x) {
+_ = Expression.Matrix.prototype = Object.create(Expression.prototype);
+_.constructor = Expression.Matrix;
+_.default = _['*'] = function (x) {
 	if(x.constructor === Expression.Matrix) {
 		// Broken
 		// O(n^3)
@@ -32,7 +31,7 @@ Expression.Matrix.prototype.default = Expression.Matrix.prototype['*'] = functio
 		throw ('Unknown type');
 	}
 };
-Expression.Matrix.prototype.reduce = function (app) {
+_.reduce = function (app) {
 	var x, y;
 	for(y = 0; y < this.rows; y++) {
 		for(x = 0; x < y; x++) {

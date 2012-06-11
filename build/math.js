@@ -21,7 +21,7 @@
 
 (function(undefined){
 	"use strict";
-	function deprecated(message){
+	var _;function deprecated(message){
 	var err = new Error(message).stack;
 	if(!err){
 		return console.warn('Deprecated: ' + message);
@@ -50,7 +50,8 @@ var startTime = new Date();function Language(language) {
 	this.operators = operators;
 	Language.build.call(this);
 }
-Language.prototype.precedence = function (v) {
+_ = Language.prototype;
+_.precedence = function (v) {
     //deprecated('Slow');
 	if (!this.operators[v]) {
 		throw('Precedence of ' + v + ' not known!');
@@ -58,20 +59,20 @@ Language.prototype.precedence = function (v) {
 	return this.operators[v][1];
 };
 
-Language.prototype.postfix = function (o) {
+_.postfix = function (o) {
 	var op = this.operators[o];
 	return op[0] === 0 && op[2] === 1;
 };
-Language.prototype.unary = function (o) {
+_.unary = function (o) {
 	var unary_secondarys = ['+', '-', '±'];
 	return (unary_secondarys.indexOf(o) != -1) ? ('@' + o) : false;
 };
 
-Language.prototype.assoc = function(o) {
+_.assoc = function(o) {
 	return this.operators[o][1] === true;
 };
 
-Language.prototype.Number = function(o) {
+_.Number = function(o) {
 	// Support for integers
 	var predefined = {
 		'0': Global.Zero,
@@ -606,65 +607,102 @@ var mathematica = new Language([
 ]);function Context() {
 	
 }
-Context.prototype = Object.create(Global);
-Context.prototype.reset = function() {
+_ = Context.prototype = Object.create(Global);
+_.reset = function() {
 	this.splice(0);
 };
-Context.prototype.impliesExpression = function(expr) {
+_.impliesExpression = function(expr) {
 	return false;
 };
-Context.prototype.learn = function(expr) {
+_.learn = function(expr) {
 	this.equations.push(expr);
 };function Expression(e, c) {
 	var n = language.parse(e, c);
 	return n;
 }
-
-//Expression.prototype = Object.create(Array.prototype);
-//Expression.prototype = {};
-Expression.prototype.valueOf = null;
-Expression.prototype.identity = function () {
+//_ = Object.create(Array.prototype);
+//_ = {};
+_ = Expression.prototype;
+_.valueOf = null;
+_.identity = function () {
     deprecated('Slow');
 	return this;
 };
 
-Expression.prototype.toString = null;
-Expression.prototype.imageURL = function () {
+_.toString = null;
+_.imageURL = function () {
 	return 'http://latex.codecogs.com/gif.latex?' + encodeURIComponent(this.s('text/latex').s);
 };
-Expression.prototype.image = function () {
+_.image = function () {
 	var image = new Image();
 	image.src = this.imageURL();
 	return image;
 };
-Expression.prototype.sub = function () {
+_.sub = function () {
 	return this;
 };
-Expression.prototype.lim = function (x, y) {
+_.lim = function (x, y) {
 	return this.sub(x, y);
 };
 // Global Root operators:
-Expression.prototype[','] = function (x) {
+_[','] = function (x) {
 	return Expression.Vector([this, x]);
 };
-Expression.prototype['='] = function (x) {
+_['='] = function (x) {
 	return new Expression.Statement(this, x, '=');
 };
-Expression.prototype['!='] = function (x) {
+_['!='] = function (x) {
 	return new Expression.Statement(this, x, '!=');
 };
-Expression.prototype['>'] = function (x) {
+_['>'] = function (x) {
 	return new Expression.Statement(this, x, '>');
 };
-Expression.prototype['>='] = function (x) {
+_['>='] = function (x) {
 	return new Expression.Statement(this, x, '>=');
 };
-Expression.prototype['<'] = function (x) {
+_['<'] = function (x) {
 	return new Expression.Statement(this, x, '<');
 };
-Expression.prototype['<='] = function (x) {
+_['<='] = function (x) {
 	return new Expression.Statement(this, x, '<=');
 };
+
+_['*'] = function (x) {
+	if(x === Global.Zero) {
+		return x;
+	}
+	if(x === Global.One) {
+		return this;
+	}
+	return new Expression.List([this, x], '*');
+};
+_.default = function (x) {
+	return this['*'](x);
+};
+
+_['/'] = function (x) {
+	return new Expression.List([this, x], '/');
+};
+
+_['+'] = function (x) {
+	return new Expression.List([this, x], '+');
+};
+
+_['-'] = function (x) {
+	return new Expression.List([this, x], '-');
+};
+
+_['^'] = function (x) {
+	return new Expression.List([this, x], '^');
+};
+
+_['%'] = function (x) {
+	return new Expression.List([this, x], '%');
+};
+
+
+
+
 
 
 
@@ -675,11 +713,11 @@ Expression.List = function(e, operator) {
 	e.operator = operator;
 	return e;
 };
-Expression.List.prototype = Object.create(Expression.prototype);
-Expression.List.prototype.constructor = Expression.List;
+_ = Expression.List.prototype = Object.create(_);
+_.constructor = Expression.List;
 
 
-Expression.List.prototype.sub = function (x, y) {
+_.sub = function (x, y) {
 	var a = this[0].sub(x, y);
 	if(this.length === 1) {
 		return a[this.operator]();
@@ -688,45 +726,13 @@ Expression.List.prototype.sub = function (x, y) {
 	
 	return a[this.operator || 'default'](b);
 };
-Expression.prototype['*'] = function (x) {
-	if(x === Global.Zero) {
-		return x;
-	}
-	if(x === Global.One) {
-		return this;
-	}
-	return new Expression.List([this, x], '*');
-};
-Expression.prototype.default = function (x) {
-	return this['*'](x);
-};
 
-Expression.List.prototype['@-'] = function () {
+_['@-'] = function () {
 	if(this.operator === '@-') {
 		return this[0];
 	}
 	return new Expression.List([this], '@-');
 };
-Expression.prototype['/'] = function (x) {
-	return new Expression.List([this, x], '/');
-};
-
-Expression.prototype['+'] = function (x) {
-	return new Expression.List([this, x], '+');
-};
-
-Expression.prototype['-'] = function (x) {
-	return new Expression.List([this, x], '-');
-};
-
-Expression.prototype['^'] = function (x) {
-	return new Expression.List([this, x], '^');
-};
-
-Expression.prototype['%'] = function (x) {
-	return new Expression.List([this, x], '%');
-};
-
 /*
 // TODO: Linked list?
 function Multiset(x) {
@@ -760,7 +766,8 @@ function MultiSet(A, m) {
 	this.A = A || [];
 	this.m = m || [];
 }
-MultiSet.prototype.add = function (x) {
+_ = MultiSet.prototype;
+_.add = function (x) {
 	// CHeck if it already exists
 	var i = this.A.indexOf(x);
 	if (i === -1) {
@@ -772,16 +779,16 @@ MultiSet.prototype.add = function (x) {
 	}
 	return this;
 };
-MultiSet.prototype.remove = function (x) {
+_.remove = function (x) {
 	var i = this.A.indexOf(x);
 	this.m[i]--;
 	return this;
 };
-MultiSet.prototype.intersect = function (x) {
+_.intersect = function (x) {
 	// -> Multiset
 	throw ('What is multiset intersection?');
 };
-MultiSet.prototype.map = function (x) {
+_.map = function (x) {
 	// Assumes x has no side effects and is not many to one
 	// TODO: Should this supply m(A) ?
 	return MultiSet(Array.prototype.map.call(this.A, x), this.m);
@@ -796,7 +803,8 @@ MultiSet.fromArray = function (arr) {
 	x.__proto__ = Set.prototype;
 	return x;
 };
-Set.prototype.intersect = function (set) {
+_ = Set.prototype;
+_.intersect = function (set) {
 	// O(n^2)
 	var i;
 	var i_l = this.length;
@@ -821,25 +829,25 @@ Set.prototype.intersect = function (set) {
 	}
 	return a;
 }; 
-Set.prototype.union = function (set) {
+_.union = function (set) {
 	// TODO: check for duplicates
 	return Set(Array.prototype.concat.call(this, set));
 }
-Set.prototype.remove = function (x) {
+_.remove = function (x) {
 	// O(1 + lookup[n])
 	var i = this.indexOf(x);
 	this[i] = this[this.length - 1];
 	this.length--;
 	return this;
 }
-Set.prototype.add = function (x) {
+_.add = function (x) {
 	// O(1 + lookup[n])
 	if (this.indexOf(x) === -1) {
 		this[this.length] = x;
 	}
 	return this;
 };
-Set.prototype.map = function (f) {
+_.map = function (f) {
 	return Set(Array.prototype.map.call(this, f));
 };Expression.Statement = function (x, y, operator) {
 	var arr = [x,y];
@@ -847,12 +855,12 @@ Set.prototype.map = function (f) {
 	arr.__proto__ = Expression.Statement.prototype;
 	return arr;
 };
-Expression.Statement.prototype = Object.create(Expression.prototype);
-Expression.Statement.prototype.constructor = Expression.Statement;
-Expression.Statement.prototype['='] = function () {
+_ = Expression.Statement.prototype = Object.create(Expression.prototype);
+_.constructor = Expression.Statement;
+_['='] = function () {
 	
 };
-Expression.Statement.prototype['<'] = function () {
+_['<'] = function () {
 	// a < b < c
 	// (a < b) = b
 	// b < c
@@ -861,7 +869,7 @@ Expression.Statement.prototype['<'] = function () {
 	// a < b .. (b < c) = b
 	// (a < b) = a.
 };
-Expression.Statement.prototype.solve = function (vars) {
+_.solve = function (vars) {
 	// a = b
 	// If b has an additive inverse?
 	
@@ -876,33 +884,33 @@ Expression.Statement.prototype.solve = function (vars) {
 };Expression.Constant = function() {
 	throw new Error('Expression.Constant created directly');
 };
-Expression.Constant.prototype = Object.create(Expression.prototype);
-Expression.Constant.prototype.simplify = function() {
+_ = Expression.Constant.prototype = Object.create(Expression.prototype);
+_.simplify = function() {
 	return this;
 };
-Expression.Constant.prototype.differentiate = function() {
+_.differentiate = function() {
 	return M.Global.Zero;
 };
-Expression.Constant.prototype.default = function (x){
+_.default = function (x){
 	return this['*'](x);
 };Expression.Symbol = function Symbol(str) {
     //Req: str is a String
 	this.symbol = str;
 };
 
-Expression.Symbol.prototype = Object.create(Expression.prototype);
-Expression.Symbol.prototype.constructor = Expression.Symbol;
+_ = Expression.Symbol.prototype = Object.create(Expression.prototype);
+_.constructor = Expression.Symbol;
 
-Expression.Symbol.prototype.differentiate = function (x) {
+_.differentiate = function (x) {
 	return this === x ? Global.One : Global.Zero;
 };
-Expression.Symbol.prototype.integrate = function (x) {
+_.integrate = function (x) {
     if (this === x) {
 		return new Expression.NumericalReal(0.5, 0) ['*'] (x ['^'] (new Expression.NumericalReal(2,0)));
     }
 	return (this) ['*'] (x);
 };
-Expression.Symbol.prototype.sub = function (x, y) {
+_.sub = function (x, y) {
 	// TODO: Ensure it is real (for Expression.Symbol.Real)
 	return this === x ? y : this;
 };
@@ -911,30 +919,31 @@ Expression.Symbol.prototype.sub = function (x, y) {
 Expression.Symbol.Real = function Symbol_Real(str) {
     this.symbol = str;
 };
-Expression.Symbol.Real.prototype = Object.create(Expression.Symbol.prototype);
-Expression.Symbol.Real.prototype.realimag = function() {
+_ = Expression.Symbol.Real.prototype = Object.create(Expression.Symbol.prototype);
+_.constructor = Expression.Symbol.Real;
+_.realimag = function() {
     return Expression.List.ComplexCartesian([this, Global.Zero]);
 };
-Expression.Symbol.Real.prototype.real = function() {
+_.real = function() {
     return this;
 };
-Expression.Symbol.Real.prototype.imag = function() {
+_.imag = function() {
     return Global.Zero;
 };
-Expression.Symbol.Real.prototype.polar = function() {
+_.polar = function() {
 	return Expression.List.ComplexPolar([
 		Expression.List.Real([Global.abs, this]),
 		Expression.List.Real([Global.arg, this])
 	]);
 };
-Expression.Symbol.Real.prototype.abs = function() {
+_.abs = function() {
 	return Expression.List.Real([Global.abs, this]);
 };
-Expression.Symbol.Real.prototype.arg = function() {
+_.arg = function() {
 	return Expression.List.Real([Global.arg, this]);
 };
 
-Expression.Symbol.Real.prototype['+'] = function (x) {
+_['+'] = function (x) {
 	if (x == Global.Zero) {
 		return this;
 	}
@@ -950,7 +959,7 @@ Expression.Symbol.Real.prototype['+'] = function (x) {
 	}
 	return x['+'](this);
 };
-Expression.Symbol.Real.prototype['-'] = function (x) {
+_['-'] = function (x) {
 	if(this === x) {
 		return Global.Zero;
 	}
@@ -970,15 +979,15 @@ Expression.Symbol.Real.prototype['-'] = function (x) {
 	return x['@-']()['+'](this);
 };
 
-Expression.Symbol.Real.prototype['@+'] = function (x) {
+_['@+'] = function (x) {
 	return Expression.List.Real([this], '@+');
 };
 
-Expression.Symbol.Real.prototype['@-'] = function (x) {
+_['@-'] = function (x) {
 	return Expression.List.Real([this], '@-');
 };
 
-Expression.Symbol.Real.prototype['*'] = function (x) {
+_['*'] = function (x) {
 
 	if(x instanceof Expression.Rational) {
 		if(x.a === x.b) {
@@ -1010,8 +1019,8 @@ Expression.Symbol.Real.prototype['*'] = function (x) {
 	}
 	return x['*'](this);
 };
-Expression.Symbol.Real.prototype.default = Expression.Symbol.Real.prototype['*'];
-Expression.Symbol.Real.prototype['/'] = function (x) {
+_.default = _['*'];
+_['/'] = function (x) {
 
 	if(x instanceof Expression.Rational) {
 		if(x.a === x.b) {
@@ -1026,7 +1035,7 @@ Expression.Symbol.Real.prototype['/'] = function (x) {
 	
 	return Expression.List.Real([this, x], '/');
 };
-Expression.Symbol.Real.prototype['^'] = function (x) {
+_['^'] = function (x) {
 	if(x instanceof Expression.Rational) {
 		if(x.a === 0) {
 			return Global.One;
@@ -1048,7 +1057,7 @@ Expression.Symbol.Real.prototype['^'] = function (x) {
 	}
 	return Expression.List([this, x], '^');
 };
-Expression.Symbol.Real.prototype.apply = function(operator, e) {
+_.apply = function(operator, e) {
 	throw("Real.apply");
 	if (operator === ',') {
 		//Maybe this should be a new object type??? Vector?
@@ -1170,8 +1179,7 @@ Expression.Symbol.Real.prototype.apply = function(operator, e) {
 	}
 };
 
-
-Expression.Symbol.Real.prototype.constructor = Expression.Symbol.Real;Expression.Function = function (p) {
+Expression.Function = function (p) {
 	this.default = p.default;
 	this['text/latex'] = (p['text/latex']);
 	this['x-shader/x-fragment'] = (p['x-shader/x-fragment']);
@@ -1179,23 +1187,33 @@ Expression.Symbol.Real.prototype.constructor = Expression.Symbol.Real;Expression
 	this.derivative = p.derivative;
 	this.realimag = p.realimag;
 };
-Expression.Function.prototype = Object.create(Expression.prototype);
-Expression.Function.prototype.constructor = Expression.Function;
-Expression.Function.prototype.default = function (argument) {
+_ = Expression.Function.prototype = Object.create(Expression.prototype);
+_.constructor = Expression.Function;
+_.default = function (argument) {
 	return ;
 };
-Expression.Function.prototype.differentiate = function () {
+_.differentiate = function () {
 	if (this.derivative) {
 		return this.derivative;
 	}
 	throw('Function has no derivative defined.');
 }
 
-Expression.Function.prototype.s = function (lang) {
+_.s = function (lang) {
 	if (this[lang]) {
 		return new Code(this[lang]);
 	}
 	throw('Could not compile function into ' + lang);
+};
+
+_['+'] = function (x) {
+	var a = new Expression.Symbol();
+	return new Expression.Function.Symbolic(this.default(a)['+'](x), [a]);
+};
+
+_['@-'] = function (x) {
+	var a = new Expression.Symbol();
+	return new Expression.Function.Symbolic(this.default(a)['@-'](), [a]);
 };
 
 
@@ -1204,10 +1222,10 @@ Expression.Function.Symbolic = function SymbolicFunction(expr, vars) {
 	this.symbols = vars;
 	
 };
-Expression.Function.Symbolic.prototype = Object.create(Expression.Function.prototype);
-Expression.Function.Symbolic.prototype.constructor = Expression.Function.Symbolic;
+_ = Expression.Function.Symbolic.prototype = Object.create(Expression.Function.prototype);
+_.constructor = Expression.Function.Symbolic;
 
-Expression.Function.Symbolic.prototype.default = function (x) {
+_.default = function (x) {
 	if (x.constructor !== Expression.Vector) {
 		x = Expression.Vector([x]);
 	}
@@ -1220,40 +1238,30 @@ Expression.Function.Symbolic.prototype.default = function (x) {
 		expr = expr.sub(this.symbols[i], x[i])
 	}
 	return expr;
-};
-
-
-Expression.Function.prototype['+'] = function (x) {
-	var a = new Expression.Symbol();
-	return new Expression.Function.Symbolic(this.default(a)['+'](x), [a]);
-};
-
-Expression.Function.prototype['@-'] = function (x) {
-	var a = new Expression.Symbol();
-	return new Expression.Function.Symbolic(this.default(a)['@-'](), [a]);
-};
-Expression.NumericalComplex = function(real, imag) {
+};Expression.NumericalComplex = function(real, imag) {
 	this._real = real;
 	this._imag = imag;
 };
 
-Expression.NumericalComplex.prototype = Object.create(Expression.Constant.prototype);
-Expression.NumericalComplex.prototype.real = function() {
+_ = Expression.NumericalComplex.prototype = Object.create(Expression.Constant.prototype);
+
+_.constructor = Expression.NumericalComplex;
+_.real = function() {
 	return new Expression.NumericalReal(this._real);
 };
-Expression.NumericalComplex.prototype.imag = function() {
+_.imag = function() {
 	return new Expression.NumericalReal(this._imag);
 };
-Expression.NumericalComplex.prototype.realimag = function() {
+_.realimag = function() {
 	return Expression.List.ComplexCartesian([
 		new Expression.NumericalReal(this._real),
 		new Expression.NumericalReal(this._imag)
 	]);
 };
-Expression.NumericalComplex.prototype.conjugate = function() {
+_.conjugate = function() {
 	return new Expression.NumericalComplex(this._real, -this._imag);
 };
-Expression.NumericalComplex.prototype['+'] = function (x) {
+_['+'] = function (x) {
 	if(this._real === 0 && this._imag === 0) {
 		return x;
 	}
@@ -1275,7 +1283,7 @@ Expression.NumericalComplex.prototype['+'] = function (x) {
 		throw ('Unknown Type for NumericalComplex +');
 	}
 };
-Expression.NumericalComplex.prototype['-'] = function (x) {
+_['-'] = function (x) {
 	if(this._real === 0 && this._imag === 0) {
 		return x['@-']();
 	}
@@ -1297,7 +1305,7 @@ Expression.NumericalComplex.prototype['-'] = function (x) {
 		throw ('Unknown Type for NumericalComplex -');
 	}
 };
-Expression.NumericalComplex.prototype['*'] = function (x) {
+_['*'] = function (x) {
 	if(this._imag === 0) {
 		if(this._real === 0) {
 			return Global.Zero;
@@ -1326,7 +1334,7 @@ Expression.NumericalComplex.prototype['*'] = function (x) {
 	}
 };
 
-Expression.NumericalComplex.prototype['/'] = function (x) {
+_['/'] = function (x) {
 	if(this._imag === 0 && this._real === 0) {
 		// TODO: Provided x != 0
 		return Global.Zero;
@@ -1352,7 +1360,7 @@ Expression.NumericalComplex.prototype['/'] = function (x) {
 	}
 };
 
-Expression.NumericalComplex.prototype['!'] = function (){
+_['!'] = function (){
 	return Global.Gamma.default(this);
 };
 (function(){
@@ -1490,9 +1498,7 @@ Expression.NumericalComplex.prototype['!'] = function (){
 		return Expression.List([this, x], operator);
 	}
 	
-}());
-
-Expression.NumericalComplex.prototype.constructor = Expression.NumericalComplex;Expression.prototype.conjugate = function() {
+}());Expression.prototype.conjugate = function() {
 	throw('Conjugate');
 };
 
@@ -1508,31 +1514,33 @@ Expression.NumericalReal = function NumericalReal(e) {
 	this.value = e;
 };
 
-Expression.NumericalReal.prototype = Object.create(Expression.NumericalComplex.prototype);
+_ = Expression.NumericalReal.prototype = Object.create(Expression.NumericalComplex.prototype);
 
-Expression.NumericalReal.prototype.constructor = Expression.NumericalReal;
-Expression.NumericalReal.prototype.__defineGetter__("_real", function () {
-	return this.value;
+_.constructor = Expression.NumericalReal;
+Object.defineProperty(_, "_real", {
+	get: function () {
+		return this.value;
+	}
 });
-Expression.NumericalReal.prototype._imag = 0;
+_._imag = 0;
 
-Expression.NumericalReal.prototype.real = function() {
+_.real = function() {
 	return this;
 };
-Expression.NumericalReal.prototype.imag = function() {
+_.imag = function() {
 	return Global.Zero;
 };
-Expression.NumericalReal.prototype.realimag = function() {
+_.realimag = function() {
 	return Expression.List.ComplexCartesian([
 		this,
 		Global.Zero
 	]);
 };
-Expression.NumericalReal.prototype.conjugate = function() {
+_.conjugate = function() {
 	return this;
 };
 
-Expression.NumericalReal.prototype['+'] = function (x) {
+_['+'] = function (x) {
 	if(this.value === 0) {
 		return x;
 	}
@@ -1542,11 +1550,11 @@ Expression.NumericalReal.prototype['+'] = function (x) {
 	return x['+'](this);
 };
 
-Expression.NumericalReal.prototype['@-'] = function (x) {
+_['@-'] = function (x) {
 	return new Expression.NumericalReal(-this.value);
 };
 
-Expression.NumericalReal.prototype['-'] = function (x) {
+_['-'] = function (x) {
 	if(this.value === 0) {
 		return x;
 	}
@@ -1557,12 +1565,12 @@ Expression.NumericalReal.prototype['-'] = function (x) {
 };
 
 
-Expression.NumericalReal.prototype['%'] = function (x) {
+_['%'] = function (x) {
 	var nonreal = 'The modular arithmetic operator \'%\' is not defined for non-real numbers.';
 	if(this.value === 0) {
 		return Global.Zero;
 	}
-	if(x.constructor === this.constructor){
+	if(x instanceof Expression.NumericalReal){
 		return new Expression.NumericalReal(this.value % x.value);
 	} else if(x.constructor === Expression.List.Real) {
 		return Expression.List.Real([this, x], '%');
@@ -1582,13 +1590,13 @@ Expression.NumericalReal.prototype['%'] = function (x) {
 		throw ('Unknown Type for NumericalReal %');
 	}
 };
-Expression.NumericalReal.prototype['*'] = function (x) {
+_['*'] = function (x) {
 	if(x instanceof Expression.NumericalReal){
 		return new Expression.NumericalReal(this.value * x.value);
 	}
 	return x['*'](this);
 };
-Expression.NumericalReal.prototype['/'] = function (x) {
+_['/'] = function (x) {
 	if(this.value === 0) {
 		return Global.Zero;
 	}
@@ -1628,7 +1636,7 @@ Expression.NumericalReal.prototype['/'] = function (x) {
 		throw ('Unknown Type for NumericalReal /');
 	}
 };
-Expression.NumericalReal.prototype['^'] = function (x) {
+_['^'] = function (x) {
 	if (this.value === 0) {
 		return Global.Zero;
 	}
@@ -1688,7 +1696,7 @@ Expression.NumericalReal.prototype['^'] = function (x) {
 	}
 };
 
-Expression.NumericalReal.prototype.apply = function(operator, x) {
+_.apply = function(operator, x) {
 	switch (operator){
 		case ',':
 			return Expression.Vector([this, x]);
@@ -1880,12 +1888,12 @@ Expression.Rational = function Rational(a, b) {
 	this.a = a;
 	this.b = b;
 };
-Expression.Rational.prototype = Object.create(Expression.NumericalReal.prototype); // --> constant
-Expression.Rational.prototype.constructor = Expression.Rational;
-Expression.Rational.prototype.__defineGetter__("value", function () {
+_ = Expression.Rational.prototype = Object.create(Expression.NumericalReal.prototype); // --> constant
+_.constructor = Expression.Rational;
+_.__defineGetter__("value", function () {
 	return this.a / this.b;
 });
-Expression.Rational.prototype['+'] = function (x) {
+_['+'] = function (x) {
 	if(this.a === 0) {
 		return x;
 	}
@@ -1917,7 +1925,7 @@ Expression.Rational.prototype['+'] = function (x) {
 	
 	
 };
-Expression.Rational.prototype['-'] = function (x) {
+_['-'] = function (x) {
 	if(this.a === 0) {
 		return x['@-']();
 	}
@@ -1948,7 +1956,7 @@ Expression.Rational.prototype['-'] = function (x) {
 	}
 };
 
-Expression.Rational.prototype['*'] = function (x) {
+_['*'] = function (x) {
 	if (this.a === 0) {
 		return Global.Zero;
 	}
@@ -1959,7 +1967,7 @@ Expression.Rational.prototype['*'] = function (x) {
 };
 
 
-Expression.Rational.prototype['/'] = function (x) {
+_['/'] = function (x) {
 	if (this.a === 0) {
 		return Global.Zero;
 	}
@@ -1971,7 +1979,7 @@ Expression.Rational.prototype['/'] = function (x) {
 	}
 	return Expression.NumericalReal.prototype['/'].call(this, x);
 };
-Expression.Rational.prototype['^'] = function (x) {
+_['^'] = function (x) {
 	if(x === Global.Zero) {
 		return Global.One;
 	}
@@ -2006,7 +2014,7 @@ Expression.Rational.prototype['^'] = function (x) {
 	return Expression.List([this, x], '^');
 	
 };
-Expression.Rational.prototype.reduce = function () {
+_.reduce = function () {
 	function gcd(a, b) {
 		if(b === 0) {
 			return a;
@@ -2024,23 +2032,23 @@ Expression.Rational.prototype.reduce = function () {
 Expression.Integer = function Integer(x) {
 	this.a = x;
 };
-Expression.Integer.prototype = Object.create(Expression.Rational.prototype);
-Expression.Integer.prototype.b = 1;
-Expression.Integer.prototype.constructor = Expression.Integer;
+_ = Expression.Integer.prototype = Object.create(Expression.Rational.prototype);
+_.b = 1;
+_.constructor = Expression.Integer;
 
-Expression.Integer.prototype['+'] = function (x) {
+_['+'] = function (x) {
 	if (x instanceof Expression.Integer) {
 		return new Expression.Integer(this.a + x.a);
 	}
 	return x['+'](this);
 };
-Expression.Integer.prototype['-'] = function (x) {
+_['-'] = function (x) {
 	if (x instanceof Expression.Integer) {
 		return new Expression.Integer(this.a - x.a);
 	}
 	return this.__proto__.__proto__['-'].call(this, x);
 };
-Expression.Integer.prototype['/'] = function (x) {
+_['/'] = function (x) {
 	if(x instanceof Expression.Integer) {
 		if(this.a % x.a === 0) {
 			return new Expression.Integer(this.a / x.a);
@@ -2050,16 +2058,16 @@ Expression.Integer.prototype['/'] = function (x) {
 	return this.__proto__.__proto__['/'].call(this, x);
 };
 
-Expression.Integer.prototype['@-'] = function () {
+_['@-'] = function () {
 	return new Expression.Integer(-this.a);
 };
-Expression.Integer.prototype['*'] = function (x) {
+_['*'] = function (x) {
 	if (x instanceof Expression.Integer) {
 		return new Expression.Integer(this.a * x.a);
 	}
 	return x['*'](this);
 };
-Expression.Integer.prototype['^'] = function (x) {
+_['^'] = function (x) {
 	if (x instanceof Expression.Integer) {
 		return new Expression.Integer(Math.pow(this.a, x.a));
 	} else if (x.constructor === Expression.Rational) {
@@ -2086,7 +2094,7 @@ Expression.Integer.prototype['^'] = function (x) {
 	);
 	
 };
-Expression.Integer.prototype['%'] = function (x) {
+_['%'] = function (x) {
 	if(x instanceof Expression.Integer) {
 		return new Expression.Integer(this.a % x.a);
 	} else if (x.constructor === Expression.Rational) {
@@ -2213,33 +2221,34 @@ Expression.Equation.prototype.apply = function(op, e) {
 	throw('Operators cannot be applied to equations');
 };
 Expression.List.ComplexPolar = function (x){
-	x.__proto__ = Expression.List.ComplexPolar.prototype;
+	x.__proto__ = _;
 	return x;
 }
-Expression.List.ComplexPolar.prototype = Object.create(Expression.prototype);
-Expression.List.ComplexPolar.prototype.polar = function(){
+_ = Expression.List.ComplexPolar.prototype = Object.create(Expression.prototype);
+_.constructor = Expression.List.ComplexPolar;
+_.polar = function(){
 	return this;
 };
-Expression.List.ComplexPolar.prototype.realimag = function() {
+_.realimag = function() {
 	//TODO: Return Expression.List.ComplexCartesian
 	return Expression.List.ComplexCartesian([
 		this[0].apply('*', Global.cos.apply(undefined, this[1])),
 		this[0].apply('*', Global.sin.apply(undefined, this[1]))
 	]);
 };
-Expression.List.ComplexPolar.prototype.real = function() {
+_.real = function() {
 	return this[0].apply('*', Global.cos.apply(undefined, this[1]));
 };
-Expression.List.ComplexPolar.prototype.imag = function() {
+_.imag = function() {
 	return this[0].apply('*', Global.sin.apply(undefined, this[1]));
 };
-Expression.List.ComplexPolar.prototype.conjugate = function() {
+_.conjugate = function() {
 	return Expression.List.ComplexPolar([
 		this[0],
 		this[1].apply('@-')
 	]);
 };
-Expression.List.ComplexPolar.prototype.differentiate = function(x){
+_.differentiate = function(x){
 	// d/dx a(x) * e^(ib(x))
 	
 	//TODO ensure below  f' + if g' part is realimag (f', fg')
@@ -2264,7 +2273,7 @@ Expression.List.ComplexPolar.prototype.differentiate = function(x){
 		)
 	);
 };
-Expression.List.ComplexPolar.prototype.apply = function(o, x) {
+_.apply = function(o, x) {
 	if (x.constructor === this.constructor) {
 		switch (o) {
 			case undefined:
@@ -2351,13 +2360,12 @@ Expression.List.ComplexPolar.prototype.apply = function(o, x) {
 	}
 	
 };
-Expression.List.ComplexPolar.prototype.abs = function (){
+_.abs = function (){
 	return this[0];
 };
-Expression.List.ComplexPolar.prototype.arg = function (){
+_.arg = function (){
 	return this[1];
-};
-Expression.List.ComplexPolar.prototype.constructor = Expression.List.ComplexPolar;Expression.prototype.real = function() {
+};Expression.prototype.real = function() {
 	console.warn('TODO: don\'t calculate both parts (Expression.prototype.real)');
 	return this.realimag()[0];
 };
@@ -2451,34 +2459,34 @@ Expression.List.prototype.realimag = function() {
 
 */
 Expression.List.ComplexCartesian = function ComplexCartesian(x){
-	x.__proto__ = Expression.List.ComplexCartesian.prototype;
+	x.__proto__ = _;
 	return x;
 };
-Expression.List.ComplexCartesian.prototype = Object.create(Expression.prototype);
-Expression.List.ComplexCartesian.prototype.constructor = Expression.List.ComplexCartesian;
-Expression.List.ComplexCartesian.prototype.realimag = function(){
+_ = Expression.List.ComplexCartesian.prototype = Object.create(Expression.prototype);
+_.constructor = Expression.List.ComplexCartesian;
+_.realimag = function(){
 	return this;
 };
-Expression.List.ComplexCartesian.prototype.real = function(){
+_.real = function(){
 	return this[0];
 };
-Expression.List.ComplexCartesian.prototype.imag = function(){
+_.imag = function(){
 	return this[1];
 };
-Expression.List.ComplexCartesian.prototype.conjugate = function () {
+_.conjugate = function () {
 	return Expression.List.ComplexCartesian([
 		this[0],
 		this[1].apply('@-')
 	]);
 };
 
-Expression.List.ComplexCartesian.prototype['@-'] = function (x) {
+_['@-'] = function (x) {
 	return new Expression.List.ComplexCartesian([
 		this[0]['@-'](),
 		this[1]['@-']()
 	]);
 };
-Expression.List.ComplexCartesian.prototype['*'] = function (x) {
+_['*'] = function (x) {
 	if (x instanceof Expression.List.ComplexCartesian) {
 		// (a+bi) * (A+Bi) = aA + aBi + bA - bB
 		return new Expression.List.ComplexCartesian([
@@ -2493,7 +2501,7 @@ Expression.List.ComplexCartesian.prototype['*'] = function (x) {
 		]);
 	}
 };
-Expression.List.ComplexCartesian.prototype['^'] = function (x) {
+_['^'] = function (x) {
 	if(x instanceof Expression.Integer) {
 
 		if(x instanceof Expression.Rational) {
@@ -2572,7 +2580,7 @@ Expression.List.ComplexCartesian.prototype['^'] = function (x) {
 	}
 	return new Expression.List([this, x], '^');
 };
-Expression.List.ComplexCartesian.prototype['+'] = function (x) {
+_['+'] = function (x) {
 	if (x instanceof Expression.List.ComplexCartesian) {
 		return new Expression.List.ComplexCartesian([
 			this[0]
@@ -2587,7 +2595,7 @@ Expression.List.ComplexCartesian.prototype['+'] = function (x) {
 	
 };
 
-Expression.List.ComplexCartesian.prototype.differentiate = function (x) {
+_.differentiate = function (x) {
 	return Expression.List.ComplexCartesian([
 		this[0].differentiate(x),
 		this[1].differentiate(x)
@@ -2595,7 +2603,7 @@ Expression.List.ComplexCartesian.prototype.differentiate = function (x) {
 };
 
 
-Expression.List.ComplexCartesian.prototype.apply = function(o, x){
+_.apply = function(o, x){
 	//TODO: ensure this has an imaginary part. If it doesn't it is a huge waste of computation
 	if (x.constructor === this.constructor) {
 		switch(o) {
@@ -2694,38 +2702,39 @@ Expression.List.ComplexCartesian.prototype.apply = function(o, x){
 	}
 	throw('CMPLX.LIST * ' + o);
 };Expression.List.Real = function List_Real(x, operator) {
-	x.__proto__ = Expression.List.Real.prototype;
+	x.__proto__ = _;
 	if(operator !== undefined) {
 		x.operator = operator;
 	}
 	return x;
 };
-Expression.List.Real.prototype = Object.create(Expression.List.prototype);
-Expression.List.Real.prototype.realimag = function (){
+_ = Expression.List.Real.prototype = Object.create(Expression.List.prototype);
+_.constructor = Expression.List.Real;
+_.realimag = function (){
 	return Expression.List.ComplexCartesian([
 		this,
 		Global.Zero
 	]);
 };
-Expression.List.Real.prototype.real = function (){
+_.real = function (){
 	return this;
 };
-Expression.List.Real.prototype.imag = function (){
+_.imag = function (){
 	return Global.Zero;
 };
-Expression.List.Real.prototype.polar = function () {
+_.polar = function () {
 	return Expression.List.ComplexPolar([
 		Expression.List.Real([Global.abs, this]),
 		Expression.List.Real([Global.arg, this])
 	]);
 };
-Expression.List.Real.prototype.abs = function (){
+_.abs = function (){
 	return Expression.List.Real([Global.abs, this]);
 };
-Expression.List.Real.prototype.arg = function (){
+_.arg = function (){
 	return Expression.List.Real([Global.arg, this]);
 };
-Expression.List.Real.prototype['+'] = function (x) {
+_['+'] = function (x) {
 	if(this === x) {
 		return x['*'](new Expression.Integer(2));
 	}
@@ -2751,7 +2760,7 @@ Expression.List.Real.prototype['+'] = function (x) {
 	return x['+'](this);
 	
 };
-Expression.List.Real.prototype['-'] = function (x) {
+_['-'] = function (x) {
 	if(x instanceof Expression.Rational) {
 		if(x.a === 0) {
 			return this;
@@ -2772,7 +2781,7 @@ Expression.List.Real.prototype['-'] = function (x) {
 	}
 	return this.realimag()['-'](x);
 };
-Expression.List.Real.prototype['*'] = function (x) {
+_['*'] = function (x) {
 	
 	if(x instanceof Expression.Rational) {
 		if(x.a === x.b) {
@@ -2799,7 +2808,7 @@ Expression.List.Real.prototype['*'] = function (x) {
 	return x['*'](this);
 	
 };
-Expression.List.Real.prototype['/'] = function (x) {
+_['/'] = function (x) {
 
 	if(x instanceof Expression.Rational) {
 		if(x.a === x.b) {
@@ -2824,13 +2833,13 @@ Expression.List.Real.prototype['/'] = function (x) {
 	return this.realimag()['/'](x);
 };
 
-Expression.List.Real.prototype['@-'] = function () {
+_['@-'] = function () {
 	if(this.operator === '@-') {
 		return this[0];
 	}
 	return Expression.List.Real([this], '@-');
 };
-Expression.List.Real.prototype['^'] = function (x) {
+_['^'] = function (x) {
 	if(x instanceof Expression.NumericalReal) {
 		if(this.operator === '*' || this.operator === '/' && this[0] instanceof Expression.NumericalReal) {
 			return Expression.List.Real([this[0]['^'](x), this[1]['^'](x)], this.operator);
@@ -2839,8 +2848,7 @@ Expression.List.Real.prototype['^'] = function (x) {
 	return Expression.Symbol.Real.prototype['^'].call(this, x);
 	
 };
-
-Expression.List.Real.prototype.constructor = Expression.List.Real;Expression.prototype.polar = function() {
+Expression.prototype.polar = function() {
 	var ri = this.realimag();
 	var two = new Expression.Integer(2);
 	return Expression.List.ComplexPolar([
@@ -3233,15 +3241,15 @@ Expression.List.Real.prototype.roots = function (vars) {
 function Infinitesimal(x) {
 	this.x = x;
 }
-Infinitesimal.prototype = Object.create(Expression.prototype);
-Infinitesimal.prototype.constructor = Infinitesimal;
-Infinitesimal.prototype['+'] = function (x) {
+_ = Infinitesimal.prototype = Object.create(Expression.prototype);
+_.constructor = Infinitesimal;
+_['+'] = function (x) {
 	if(x instanceof Infinitesimal) {
 		throw('Infinitesimal addition');
 	}
 	return x;
 };
-Infinitesimal.prototype['/'] = function (x) {
+_['/'] = function (x) {
 	if(x instanceof Infinitesimal) {
 		if(x.x instanceof Expression.Symbol) {
 			return this.x.differentiate(x.x);
@@ -3251,14 +3259,14 @@ Infinitesimal.prototype['/'] = function (x) {
 	this.x = this.x['/'](x);
 	return this;
 };
-Infinitesimal.prototype['*'] = function (x) {
+_['*'] = function (x) {
 	// d^2 = 0
 	if(x instanceof Infinitesimal) {
 		return Global.Zero;
 	}
 	this.x = this.x['*'](x);
 };
-Infinitesimal.prototype.s = function(lang) {
+_.s = function(lang) {
 	if(lang !== 'text/latex') {
 		throw ('Infinitesimal numbers cannot be exported to programming languages');
 	}
@@ -3274,9 +3282,9 @@ function Derivative(x) {
 	// technically should be a function / operator
 	this.x = x;
 }
-Derivative.prototype = Object.create(Expression.Function.prototype);
-Derivative.prototype.constructor = Derivative;
-Derivative.prototype.default = function (x) {
+_ = Derivative.prototype = Object.create(Expression.Function.prototype);
+_.constructor = Derivative;
+_.default = function (x) {
 	return x.differentiate(this.x);
 };
 Expression.List.prototype.lim = function (x, y) {
@@ -3323,22 +3331,22 @@ Expression.List.prototype.lim = function (x, y) {
 			return this.sub(x, y);
 	}
 };Expression.Vector = function (e) {
-	e.__proto__ = Expression.Vector.prototype;
+	e.__proto__ = _;
 	return e;
 };
 
-Expression.Vector.prototype = Object.create(Expression.prototype);
-Expression.Vector.prototype.constructor = Expression.Vector;
-Expression.Vector.prototype[','] = function (x) {
+_ = Expression.Vector.prototype = Object.create(Expression.prototype);
+_.constructor = Expression.Vector;
+_[','] = function (x) {
 	this[this.length] = x;
 	return this;
 };
-Expression.Vector.prototype.differentiate = function (x) {
+_.differentiate = function (x) {
 	return Expression.Vector(Array.prototype.map.call(this, function (c) {
 		return c.differentiate(x);
 	}));
 };
-Expression.Vector.prototype.cross = function (x) {
+_.cross = function (x) {
 	if (this.length !== 3 || x.length !== 3) {
 		throw('Cross product only defined for 3D vectors.');
 	}
@@ -3356,7 +3364,7 @@ Expression.Vector.prototype.cross = function (x) {
 		this[0]['*'](x[1])['-'](this[1]['*'](x[0]))
 	]);
 };
-Expression.Vector.prototype.default = function (x) {
+_.default = function (x) {
 	var l = this.length;
 	if (x instanceof Expression.Vector) {
 		// Dot product
@@ -3379,8 +3387,8 @@ Expression.Vector.prototype.default = function (x) {
 		}));
 	}
 };
-Expression.Vector.prototype['*'] = Expression.Vector.prototype.default;
-Expression.Vector.prototype['+'] = function (x, op) {
+_['*'] = _.default;
+_['+'] = function (x, op) {
 	var l = this.length;
 	if(l != x.length) {
 		throw('Vector Dimension mismatch.');
@@ -3392,10 +3400,10 @@ Expression.Vector.prototype['+'] = function (x, op) {
 	}
 	return Expression.Vector(n);
 };
-Expression.Vector.prototype['-'] = function (x) {
-	return Expression.Vector.prototype.call(this, x, '-');
+_['-'] = function (x) {
+	return _.call(this, x, '-');
 };
-Expression.Vector.prototype['/'] = function (x) {
+_['/'] = function (x) {
 	if (x instanceof Expression.Vector) {
 		throw('Vector division not defined');
 	}
@@ -3404,7 +3412,7 @@ Expression.Vector.prototype['/'] = function (x) {
 	}));
 	
 };
-Expression.Vector.prototype['^'] = function (x) {
+_['^'] = function (x) {
 	if(x instanceof Expression.Integer) {
 		if(x.a === 0) {
 			throw('Raised to zero power');
@@ -3442,7 +3450,7 @@ Expression.Vector.prototype['^'] = function (x) {
 	}
 	return this.default(this['^'](x['-'](Global.One)));
 };
-Expression.Vector.prototype.apply = function(operator, e) {
+_.apply = function(operator, e) {
 	var l = this.length;
 	switch (operator) {
 		case ',':
@@ -3480,7 +3488,7 @@ Expression.Vector.prototype.apply = function(operator, e) {
 	}
 };
 
-Expression.Vector.prototype.realimag = function(){
+_.realimag = function(){
 	var l = this.length;
 	var _x = new Array(l);
 	var _y = new Array(l);
@@ -3496,16 +3504,15 @@ Expression.Vector.prototype.realimag = function(){
 	]);
 };
 Expression.Matrix = function (e, r, c) {
-	e.__proto__ = Expression.Matrix.prototype;
+	e.__proto__ = _;
 	e.rows = r;
 	e.cols = c;
 	return e;
 };
 
-window.M4 = Expression.Matrix;
-Expression.Matrix.prototype = Object.create(Expression.prototype);
-Expression.Matrix.prototype.constructor = Expression.Matrix;
-Expression.Matrix.prototype.default = Expression.Matrix.prototype['*'] = function (x) {
+_ = Expression.Matrix.prototype = Object.create(Expression.prototype);
+_.constructor = Expression.Matrix;
+_.default = _['*'] = function (x) {
 	if(x.constructor === Expression.Matrix) {
 		// Broken
 		// O(n^3)
@@ -3529,7 +3536,7 @@ Expression.Matrix.prototype.default = Expression.Matrix.prototype['*'] = functio
 		throw ('Unknown type');
 	}
 };
-Expression.Matrix.prototype.reduce = function (app) {
+_.reduce = function (app) {
 	var x, y;
 	for(y = 0; y < this.rows; y++) {
 		for(x = 0; x < y; x++) {
@@ -3554,10 +3561,10 @@ Expression.Sum = function Summation(x, a, b, f_unbound) {
 	this.a = a;
 	this.b = b;
 };
-Expression.Sum.prototype = Object.create(Expression.Symbol.prototype);
-Expression.Sum.prototype.constructor = Expression.Sum;
+_ = Expression.Sum.prototype = Object.create(Expression.Symbol.prototype);
+_.constructor = Expression.Sum;
 
-Expression.Sum.prototype.s = function (lang) {
+_.s = function (lang) {
 	if (lang === 'text/latex') {
 		var cf = this.f.s(lang);
 		var ca = this.a.s(lang);
@@ -3603,7 +3610,7 @@ Expression.Sum.prototype.s = function (lang) {
 		return c.merge(cf, ts, Infinity, sumcode);
 	}
 };
-Expression.Sum.prototype['^'] = function (x) {
+_['^'] = function (x) {
 	if(this.b_locked) {
 		throw('Sum was upper bounded twice!');
 	}
@@ -3611,7 +3618,7 @@ Expression.Sum.prototype['^'] = function (x) {
 	this.b_locked = true;
 	return this;
 };
-Expression.Sum.prototype.default = function (x) {
+_.default = function (x) {
 	if(!this.b_locked) {
 		throw('Sum was not upper bounded!');
 	}
@@ -3946,10 +3953,11 @@ function Code (s, pre){
 	this.vars = 0;
 	this.p = Infinity;
 }
-Code.prototype.var = function () {
+_ = Code.prototype;
+_.var = function () {
 	return 't' + (this.vars++).toString(36);
 }
-Code.prototype.merge = function (o, str, p, pre) {
+_.merge = function (o, str, p, pre) {
 	this.s = str;
 	if (pre) {
 		this.pre.push(pre);
@@ -3960,7 +3968,7 @@ Code.prototype.merge = function (o, str, p, pre) {
 	this.p = p;
 	return this;
 };
-Code.prototype.update = function (str, p, pre) {
+_.update = function (str, p, pre) {
 	this. p = p;
 	if(pre) {
 		this.pre.push(pre);
@@ -3968,7 +3976,7 @@ Code.prototype.update = function (str, p, pre) {
 	this.s = str;
 	return this;
 }
-Code.prototype.compile = function (x) {
+_.compile = function (x) {
 	return Function(x, this.pre.join('\n') + 'return ' + this.s);
 };
 

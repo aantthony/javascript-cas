@@ -3,23 +3,25 @@ Expression.NumericalComplex = function(real, imag) {
 	this._imag = imag;
 };
 
-Expression.NumericalComplex.prototype = Object.create(Expression.Constant.prototype);
-Expression.NumericalComplex.prototype.real = function() {
+_ = Expression.NumericalComplex.prototype = Object.create(Expression.Constant.prototype);
+
+_.constructor = Expression.NumericalComplex;
+_.real = function() {
 	return new Expression.NumericalReal(this._real);
 };
-Expression.NumericalComplex.prototype.imag = function() {
+_.imag = function() {
 	return new Expression.NumericalReal(this._imag);
 };
-Expression.NumericalComplex.prototype.realimag = function() {
+_.realimag = function() {
 	return Expression.List.ComplexCartesian([
 		new Expression.NumericalReal(this._real),
 		new Expression.NumericalReal(this._imag)
 	]);
 };
-Expression.NumericalComplex.prototype.conjugate = function() {
+_.conjugate = function() {
 	return new Expression.NumericalComplex(this._real, -this._imag);
 };
-Expression.NumericalComplex.prototype['+'] = function (x) {
+_['+'] = function (x) {
 	if(this._real === 0 && this._imag === 0) {
 		return x;
 	}
@@ -41,7 +43,7 @@ Expression.NumericalComplex.prototype['+'] = function (x) {
 		throw ('Unknown Type for NumericalComplex +');
 	}
 };
-Expression.NumericalComplex.prototype['-'] = function (x) {
+_['-'] = function (x) {
 	if(this._real === 0 && this._imag === 0) {
 		return x['@-']();
 	}
@@ -63,7 +65,7 @@ Expression.NumericalComplex.prototype['-'] = function (x) {
 		throw ('Unknown Type for NumericalComplex -');
 	}
 };
-Expression.NumericalComplex.prototype['*'] = function (x) {
+_['*'] = function (x) {
 	if(this._imag === 0) {
 		if(this._real === 0) {
 			return Global.Zero;
@@ -92,7 +94,7 @@ Expression.NumericalComplex.prototype['*'] = function (x) {
 	}
 };
 
-Expression.NumericalComplex.prototype['/'] = function (x) {
+_['/'] = function (x) {
 	if(this._imag === 0 && this._real === 0) {
 		// TODO: Provided x != 0
 		return Global.Zero;
@@ -118,7 +120,7 @@ Expression.NumericalComplex.prototype['/'] = function (x) {
 	}
 };
 
-Expression.NumericalComplex.prototype['!'] = function (){
+_['!'] = function (){
 	return Global.Gamma.default(this);
 };
 (function(){
@@ -257,5 +259,3 @@ Expression.NumericalComplex.prototype['!'] = function (){
 	}
 	
 }());
-
-Expression.NumericalComplex.prototype.constructor = Expression.NumericalComplex;

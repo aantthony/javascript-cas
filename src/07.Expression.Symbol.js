@@ -3,19 +3,19 @@ Expression.Symbol = function Symbol(str) {
 	this.symbol = str;
 };
 
-Expression.Symbol.prototype = Object.create(Expression.prototype);
-Expression.Symbol.prototype.constructor = Expression.Symbol;
+_ = Expression.Symbol.prototype = Object.create(Expression.prototype);
+_.constructor = Expression.Symbol;
 
-Expression.Symbol.prototype.differentiate = function (x) {
+_.differentiate = function (x) {
 	return this === x ? Global.One : Global.Zero;
 };
-Expression.Symbol.prototype.integrate = function (x) {
+_.integrate = function (x) {
     if (this === x) {
 		return new Expression.NumericalReal(0.5, 0) ['*'] (x ['^'] (new Expression.NumericalReal(2,0)));
     }
 	return (this) ['*'] (x);
 };
-Expression.Symbol.prototype.sub = function (x, y) {
+_.sub = function (x, y) {
 	// TODO: Ensure it is real (for Expression.Symbol.Real)
 	return this === x ? y : this;
 };
@@ -24,30 +24,31 @@ Expression.Symbol.prototype.sub = function (x, y) {
 Expression.Symbol.Real = function Symbol_Real(str) {
     this.symbol = str;
 };
-Expression.Symbol.Real.prototype = Object.create(Expression.Symbol.prototype);
-Expression.Symbol.Real.prototype.realimag = function() {
+_ = Expression.Symbol.Real.prototype = Object.create(Expression.Symbol.prototype);
+_.constructor = Expression.Symbol.Real;
+_.realimag = function() {
     return Expression.List.ComplexCartesian([this, Global.Zero]);
 };
-Expression.Symbol.Real.prototype.real = function() {
+_.real = function() {
     return this;
 };
-Expression.Symbol.Real.prototype.imag = function() {
+_.imag = function() {
     return Global.Zero;
 };
-Expression.Symbol.Real.prototype.polar = function() {
+_.polar = function() {
 	return Expression.List.ComplexPolar([
 		Expression.List.Real([Global.abs, this]),
 		Expression.List.Real([Global.arg, this])
 	]);
 };
-Expression.Symbol.Real.prototype.abs = function() {
+_.abs = function() {
 	return Expression.List.Real([Global.abs, this]);
 };
-Expression.Symbol.Real.prototype.arg = function() {
+_.arg = function() {
 	return Expression.List.Real([Global.arg, this]);
 };
 
-Expression.Symbol.Real.prototype['+'] = function (x) {
+_['+'] = function (x) {
 	if (x == Global.Zero) {
 		return this;
 	}
@@ -63,7 +64,7 @@ Expression.Symbol.Real.prototype['+'] = function (x) {
 	}
 	return x['+'](this);
 };
-Expression.Symbol.Real.prototype['-'] = function (x) {
+_['-'] = function (x) {
 	if(this === x) {
 		return Global.Zero;
 	}
@@ -83,15 +84,15 @@ Expression.Symbol.Real.prototype['-'] = function (x) {
 	return x['@-']()['+'](this);
 };
 
-Expression.Symbol.Real.prototype['@+'] = function (x) {
+_['@+'] = function (x) {
 	return Expression.List.Real([this], '@+');
 };
 
-Expression.Symbol.Real.prototype['@-'] = function (x) {
+_['@-'] = function (x) {
 	return Expression.List.Real([this], '@-');
 };
 
-Expression.Symbol.Real.prototype['*'] = function (x) {
+_['*'] = function (x) {
 
 	if(x instanceof Expression.Rational) {
 		if(x.a === x.b) {
@@ -123,8 +124,8 @@ Expression.Symbol.Real.prototype['*'] = function (x) {
 	}
 	return x['*'](this);
 };
-Expression.Symbol.Real.prototype.default = Expression.Symbol.Real.prototype['*'];
-Expression.Symbol.Real.prototype['/'] = function (x) {
+_.default = _['*'];
+_['/'] = function (x) {
 
 	if(x instanceof Expression.Rational) {
 		if(x.a === x.b) {
@@ -139,7 +140,7 @@ Expression.Symbol.Real.prototype['/'] = function (x) {
 	
 	return Expression.List.Real([this, x], '/');
 };
-Expression.Symbol.Real.prototype['^'] = function (x) {
+_['^'] = function (x) {
 	if(x instanceof Expression.Rational) {
 		if(x.a === 0) {
 			return Global.One;
@@ -161,7 +162,7 @@ Expression.Symbol.Real.prototype['^'] = function (x) {
 	}
 	return Expression.List([this, x], '^');
 };
-Expression.Symbol.Real.prototype.apply = function(operator, e) {
+_.apply = function(operator, e) {
 	throw("Real.apply");
 	if (operator === ',') {
 		//Maybe this should be a new object type??? Vector?
@@ -283,5 +284,3 @@ Expression.Symbol.Real.prototype.apply = function(operator, e) {
 	}
 };
 
-
-Expression.Symbol.Real.prototype.constructor = Expression.Symbol.Real;

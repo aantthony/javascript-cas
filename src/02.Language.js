@@ -19,7 +19,8 @@ function Language(language) {
 	this.operators = operators;
 	Language.build.call(this);
 }
-Language.prototype.precedence = function (v) {
+_ = Language.prototype;
+_.precedence = function (v) {
     //deprecated('Slow');
 	if (!this.operators[v]) {
 		throw('Precedence of ' + v + ' not known!');
@@ -27,20 +28,20 @@ Language.prototype.precedence = function (v) {
 	return this.operators[v][1];
 };
 
-Language.prototype.postfix = function (o) {
+_.postfix = function (o) {
 	var op = this.operators[o];
 	return op[0] === 0 && op[2] === 1;
 };
-Language.prototype.unary = function (o) {
+_.unary = function (o) {
 	var unary_secondarys = ['+', '-', '±'];
 	return (unary_secondarys.indexOf(o) != -1) ? ('@' + o) : false;
 };
 
-Language.prototype.assoc = function(o) {
+_.assoc = function(o) {
 	return this.operators[o][1] === true;
 };
 
-Language.prototype.Number = function(o) {
+_.Number = function(o) {
 	// Support for integers
 	var predefined = {
 		'0': Global.Zero,

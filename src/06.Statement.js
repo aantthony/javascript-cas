@@ -4,12 +4,12 @@ Expression.Statement = function (x, y, operator) {
 	arr.__proto__ = Expression.Statement.prototype;
 	return arr;
 };
-Expression.Statement.prototype = Object.create(Expression.prototype);
-Expression.Statement.prototype.constructor = Expression.Statement;
-Expression.Statement.prototype['='] = function () {
+_ = Expression.Statement.prototype = Object.create(Expression.prototype);
+_.constructor = Expression.Statement;
+_['='] = function () {
 	
 };
-Expression.Statement.prototype['<'] = function () {
+_['<'] = function () {
 	// a < b < c
 	// (a < b) = b
 	// b < c
@@ -18,7 +18,7 @@ Expression.Statement.prototype['<'] = function () {
 	// a < b .. (b < c) = b
 	// (a < b) = a.
 };
-Expression.Statement.prototype.solve = function (vars) {
+_.solve = function (vars) {
 	// a = b
 	// If b has an additive inverse?
 	

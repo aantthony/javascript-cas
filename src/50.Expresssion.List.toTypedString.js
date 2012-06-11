@@ -270,10 +270,11 @@ function Code (s, pre){
 	this.vars = 0;
 	this.p = Infinity;
 }
-Code.prototype.var = function () {
+_ = Code.prototype;
+_.var = function () {
 	return 't' + (this.vars++).toString(36);
 }
-Code.prototype.merge = function (o, str, p, pre) {
+_.merge = function (o, str, p, pre) {
 	this.s = str;
 	if (pre) {
 		this.pre.push(pre);
@@ -284,7 +285,7 @@ Code.prototype.merge = function (o, str, p, pre) {
 	this.p = p;
 	return this;
 };
-Code.prototype.update = function (str, p, pre) {
+_.update = function (str, p, pre) {
 	this. p = p;
 	if(pre) {
 		this.pre.push(pre);
@@ -292,7 +293,7 @@ Code.prototype.update = function (str, p, pre) {
 	this.s = str;
 	return this;
 }
-Code.prototype.compile = function (x) {
+_.compile = function (x) {
 	return Function(x, this.pre.join('\n') + 'return ' + this.s);
 };
 

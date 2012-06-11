@@ -2,12 +2,12 @@ Expression.Rational = function Rational(a, b) {
 	this.a = a;
 	this.b = b;
 };
-Expression.Rational.prototype = Object.create(Expression.NumericalReal.prototype); // --> constant
-Expression.Rational.prototype.constructor = Expression.Rational;
-Expression.Rational.prototype.__defineGetter__("value", function () {
+_ = Expression.Rational.prototype = Object.create(Expression.NumericalReal.prototype); // --> constant
+_.constructor = Expression.Rational;
+_.__defineGetter__("value", function () {
 	return this.a / this.b;
 });
-Expression.Rational.prototype['+'] = function (x) {
+_['+'] = function (x) {
 	if(this.a === 0) {
 		return x;
 	}
@@ -39,7 +39,7 @@ Expression.Rational.prototype['+'] = function (x) {
 	
 	
 };
-Expression.Rational.prototype['-'] = function (x) {
+_['-'] = function (x) {
 	if(this.a === 0) {
 		return x['@-']();
 	}
@@ -70,7 +70,7 @@ Expression.Rational.prototype['-'] = function (x) {
 	}
 };
 
-Expression.Rational.prototype['*'] = function (x) {
+_['*'] = function (x) {
 	if (this.a === 0) {
 		return Global.Zero;
 	}
@@ -81,7 +81,7 @@ Expression.Rational.prototype['*'] = function (x) {
 };
 
 
-Expression.Rational.prototype['/'] = function (x) {
+_['/'] = function (x) {
 	if (this.a === 0) {
 		return Global.Zero;
 	}
@@ -93,7 +93,7 @@ Expression.Rational.prototype['/'] = function (x) {
 	}
 	return Expression.NumericalReal.prototype['/'].call(this, x);
 };
-Expression.Rational.prototype['^'] = function (x) {
+_['^'] = function (x) {
 	if(x === Global.Zero) {
 		return Global.One;
 	}
@@ -128,7 +128,7 @@ Expression.Rational.prototype['^'] = function (x) {
 	return Expression.List([this, x], '^');
 	
 };
-Expression.Rational.prototype.reduce = function () {
+_.reduce = function () {
 	function gcd(a, b) {
 		if(b === 0) {
 			return a;

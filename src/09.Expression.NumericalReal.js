@@ -2,31 +2,33 @@ Expression.NumericalReal = function NumericalReal(e) {
 	this.value = e;
 };
 
-Expression.NumericalReal.prototype = Object.create(Expression.NumericalComplex.prototype);
+_ = Expression.NumericalReal.prototype = Object.create(Expression.NumericalComplex.prototype);
 
-Expression.NumericalReal.prototype.constructor = Expression.NumericalReal;
-Expression.NumericalReal.prototype.__defineGetter__("_real", function () {
-	return this.value;
+_.constructor = Expression.NumericalReal;
+Object.defineProperty(_, "_real", {
+	get: function () {
+		return this.value;
+	}
 });
-Expression.NumericalReal.prototype._imag = 0;
+_._imag = 0;
 
-Expression.NumericalReal.prototype.real = function() {
+_.real = function() {
 	return this;
 };
-Expression.NumericalReal.prototype.imag = function() {
+_.imag = function() {
 	return Global.Zero;
 };
-Expression.NumericalReal.prototype.realimag = function() {
+_.realimag = function() {
 	return Expression.List.ComplexCartesian([
 		this,
 		Global.Zero
 	]);
 };
-Expression.NumericalReal.prototype.conjugate = function() {
+_.conjugate = function() {
 	return this;
 };
 
-Expression.NumericalReal.prototype['+'] = function (x) {
+_['+'] = function (x) {
 	if(this.value === 0) {
 		return x;
 	}
@@ -36,11 +38,11 @@ Expression.NumericalReal.prototype['+'] = function (x) {
 	return x['+'](this);
 };
 
-Expression.NumericalReal.prototype['@-'] = function (x) {
+_['@-'] = function (x) {
 	return new Expression.NumericalReal(-this.value);
 };
 
-Expression.NumericalReal.prototype['-'] = function (x) {
+_['-'] = function (x) {
 	if(this.value === 0) {
 		return x;
 	}
@@ -51,12 +53,12 @@ Expression.NumericalReal.prototype['-'] = function (x) {
 };
 
 
-Expression.NumericalReal.prototype['%'] = function (x) {
+_['%'] = function (x) {
 	var nonreal = 'The modular arithmetic operator \'%\' is not defined for non-real numbers.';
 	if(this.value === 0) {
 		return Global.Zero;
 	}
-	if(x.constructor === this.constructor){
+	if(x instanceof Expression.NumericalReal){
 		return new Expression.NumericalReal(this.value % x.value);
 	} else if(x.constructor === Expression.List.Real) {
 		return Expression.List.Real([this, x], '%');
@@ -76,13 +78,13 @@ Expression.NumericalReal.prototype['%'] = function (x) {
 		throw ('Unknown Type for NumericalReal %');
 	}
 };
-Expression.NumericalReal.prototype['*'] = function (x) {
+_['*'] = function (x) {
 	if(x instanceof Expression.NumericalReal){
 		return new Expression.NumericalReal(this.value * x.value);
 	}
 	return x['*'](this);
 };
-Expression.NumericalReal.prototype['/'] = function (x) {
+_['/'] = function (x) {
 	if(this.value === 0) {
 		return Global.Zero;
 	}
@@ -122,7 +124,7 @@ Expression.NumericalReal.prototype['/'] = function (x) {
 		throw ('Unknown Type for NumericalReal /');
 	}
 };
-Expression.NumericalReal.prototype['^'] = function (x) {
+_['^'] = function (x) {
 	if (this.value === 0) {
 		return Global.Zero;
 	}
@@ -182,7 +184,7 @@ Expression.NumericalReal.prototype['^'] = function (x) {
 	}
 };
 
-Expression.NumericalReal.prototype.apply = function(operator, x) {
+_.apply = function(operator, x) {
 	switch (operator){
 		case ',':
 			return Expression.Vector([this, x]);

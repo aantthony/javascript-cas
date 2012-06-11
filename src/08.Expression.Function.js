@@ -6,23 +6,33 @@ Expression.Function = function (p) {
 	this.derivative = p.derivative;
 	this.realimag = p.realimag;
 };
-Expression.Function.prototype = Object.create(Expression.prototype);
-Expression.Function.prototype.constructor = Expression.Function;
-Expression.Function.prototype.default = function (argument) {
+_ = Expression.Function.prototype = Object.create(Expression.prototype);
+_.constructor = Expression.Function;
+_.default = function (argument) {
 	return ;
 };
-Expression.Function.prototype.differentiate = function () {
+_.differentiate = function () {
 	if (this.derivative) {
 		return this.derivative;
 	}
 	throw('Function has no derivative defined.');
 }
 
-Expression.Function.prototype.s = function (lang) {
+_.s = function (lang) {
 	if (this[lang]) {
 		return new Code(this[lang]);
 	}
 	throw('Could not compile function into ' + lang);
+};
+
+_['+'] = function (x) {
+	var a = new Expression.Symbol();
+	return new Expression.Function.Symbolic(this.default(a)['+'](x), [a]);
+};
+
+_['@-'] = function (x) {
+	var a = new Expression.Symbol();
+	return new Expression.Function.Symbolic(this.default(a)['@-'](), [a]);
 };
 
 
@@ -31,10 +41,10 @@ Expression.Function.Symbolic = function SymbolicFunction(expr, vars) {
 	this.symbols = vars;
 	
 };
-Expression.Function.Symbolic.prototype = Object.create(Expression.Function.prototype);
-Expression.Function.Symbolic.prototype.constructor = Expression.Function.Symbolic;
+_ = Expression.Function.Symbolic.prototype = Object.create(Expression.Function.prototype);
+_.constructor = Expression.Function.Symbolic;
 
-Expression.Function.Symbolic.prototype.default = function (x) {
+_.default = function (x) {
 	if (x.constructor !== Expression.Vector) {
 		x = Expression.Vector([x]);
 	}
@@ -47,15 +57,4 @@ Expression.Function.Symbolic.prototype.default = function (x) {
 		expr = expr.sub(this.symbols[i], x[i])
 	}
 	return expr;
-};
-
-
-Expression.Function.prototype['+'] = function (x) {
-	var a = new Expression.Symbol();
-	return new Expression.Function.Symbolic(this.default(a)['+'](x), [a]);
-};
-
-Expression.Function.prototype['@-'] = function (x) {
-	var a = new Expression.Symbol();
-	return new Expression.Function.Symbolic(this.default(a)['@-'](), [a]);
 };

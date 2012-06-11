@@ -4,10 +4,10 @@ Expression.Sum = function Summation(x, a, b, f_unbound) {
 	this.a = a;
 	this.b = b;
 };
-Expression.Sum.prototype = Object.create(Expression.Symbol.prototype);
-Expression.Sum.prototype.constructor = Expression.Sum;
+_ = Expression.Sum.prototype = Object.create(Expression.Symbol.prototype);
+_.constructor = Expression.Sum;
 
-Expression.Sum.prototype.s = function (lang) {
+_.s = function (lang) {
 	if (lang === 'text/latex') {
 		var cf = this.f.s(lang);
 		var ca = this.a.s(lang);
@@ -53,7 +53,7 @@ Expression.Sum.prototype.s = function (lang) {
 		return c.merge(cf, ts, Infinity, sumcode);
 	}
 };
-Expression.Sum.prototype['^'] = function (x) {
+_['^'] = function (x) {
 	if(this.b_locked) {
 		throw('Sum was upper bounded twice!');
 	}
@@ -61,7 +61,7 @@ Expression.Sum.prototype['^'] = function (x) {
 	this.b_locked = true;
 	return this;
 };
-Expression.Sum.prototype.default = function (x) {
+_.default = function (x) {
 	if(!this.b_locked) {
 		throw('Sum was not upper bounded!');
 	}

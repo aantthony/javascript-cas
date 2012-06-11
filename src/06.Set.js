@@ -2,7 +2,8 @@ function Set(x) {
 	x.__proto__ = Set.prototype;
 	return x;
 };
-Set.prototype.intersect = function (set) {
+_ = Set.prototype;
+_.intersect = function (set) {
 	// O(n^2)
 	var i;
 	var i_l = this.length;
@@ -27,24 +28,24 @@ Set.prototype.intersect = function (set) {
 	}
 	return a;
 }; 
-Set.prototype.union = function (set) {
+_.union = function (set) {
 	// TODO: check for duplicates
 	return Set(Array.prototype.concat.call(this, set));
 }
-Set.prototype.remove = function (x) {
+_.remove = function (x) {
 	// O(1 + lookup[n])
 	var i = this.indexOf(x);
 	this[i] = this[this.length - 1];
 	this.length--;
 	return this;
 }
-Set.prototype.add = function (x) {
+_.add = function (x) {
 	// O(1 + lookup[n])
 	if (this.indexOf(x) === -1) {
 		this[this.length] = x;
 	}
 	return this;
 };
-Set.prototype.map = function (f) {
+_.map = function (f) {
 	return Set(Array.prototype.map.call(this, f));
 };

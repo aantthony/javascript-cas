@@ -13,34 +13,34 @@
 
 */
 Expression.List.ComplexCartesian = function ComplexCartesian(x){
-	x.__proto__ = Expression.List.ComplexCartesian.prototype;
+	x.__proto__ = _;
 	return x;
 };
-Expression.List.ComplexCartesian.prototype = Object.create(Expression.prototype);
-Expression.List.ComplexCartesian.prototype.constructor = Expression.List.ComplexCartesian;
-Expression.List.ComplexCartesian.prototype.realimag = function(){
+_ = Expression.List.ComplexCartesian.prototype = Object.create(Expression.prototype);
+_.constructor = Expression.List.ComplexCartesian;
+_.realimag = function(){
 	return this;
 };
-Expression.List.ComplexCartesian.prototype.real = function(){
+_.real = function(){
 	return this[0];
 };
-Expression.List.ComplexCartesian.prototype.imag = function(){
+_.imag = function(){
 	return this[1];
 };
-Expression.List.ComplexCartesian.prototype.conjugate = function () {
+_.conjugate = function () {
 	return Expression.List.ComplexCartesian([
 		this[0],
 		this[1].apply('@-')
 	]);
 };
 
-Expression.List.ComplexCartesian.prototype['@-'] = function (x) {
+_['@-'] = function (x) {
 	return new Expression.List.ComplexCartesian([
 		this[0]['@-'](),
 		this[1]['@-']()
 	]);
 };
-Expression.List.ComplexCartesian.prototype['*'] = function (x) {
+_['*'] = function (x) {
 	if (x instanceof Expression.List.ComplexCartesian) {
 		// (a+bi) * (A+Bi) = aA + aBi + bA - bB
 		return new Expression.List.ComplexCartesian([
@@ -55,7 +55,7 @@ Expression.List.ComplexCartesian.prototype['*'] = function (x) {
 		]);
 	}
 };
-Expression.List.ComplexCartesian.prototype['^'] = function (x) {
+_['^'] = function (x) {
 	if(x instanceof Expression.Integer) {
 
 		if(x instanceof Expression.Rational) {
@@ -134,7 +134,7 @@ Expression.List.ComplexCartesian.prototype['^'] = function (x) {
 	}
 	return new Expression.List([this, x], '^');
 };
-Expression.List.ComplexCartesian.prototype['+'] = function (x) {
+_['+'] = function (x) {
 	if (x instanceof Expression.List.ComplexCartesian) {
 		return new Expression.List.ComplexCartesian([
 			this[0]
@@ -149,7 +149,7 @@ Expression.List.ComplexCartesian.prototype['+'] = function (x) {
 	
 };
 
-Expression.List.ComplexCartesian.prototype.differentiate = function (x) {
+_.differentiate = function (x) {
 	return Expression.List.ComplexCartesian([
 		this[0].differentiate(x),
 		this[1].differentiate(x)
@@ -157,7 +157,7 @@ Expression.List.ComplexCartesian.prototype.differentiate = function (x) {
 };
 
 
-Expression.List.ComplexCartesian.prototype.apply = function(o, x){
+_.apply = function(o, x){
 	//TODO: ensure this has an imaginary part. If it doesn't it is a huge waste of computation
 	if (x.constructor === this.constructor) {
 		switch(o) {
