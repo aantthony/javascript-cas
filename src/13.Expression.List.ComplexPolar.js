@@ -1,5 +1,5 @@
 Expression.List.ComplexPolar = function (x){
-	x.__proto__ = _;
+	x.__proto__ = Expression.List.ComplexPolar.prototype;
 	return x;
 }
 _ = Expression.List.ComplexPolar.prototype = Object.create(Expression.prototype);

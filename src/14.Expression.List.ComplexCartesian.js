@@ -13,7 +13,7 @@
 
 */
 Expression.List.ComplexCartesian = function ComplexCartesian(x){
-	x.__proto__ = _;
+	x.__proto__ = Expression.List.ComplexCartesian.prototype;
 	return x;
 };
 _ = Expression.List.ComplexCartesian.prototype = Object.create(Expression.prototype);

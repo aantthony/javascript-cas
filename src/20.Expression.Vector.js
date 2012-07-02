@@ -1,5 +1,5 @@
 Expression.Vector = function (e) {
-	e.__proto__ = _;
+	e.__proto__ = Expression.Vector.prototype;
 	return e;
 };
 

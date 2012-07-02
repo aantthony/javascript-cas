@@ -2198,16 +2198,16 @@ Expression.Root = function NthRoot(x, n) {
 	this.a = x;
 	this.n = n;
 };
-Expression.Root.prototype = Object.create(Expression.NumericalReal);
-Expression.Root.constructor = Expression.Root;
-Expression.Root.prototype['*'] = function (x) {
+_ = Expression.Root.prototype = Object.create(Expression.NumericalReal);
+_.constructor = Expression.Root;
+_['*'] = function (x) {
 	if (x.constructor === this.constructor) {
 		
 	} else {
 		return x['*'](this);
 	}
 };
-Expression.Root.prototype.__defineGetter__("value", function () {
+_.__defineGetter__("value", function () {
 	return Math.pow(this.a, 1 / this.n);
 });
 Expression.Equation = function(e, operator){
@@ -2216,12 +2216,12 @@ Expression.Equation = function(e, operator){
 	return e;
 };
 //Get toTypedString methods? Maybe we shouldn't.
-Expression.Equation.prototype = Object.create(Expression.List.prototype);
-Expression.Equation.prototype.apply = function(op, e) {
+_ = Expression.Equation.prototype = Object.create(Expression.List.prototype);
+_.apply = function(op, e) {
 	throw('Operators cannot be applied to equations');
 };
 Expression.List.ComplexPolar = function (x){
-	x.__proto__ = _;
+	x.__proto__ = Expression.List.ComplexPolar.prototype;
 	return x;
 }
 _ = Expression.List.ComplexPolar.prototype = Object.create(Expression.prototype);
@@ -2459,7 +2459,7 @@ Expression.List.prototype.realimag = function() {
 
 */
 Expression.List.ComplexCartesian = function ComplexCartesian(x){
-	x.__proto__ = _;
+	x.__proto__ = Expression.List.ComplexCartesian.prototype;
 	return x;
 };
 _ = Expression.List.ComplexCartesian.prototype = Object.create(Expression.prototype);
@@ -2702,7 +2702,7 @@ _.apply = function(o, x){
 	}
 	throw('CMPLX.LIST * ' + o);
 };Expression.List.Real = function List_Real(x, operator) {
-	x.__proto__ = _;
+	x.__proto__ = Expression.List.Real.prototype;
 	if(operator !== undefined) {
 		x.operator = operator;
 	}
@@ -3331,7 +3331,7 @@ Expression.List.prototype.lim = function (x, y) {
 			return this.sub(x, y);
 	}
 };Expression.Vector = function (e) {
-	e.__proto__ = _;
+	e.__proto__ = Expression.Vector.prototype;
 	return e;
 };
 
@@ -3504,7 +3504,7 @@ _.realimag = function(){
 	]);
 };
 Expression.Matrix = function (e, r, c) {
-	e.__proto__ = _;
+	e.__proto__ = Expression.Matrix.prototype;
 	e.rows = r;
 	e.cols = c;
 	return e;
