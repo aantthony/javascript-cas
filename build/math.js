@@ -327,6 +327,7 @@ _.Number = function(o) {
 		var rpn_stack = [];
 		
 		var free_context = {};
+		var bound_context = {};
 		function bind(x) {
 			var j = free_context[x];
 			delete free_context[x];
@@ -350,7 +351,7 @@ _.Number = function(o) {
 				// If there are fewer than n values on the stack
 				if (rpn_stack.length < n) {
 					// (Error) The user has not input sufficient values in the expression.
-					throw (new SyntaxError('The \'' + token.v + '\' operator requires exactly ' + n + ' operands, whereas only ' + rpn_stack.length + ' ' + (rpn_stack.length === 1 ? 'was ': 'were ') + 'supplied, namely '+rpn_stack.toString()));
+					throw (new SyntaxError('The \'' + token.v + '\' operator requires exactly ' + n + ' operands, whereas only ' + rpn_stack.length + ' ' + (rpn_stack.length === 1 ? 'was ': 'were ') + 'supplied'));
 					// Else,
 				} else {
 					// Pop the top n values from the stack.
@@ -390,7 +391,7 @@ _.Number = function(o) {
 				} else if (typeof token.v === 'string') {
 				    if (context[token.v]) {
 				        //Make .v a pointer to the referenced object.
-				        token.v = context[token.v];
+				        token.v = bound_context[token.v] = context[token.v];
 					} else if (free_context[token.v]) {
 						token.v = free_context[token.v];
 				    } else {
@@ -398,7 +399,7 @@ _.Number = function(o) {
 				    }
 				}
 			}
-			//console.log('token: ', token.v, names[token.t]);
+			
 			//Comments from http://en.wikipedia.org/wiki/Shunting-yard_algorithm
 			// Read a token.
 			// If the token is a number, then add it to the output queue.
@@ -540,6 +541,7 @@ _.Number = function(o) {
 		// Free variables: (these could be used to quickly check which variables an equation has).
 		// Perhaps every expression should have such a context, but maybe that would take too much ram.
 		rpn_stack[0].unbound = free_context;
+		rpn_stack[0].bound = bound_context;
 		return rpn_stack[0];
 	};
 };//Language.prototype.parse = function(str, context, output) {
@@ -4734,18 +4736,7 @@ function M(a, b) {
     var ne = Expression(a, b || M.Global);
 	return ne;
 }
-var _M = M;
-M = function (a, b) {
-	var t = new Date();
-	var r = _M(a, b);
-	var i;
-	var j = 100;
-	for(i = 0; i < j; i++) {
-		_M(a, b);
-	}
-	console.log('M: ', a, (new Date() - t)/j + 'ms');
-	return r;
-}
+
 M.toString = function() {
 	return 'function M() {\n    /*!\n     *  Math JavaScript Library v3.0.0\n     *  https://github.com/aantthony/javascript-cas\n     *  \n     *  Copyright 2010 Anthony Foster. All rights reserved.\n     */\n    [awesome code]\n}';
 };

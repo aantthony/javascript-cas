@@ -3,18 +3,7 @@ function M(a, b) {
     var ne = Expression(a, b || M.Global);
 	return ne;
 }
-var _M = M;
-M = function (a, b) {
-	var t = new Date();
-	var r = _M(a, b);
-	var i;
-	var j = 100;
-	for(i = 0; i < j; i++) {
-		_M(a, b);
-	}
-	console.log('M: ', a, (new Date() - t)/j + 'ms');
-	return r;
-}
+
 M.toString = function() {
 	return 'function M() {\n    /*!\n     *  Math JavaScript Library v3.0.0\n     *  https://github.com/aantthony/javascript-cas\n     *  \n     *  Copyright 2010 Anthony Foster. All rights reserved.\n     */\n    [awesome code]\n}';
 };

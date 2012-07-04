@@ -230,6 +230,7 @@ Language.build = function () {
 		var rpn_stack = [];
 		
 		var free_context = {};
+		var bound_context = {};
 		function bind(x) {
 			var j = free_context[x];
 			delete free_context[x];
@@ -253,7 +254,7 @@ Language.build = function () {
 				// If there are fewer than n values on the stack
 				if (rpn_stack.length < n) {
 					// (Error) The user has not input sufficient values in the expression.
-					throw (new SyntaxError('The \'' + token.v + '\' operator requires exactly ' + n + ' operands, whereas only ' + rpn_stack.length + ' ' + (rpn_stack.length === 1 ? 'was ': 'were ') + 'supplied, namely '+rpn_stack.toString()));
+					throw (new SyntaxError('The \'' + token.v + '\' operator requires exactly ' + n + ' operands, whereas only ' + rpn_stack.length + ' ' + (rpn_stack.length === 1 ? 'was ': 'were ') + 'supplied'));
 					// Else,
 				} else {
 					// Pop the top n values from the stack.
@@ -293,7 +294,7 @@ Language.build = function () {
 				} else if (typeof token.v === 'string') {
 				    if (context[token.v]) {
 				        //Make .v a pointer to the referenced object.
-				        token.v = context[token.v];
+				        token.v = bound_context[token.v] = context[token.v];
 					} else if (free_context[token.v]) {
 						token.v = free_context[token.v];
 				    } else {
@@ -301,7 +302,7 @@ Language.build = function () {
 				    }
 				}
 			}
-			//console.log('token: ', token.v, names[token.t]);
+			
 			//Comments from http://en.wikipedia.org/wiki/Shunting-yard_algorithm
 			// Read a token.
 			// If the token is a number, then add it to the output queue.
@@ -443,6 +444,7 @@ Language.build = function () {
 		// Free variables: (these could be used to quickly check which variables an equation has).
 		// Perhaps every expression should have such a context, but maybe that would take too much ram.
 		rpn_stack[0].unbound = free_context;
+		rpn_stack[0].bound = bound_context;
 		return rpn_stack[0];
 	};
 };
