@@ -30,7 +30,11 @@ _.realimag = function (x) {
 		return y.realimag();
 	});
 };
-
+_.differentiate = function (x) {
+	return expandThrough(this, function (y) {
+		return y.differentiate(x);
+	});
+};
 Expression.Conditional.Real = function ConditionalReal(cond, a, b) {
 	this.cond = cond;
 	this.a = a;
@@ -44,6 +48,9 @@ _.real = function () {
 _.imag = function () {
 	return Global.Zero;
 };
+_.realimag = function () {
+	return new Expression.List.ComplexCartesian([this, Global.Zero]);
+};
 _.s = function (lang) {
 	if (lang === 'text/latex') {
 		
@@ -51,10 +58,11 @@ _.s = function (lang) {
 	if (lang === 'text/javascript' || lang == 'x-shader/x-fragment') {
 		var ca = this.a.s(lang);
 		var cb = this.b.s(lang);
-
+		console.log('code', ca, cb);
 		var ccond = this.cond.s(lang);
 		var ca_s = ca.s;
 		var c = ca.merge(cb);
-		return c.merge(ccond, ccond.s +' ? ' + ca_s + ' : ' + cb.s);
+		// Use parentheses anyway...
+		return c.merge(ccond, '(' + ccond.s +') ? ' + ca_s + ' : ' + cb.s);
 	}
 };

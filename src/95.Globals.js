@@ -469,7 +469,30 @@ Global['undefined'] = {
 	s: function (lang){
 		if (lang === 'text/javascript') {
 			return new Code('undefined');
+		} else if (lang === 'x-shader/x-fragment') {
+			return new Code('(1.0/0.0)');
 		}
+	},
+	differentiate: function (){
+		return this;
+	},
+	'*': function (){
+		return this;
+	},
+	'+': function (){
+		return this;
+	},
+	'-': function () {
+		return this;
+	},
+	'/': function () {
+		return this;
+	},
+	'^': function () {
+		return this;
+	},
+	'@-': function () {
+		return this;
 	}
 };
 Global['sum'] = new Expression.Function({

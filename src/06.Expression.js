@@ -77,6 +77,10 @@ _['-'] = function (x) {
 	return new Expression.List([this, x], '-');
 };
 
+_['@-'] = function (x) {
+	return new Expression.List([this], '@-');
+};
+
 _['^'] = function (x) {
 	return new Expression.List([this, x], '^');
 };
