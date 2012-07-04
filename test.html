@@ -9,4 +9,19 @@ M.Expression.prototype.glsl = function () {
 	return this.s('x-shader/x-fragment').s;
 }
 c.x = M('x', c);
+M.Expression.prototype.tree = function () {
+	return this;
+};
+M.Expression.NumericalReal.prototype.tree = function () {
+	return this.value;
+};
+M.Expression.Symbol.prototype.tree = function () {
+	return this.symbol;
+}
+function tree(x) {
+	return x.tree();
+}
+M.Expression.List.Real.prototype.tree = function () {
+	return [this.operator].concat(Array.prototype.map.call(this, tree));
+}
 </script>
