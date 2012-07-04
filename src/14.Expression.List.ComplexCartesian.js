@@ -42,10 +42,10 @@ _['@-'] = function (x) {
 };
 _['*'] = function (x) {
 	if (x instanceof Expression.List.ComplexCartesian) {
-		// (a+bi) * (A+Bi) = aA + aBi + bA - bB
+		// (a+bi) * (c+di) = ac + adi + bci - bd
 		return new Expression.List.ComplexCartesian([
-			this[0]['*'](x[0])['+'](this[1]['*'](x[0])),
-			this[0]['*'](x[1])['-'](this[1]['*'](x[1]))
+			this[0]['*'](x[0])['-'](this[1]['*'](x[1])),
+			this[0]['*'](x[1])['+'](this[1]['*'](x[0]))
 		]);
 	}
 	if (x instanceof Expression.List.Real || x instanceof Expression.Symbol.Real || x instanceof Expression.NumericalReal) {

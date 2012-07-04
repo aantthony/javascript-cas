@@ -1500,7 +1500,14 @@ _['!'] = function (){
 		return Expression.List([this, x], operator);
 	}
 	
-}());Expression.prototype.conjugate = function() {
+}());Expression.Conditional = function (cond, a, b) {
+	this.cond = code;
+	this.a = a;
+	this.b = b;
+};
+_ = Expression.Conditional.prototype = Object.create(Expression.prototype);
+_.constructor = Expression.Conditional;
+Expression.prototype.conjugate = function() {
 	throw('Conjugate');
 };
 
@@ -2490,10 +2497,10 @@ _['@-'] = function (x) {
 };
 _['*'] = function (x) {
 	if (x instanceof Expression.List.ComplexCartesian) {
-		// (a+bi) * (A+Bi) = aA + aBi + bA - bB
+		// (a+bi) * (c+di) = ac + adi + bci - bd
 		return new Expression.List.ComplexCartesian([
-			this[0]['*'](x[0])['+'](this[1]['*'](x[0])),
-			this[0]['*'](x[1])['-'](this[1]['*'](x[1]))
+			this[0]['*'](x[0])['-'](this[1]['*'](x[1])),
+			this[0]['*'](x[1])['+'](this[1]['*'](x[0]))
 		]);
 	}
 	if (x instanceof Expression.List.Real || x instanceof Expression.Symbol.Real || x instanceof Expression.NumericalReal) {
@@ -3340,6 +3347,13 @@ Expression.List.prototype.lim = function (x, y) {
 _ = Expression.Vector.prototype = Object.create(Expression.prototype);
 _.constructor = Expression.Vector;
 _[','] = function (x) {
+	if(x instanceof Expression.Statement && !(this[0] instanceof Expression.Statement)) {
+		// This is a domain restriction, not a vector!
+		// The result is a quantity and assertion
+		// or perhaps it is a quantity defined only when the statement is true?
+		
+		
+	}
 	this[this.length] = x;
 	return this;
 };
@@ -4669,6 +4683,10 @@ Global['Zero']['*'] = function (x) {
 Global['Zero']['+'] = function (x) {
 	return x;
 };
+Global['Zero']['@-'] = function (x) {
+	return this;
+};
+
 Global['Zero']['-'] = function (x) {
 	return x['@-']();
 };

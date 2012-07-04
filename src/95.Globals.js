@@ -410,6 +410,10 @@ Global['Zero']['*'] = function (x) {
 Global['Zero']['+'] = function (x) {
 	return x;
 };
+Global['Zero']['@-'] = function (x) {
+	return this;
+};
+
 Global['Zero']['-'] = function (x) {
 	return x['@-']();
 };
