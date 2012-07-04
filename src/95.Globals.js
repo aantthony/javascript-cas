@@ -465,7 +465,13 @@ Global.d['/'] = function (x) {
 	throw('Dividing d by some large number.');
 	
 };
-
+Global['undefined'] = {
+	s: function (lang){
+		if (lang === 'text/javascript') {
+			return new Code('undefined');
+		}
+	}
+};
 Global['sum'] = new Expression.Function({
 	default: function (x) {
 		return 3;

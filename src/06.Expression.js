@@ -28,6 +28,9 @@ _.lim = function (x, y) {
 };
 // Global Root operators:
 _[','] = function (x) {
+	if(x instanceof Expression.Statement) {
+		return new Expression.Conditional(x, this);
+	}
 	return Expression.Vector([this, x]);
 };
 _['='] = function (x) {

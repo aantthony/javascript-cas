@@ -648,6 +648,9 @@ _.lim = function (x, y) {
 };
 // Global Root operators:
 _[','] = function (x) {
+	if(x instanceof Expression.Statement) {
+		return new Expression.Conditional(x, this);
+	}
 	return Expression.Vector([this, x]);
 };
 _['='] = function (x) {
@@ -1500,14 +1503,66 @@ _['!'] = function (){
 		return Expression.List([this, x], operator);
 	}
 	
-}());Expression.Conditional = function (cond, a, b) {
-	this.cond = code;
+}());Expression.Conditional = function Conditional(cond, a, b) {
+	if(a instanceof Expression.Symbol.Real || a instanceof Expression.List.Real) {
+		return new Expression.Conditional.Real(cond, a, b);
+	}
+	this.cond = cond;
 	this.a = a;
-	this.b = b;
+	this.b = b || Global.undefined;
 };
 _ = Expression.Conditional.prototype = Object.create(Expression.prototype);
 _.constructor = Expression.Conditional;
-Expression.prototype.conjugate = function() {
+
+_.s = function (lang) {
+	throw('Not real... too confusing');
+};
+function expandThrough(c, func) {
+	return new Expression.Conditional(c.cond, func(c.a), func(c.b));
+}
+_.real = function (x) {
+	return expandThrough(this, function (y) {
+		return y.real();
+	});
+};
+_.imag = function (x) {
+	return expandThrough(this, function (y) {
+		return y.imag();
+	});
+};
+_.realimag = function (x) {
+	return expandThrough(this, function (y) {
+		return y.realimag();
+	});
+};
+
+Expression.Conditional.Real = function ConditionalReal(cond, a, b) {
+	this.cond = cond;
+	this.a = a;
+	this.b = b || Global.undefined;
+};
+_ = Expression.Conditional.Real.prototype = Object.create(Expression.Conditional.prototype);
+_.constructor = Expression.Conditional.Real;
+_.real = function () {
+	return this;
+};
+_.imag = function () {
+	return Global.Zero;
+};
+_.s = function (lang) {
+	if (lang === 'text/latex') {
+		
+	}
+	if (lang === 'text/javascript' || lang == 'x-shader/x-fragment') {
+		var ca = this.a.s(lang);
+		var cb = this.b.s(lang);
+
+		var ccond = this.cond.s(lang);
+		var ca_s = ca.s;
+		var c = ca.merge(cb);
+		return c.merge(ccond, ccond.s +' ? ' + ca_s + ' : ' + cb.s);
+	}
+};Expression.prototype.conjugate = function() {
 	throw('Conjugate');
 };
 
@@ -3339,7 +3394,7 @@ Expression.List.prototype.lim = function (x, y) {
 		case '!':
 			return this.sub(x, y);
 	}
-};Expression.Vector = function (e) {
+};Expression.Vector = function Vector(e) {
 	e.__proto__ = Expression.Vector.prototype;
 	return e;
 };
@@ -3347,12 +3402,11 @@ Expression.List.prototype.lim = function (x, y) {
 _ = Expression.Vector.prototype = Object.create(Expression.prototype);
 _.constructor = Expression.Vector;
 _[','] = function (x) {
-	if(x instanceof Expression.Statement && !(this[0] instanceof Expression.Statement)) {
-		// This is a domain restriction, not a vector!
+	if(x instanceof Expression.Statement) {
+		// This is a domain restriction, (of a vector!)
 		// The result is a quantity and assertion
 		// or perhaps it is a quantity defined only when the statement is true?
-		
-		
+		return new Expression.Conditional(x, this, undefined);
 	}
 	this[this.length] = x;
 	return this;
@@ -4738,7 +4792,13 @@ Global.d['/'] = function (x) {
 	throw('Dividing d by some large number.');
 	
 };
-
+Global['undefined'] = {
+	s: function (lang){
+		if (lang === 'text/javascript') {
+			return new Code('undefined');
+		}
+	}
+};
 Global['sum'] = new Expression.Function({
 	default: function (x) {
 		return 3;

@@ -1,4 +1,4 @@
-Expression.Vector = function (e) {
+Expression.Vector = function Vector(e) {
 	e.__proto__ = Expression.Vector.prototype;
 	return e;
 };
@@ -6,12 +6,11 @@ Expression.Vector = function (e) {
 _ = Expression.Vector.prototype = Object.create(Expression.prototype);
 _.constructor = Expression.Vector;
 _[','] = function (x) {
-	if(x instanceof Expression.Statement && !(this[0] instanceof Expression.Statement)) {
-		// This is a domain restriction, not a vector!
+	if(x instanceof Expression.Statement) {
+		// This is a domain restriction, (of a vector!)
 		// The result is a quantity and assertion
 		// or perhaps it is a quantity defined only when the statement is true?
-		
-		
+		return new Expression.Conditional(x, this, undefined);
 	}
 	this[this.length] = x;
 	return this;
