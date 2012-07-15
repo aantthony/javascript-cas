@@ -296,6 +296,10 @@ _.update = function (str, p, pre) {
 _.compile = function (x) {
 	return Function(x, this.pre.join('\n') + 'return ' + this.s);
 };
+_.glslFunction = function (type, name, parameters) {
+	return type + ' ' + name + '(' + parameters + '){\n' + this.pre.join('\n') + 'return ' + this.s + ';\n}\n';
+};
+
 
 Expression.List.prototype.s = function (lang) {
 	// TODO: remove this (debug code)

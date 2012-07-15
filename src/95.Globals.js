@@ -497,6 +497,7 @@ Global['undefined'] = {
 };
 Global['sum'] = new Expression.Function({
 	default: function (x) {
+		throw('Sum not properly constructed yet.');
 		return 3;
 	}
 });
@@ -504,5 +505,5 @@ Global['sum']['_'] = function (eq) {
 	// start: 
 	var t = eq[0];
 	var v = eq[1];
-	return new Expression.Sum(t, v);
+	return new Expression.Sum.Real(t, v);
 }
