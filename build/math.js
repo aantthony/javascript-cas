@@ -196,7 +196,8 @@ _.Number = function(o) {
 		s = s.replace(/\\left\|/g, '\\abs(');
 		s = s.replace(/\\right\|/g, ')');
 		s = s.replace(/\\\:/g, ' ');
-		s = s.replace(/\\([a-z\%]+)/g, function(u, x) {
+		s = s.replace(/\\\%/g, '%');
+		s = s.replace(/\\([a-z]+)/g, function(u, x) {
 			var s = latexexprs[x];
 			return ' '+ ((s !== undefined) ? s : ('\\' + x));
 		});
@@ -218,12 +219,12 @@ _.Number = function(o) {
 			'circ': '∘',
 			//'sqrt': '\u221A',
 			'div': '/',
-			'%': '%',
+		//	'%': '%',
 			'gt': '>',
 			'left|': '\\abs(',
 			'right|': ')',
 			'times': '*',
-			':': '',
+		//	':': '',
 			'left(': '(',
 			'right)': ')',
 			'left[': '[',
@@ -1065,6 +1066,9 @@ _['^'] = function (x) {
 		}
 	}
 	return Expression.List([this, x], '^');
+};
+_['%'] = function (x) {
+	return Expression.List.Real([this, x], '%');
 };
 _.apply = function(operator, e) {
 	throw("Real.apply");
@@ -2908,7 +2912,9 @@ _['/'] = function (x) {
 	}
 	return this.realimag()['/'](x);
 };
-
+_['%'] = function (x) {
+	return Expression.List.Real([this, x], '%');
+};
 _['@-'] = function () {
 	if(this.operator === '@-') {
 		return this[0];
@@ -4276,6 +4282,10 @@ Expression.List.Real.prototype.s = function(lang) {
 		}
 		if(this.operator === '*') {
 			return c0.merge(c1, _(c0) + _(c1), p);
+		}
+	} else if (lang === 'x-shader/x-fragment') {
+		if(this.operator === '%') {
+			return c0.merge(c1, 'mod(' + _(c0) + ',' + _(c1) + ')', p);
 		}
 	}
 

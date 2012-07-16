@@ -162,6 +162,9 @@ _['^'] = function (x) {
 	}
 	return Expression.List([this, x], '^');
 };
+_['%'] = function (x) {
+	return Expression.List.Real([this, x], '%');
+};
 _.apply = function(operator, e) {
 	throw("Real.apply");
 	if (operator === ',') {

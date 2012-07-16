@@ -129,7 +129,9 @@ _['/'] = function (x) {
 	}
 	return this.realimag()['/'](x);
 };
-
+_['%'] = function (x) {
+	return Expression.List.Real([this, x], '%');
+};
 _['@-'] = function () {
 	if(this.operator === '@-') {
 		return this[0];

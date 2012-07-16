@@ -99,7 +99,8 @@ Language.build = function () {
 		s = s.replace(/\\left\|/g, '\\abs(');
 		s = s.replace(/\\right\|/g, ')');
 		s = s.replace(/\\\:/g, ' ');
-		s = s.replace(/\\([a-z\%]+)/g, function(u, x) {
+		s = s.replace(/\\\%/g, '%');
+		s = s.replace(/\\([a-z]+)/g, function(u, x) {
 			var s = latexexprs[x];
 			return ' '+ ((s !== undefined) ? s : ('\\' + x));
 		});
@@ -121,12 +122,12 @@ Language.build = function () {
 			'circ': '∘',
 			//'sqrt': '\u221A',
 			'div': '/',
-			'%': '%',
+		//	'%': '%',
 			'gt': '>',
 			'left|': '\\abs(',
 			'right|': ')',
 			'times': '*',
-			':': '',
+		//	':': '',
 			'left(': '(',
 			'right)': ')',
 			'left[': '[',

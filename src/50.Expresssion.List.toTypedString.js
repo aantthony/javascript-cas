@@ -461,6 +461,10 @@ Expression.List.Real.prototype.s = function(lang) {
 		if(this.operator === '*') {
 			return c0.merge(c1, _(c0) + _(c1), p);
 		}
+	} else if (lang === 'x-shader/x-fragment') {
+		if(this.operator === '%') {
+			return c0.merge(c1, 'mod(' + _(c0) + ',' + _(c1) + ')', p);
+		}
 	}
 
 	return c0.merge(c1, _(c0) + this.operator + _(c1), p);
