@@ -578,3 +578,6 @@ Expression.Vector.prototype.s = function(lang) {
 Expression.prototype.compile = function(x){
 	return this.s('text/javascript').compile(x);
 };
+Expression.prototype.glslFunction = function(type, name, args){
+	return this.s('x-shader/x-fragment').glslFunction(type, name, args)
+};

@@ -4399,7 +4399,11 @@ Expression.Vector.prototype.s = function(lang) {
 
 Expression.prototype.compile = function(x){
 	return this.s('text/javascript').compile(x);
-};//Use complex numbers by default
+};
+Expression.prototype.glslFunction = function(type, name, args){
+	return this.s('x-shader/x-fragment').glslFunction(type, name, args)
+};
+//Use complex numbers by default
 Expression.Numerical = Expression.Complex;
 //Expression.Numerical = Expression.NumericalReal;
 Global['sin'] = new Expression.Function({
