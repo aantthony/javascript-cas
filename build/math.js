@@ -3484,7 +3484,7 @@ _['+'] = function (x, op) {
 	var i;
 	var n = new Array(l);
 	for (i = 0; i < l; i++) {
-		n[i] = this[i][op || '+'](e[i]);
+		n[i] = this[i][op || '+'](x[i]);
 	}
 	return Expression.Vector(n);
 };
