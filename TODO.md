@@ -1,4 +1,5 @@
 ### Important
+FIX \sqrt{2} x and \sin2 x
 1. Fix up operators (identity, inverse, associative, commutative)
 - Plus.inverse = x -> -x
 - Plus.identity = One
