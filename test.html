@@ -1,4 +1,5 @@
 <script type="text/javascript" src="build/math.js"></script>
+<script type="text/javascript" src="extensions/M.Interval.js"></script>
 <script>
 function log(math) {
   document.body.appendChild(math.image());
@@ -23,5 +24,6 @@ function tree(x) {
 }
 M.Expression.List.Real.prototype.tree = function () {
 	return [this.operator].concat(Array.prototype.map.call(this, tree));
-}
+};
+console.log(M('\\sqrt{2} x'));
 </script>

@@ -1,20 +1,35 @@
+var CartSine = new Expression.Function({
+	default: function (x) {
+		if(x instanceof Expression.NumericalReal
+			|| x instanceof Expression.List.Real
+			|| x instanceof Expression.Symbol.Real) {
+			return new M.Expression.List.ComplexCartesian([Global.sin.default(x), Global.Zero]);
+		} else {
+			throw(new Error('Complex Sine Cartesian form not implemented yet.'));
+		}
+	}
+});
+
 Global['sin'] = new Expression.Function({
 	default: function(x) {
-		switch (x.constructor) {
-			case Expression.ComplexNumerical:
+		if(x instanceof Expression.NumericalReal) {
+			return new Expression.NumericalReal(Math.sin(x.value));
+		}
+		if(x instanceof Expression.List.Real || x instanceof Expression.Symbol.Real) {
+			return Expression.List.Real([Global.sin, x]);
+		}
+		return Expression.List([Global.sin, x]);
+		
+		/*
 				// sin(a+bi) = sin(a)cosh(b) + i cos(a)sinh(b)
 				var exp_b = Math.exp(x._imag);
 				var cosh_b = (exp_b + 1 / exp_b) / 2;
 				var sinh_b = (exp_b - 1 / exp_b) / 2;
 				return new Expression.ComplexNumerical(Math.sin(x._real) * cosh_b, Math.cos(x._real) * sinh_b);
-			case Expression.NumericalReal:
-				return new Expression.NumericalReal(Math.sin(x.value));
-			case Expression.List.Real:
-			case Expression.Symbol.Real:
-				return Expression.List.Real([Global.sin, x]);
-			default:
-				return Expression.List([Global.sin, x]);
-		}
+		*/
+	},
+	realimag: function () {
+		return CartSine;
 	},
 	'text/latex': '\\sin',
 	'text/javascript': 'Math.sin',
@@ -26,21 +41,14 @@ Global['sin'] = new Expression.Function({
 });
 Global['cos'] = new Expression.Function({
 	default: function(x) {
-		switch (x.constructor) {
-			case Expression.Complex:
-				// cos(a+bi) = sin(a)cosh(b) + i cos(a)sinh(b)
-				var exp_b = Math.exp(x._imag);
-				var cosh_b = (exp_b + 1 / exp_b) / 2;
-				var sinh_b = (exp_b - 1 / exp_b) / 2;
-				return new Expression.Complex(Math.cos(x._real) * cosh_b, -Math.sin(x._real) * sinh_b);
-			case Expression.NumericalReal:
-				return new Expression.NumericalReal(Math.cos(x));
-			case Expression.List.Real:
-			case Expression.Symbol.Real:
-				return Expression.List.Real([Global.cos, x]);
-			default:
-				return Expression.List([Global.cos, x]);
+		if(x instanceof Expression.NumericalReal) {
+			return new Expression.NumericalReal(Math.cos(x.value));
 		}
+		if(x instanceof Expression.List.Real || x instanceof Expression.Symbol.Real) {
+			return Expression.List.Real([Global.cos, x]);
+		}
+		return Expression.List([Global.cos, x]);
+		
 	},
 	derivative: Global.sin['@-'](),
 	'text/latex': '\\cos',
@@ -55,8 +63,8 @@ Global['cos'] = new Expression.Function({
 Global.sin.derivative = Global.cos;
 
 Global['tan'] = new Expression.Function({
-	symbolic: function () {
-		
+	symbolic: function (x) {
+		//
 	}
 });
 Global['log'] = new Expression.Function({

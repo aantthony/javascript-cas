@@ -320,6 +320,7 @@ _.Number = function(o) {
 			return undefined;
 		}
 		s = deLaTeX(s);
+		console.log(s);
 		var last_token_type = token_types.parenopen;
 		
 		//Stack of tokens for the shunting yard algorithm
@@ -400,7 +401,7 @@ _.Number = function(o) {
 				    }
 				}
 			}
-			
+			console.log(token.v);
 			//Comments from http://en.wikipedia.org/wiki/Shunting-yard_algorithm
 			// Read a token.
 			// If the token is a number, then add it to the output queue.
@@ -2095,6 +2096,7 @@ _['^'] = function (x) {
 	
 };
 _.reduce = function () {
+	// mutable.
 	function gcd(a, b) {
 		if(b === 0) {
 			return a;
@@ -2107,6 +2109,11 @@ _.reduce = function () {
 	if(this.b === 1) {
 		return new Expression.Integer(this.a);
 	}
+	if(this.b < 0) {
+		this.a = -this.a;
+		this.b = -this.b;
+	}
+	
 	return this;
 };
 Expression.Integer = function Integer(x) {
@@ -4186,37 +4193,53 @@ Expression.List.Real.prototype.s = function(lang) {
 				var c1 = this[1].s(lang);
 				return c1.update('exp(' + c1.s + ')');
 			}
-			if(this[1] instanceof Expression.Integer && this[1].a < 5) {
+			if(this[1] instanceof Expression.Integer && this[1].a < 5 && this[1].a > -1) {
 				var c0 = this[0].s(lang);
-				var cs = c0.s;
 				var j = language.precedence('*');
-				if (j > c0.p) {
-					cs = '(' + cs + ')';
+				
+				var pre = undefined;
+				var cs;
+				if(this[0] instanceof Expression.Symbol) {
+					cs = c0.s;
+				} else {
+					pre = 'float ' + cs + ' = ' + c0.s + ';';
+				
+					cs = c0.var();
+					
 				}
 				var s = cs;
 				var i;
 				for(i = 1; i < this[1].a; i++) {
 					s+= '*' + cs;
 				}
-				return c0.update('(' + s + ')');
+				return c0.update('(' + s + ')', Infinity, pre);
+			}
+			if(this[1] instanceof Expression.Integer && this[1].a == -1) {
+				var c0 = this[0].s(lang);
+				// todo: precedence not necessary
+				return c0.update('(1.0/(' + c0.s + '))');
 			}
 			if(this[1] instanceof Expression.Rational) {
 				// a^2, 3, 4, 5, 6 
-				var even = this[1].a %2 ? false : true;
+				// unsure it is gcd
+				this[1] = this[1].reduce();
+				var even = this[1].a % 2 ? false : true;
 				if(even) {
-
 					var c1 = this[1].s(lang);
 					var c0 = this[0].s(lang);
 					
 					return c0.merge(c1, 'pow(' + c0.s + ',' + c1.s  + ')');
 				} else {
 
+					// x^(a) = (x) * x^(a-1)
 					var c1 = this[1]['-'](Global.One).s(lang);
 					var c0 = this[0].s(lang);
+					console.log('ne');
 					
 					return c0.merge(c1, '((' + c0.s + ') * pow(' + c0.s + ',' + c1.s + '))');
 				}
-			} else if (this[0] instanceof Expression.NumericalReal) {
+			}
+			if (this[0] instanceof Expression.NumericalReal) {
 
 				// Neg or pos.
 				var c1 = this[1]['-'](Global.One).s(lang);
@@ -4224,14 +4247,13 @@ Expression.List.Real.prototype.s = function(lang) {
 				
 				return c0.merge(c1, '((' + c0.s + ') * pow(' + c0.s + ','+c1.s+'))');
 				
-			} else {
-
-				var c1 = this[1]['-'](Global.One).s(lang);
-				var c0 = this[0].s(lang);
-				
-				// Needs a new function, dependent on power.
-				return c0.merge(c1, '((' + c0.s + ') * pow(' + c0.s + ','+c1.s+'))');
 			}
+			var c1 = this[1]['-'](Global.One).s(lang);
+			var c0 = this[0].s(lang);
+				
+			// Needs a new function, dependent on power.
+			return c0.merge(c1, '((' + c0.s + ') * pow(' + c0.s + ','+c1.s+'))');
+			
 		} else if(lang === 'text/javascript') {
 			if(this[0] === Global.e) {
 				var c1 = this[1].s(lang);
@@ -4406,23 +4428,38 @@ Expression.prototype.glslFunction = function(type, name, args){
 //Use complex numbers by default
 Expression.Numerical = Expression.Complex;
 //Expression.Numerical = Expression.NumericalReal;
+var CartSine = new Expression.Function({
+	default: function (x) {
+		if(x instanceof Expression.NumericalReal
+			|| x instanceof Expression.List.Real
+			|| x instanceof Expression.Symbol.Real) {
+			return new M.Expression.List.ComplexCartesian([Global.sin.default(x), Global.Zero]);
+		} else {
+			throw(new Error('Complex Sine Cartesian form not implemented yet.'));
+		}
+	}
+});
+
 Global['sin'] = new Expression.Function({
 	default: function(x) {
-		switch (x.constructor) {
-			case Expression.ComplexNumerical:
+		if(x instanceof Expression.NumericalReal) {
+			return new Expression.NumericalReal(Math.sin(x.value));
+		}
+		if(x instanceof Expression.List.Real || x instanceof Expression.Symbol.Real) {
+			return Expression.List.Real([Global.sin, x]);
+		}
+		return Expression.List([Global.sin, x]);
+		
+		/*
 				// sin(a+bi) = sin(a)cosh(b) + i cos(a)sinh(b)
 				var exp_b = Math.exp(x._imag);
 				var cosh_b = (exp_b + 1 / exp_b) / 2;
 				var sinh_b = (exp_b - 1 / exp_b) / 2;
 				return new Expression.ComplexNumerical(Math.sin(x._real) * cosh_b, Math.cos(x._real) * sinh_b);
-			case Expression.NumericalReal:
-				return new Expression.NumericalReal(Math.sin(x.value));
-			case Expression.List.Real:
-			case Expression.Symbol.Real:
-				return Expression.List.Real([Global.sin, x]);
-			default:
-				return Expression.List([Global.sin, x]);
-		}
+		*/
+	},
+	realimag: function () {
+		return CartSine;
 	},
 	'text/latex': '\\sin',
 	'text/javascript': 'Math.sin',
@@ -4434,21 +4471,14 @@ Global['sin'] = new Expression.Function({
 });
 Global['cos'] = new Expression.Function({
 	default: function(x) {
-		switch (x.constructor) {
-			case Expression.Complex:
-				// cos(a+bi) = sin(a)cosh(b) + i cos(a)sinh(b)
-				var exp_b = Math.exp(x._imag);
-				var cosh_b = (exp_b + 1 / exp_b) / 2;
-				var sinh_b = (exp_b - 1 / exp_b) / 2;
-				return new Expression.Complex(Math.cos(x._real) * cosh_b, -Math.sin(x._real) * sinh_b);
-			case Expression.NumericalReal:
-				return new Expression.NumericalReal(Math.cos(x));
-			case Expression.List.Real:
-			case Expression.Symbol.Real:
-				return Expression.List.Real([Global.cos, x]);
-			default:
-				return Expression.List([Global.cos, x]);
+		if(x instanceof Expression.NumericalReal) {
+			return new Expression.NumericalReal(Math.cos(x.value));
 		}
+		if(x instanceof Expression.List.Real || x instanceof Expression.Symbol.Real) {
+			return Expression.List.Real([Global.cos, x]);
+		}
+		return Expression.List([Global.cos, x]);
+		
 	},
 	derivative: Global.sin['@-'](),
 	'text/latex': '\\cos',
@@ -4463,8 +4493,8 @@ Global['cos'] = new Expression.Function({
 Global.sin.derivative = Global.cos;
 
 Global['tan'] = new Expression.Function({
-	symbolic: function () {
-		
+	symbolic: function (x) {
+		//
 	}
 });
 Global['log'] = new Expression.Function({

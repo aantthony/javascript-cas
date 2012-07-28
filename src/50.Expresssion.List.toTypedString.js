@@ -364,37 +364,53 @@ Expression.List.Real.prototype.s = function(lang) {
 				var c1 = this[1].s(lang);
 				return c1.update('exp(' + c1.s + ')');
 			}
-			if(this[1] instanceof Expression.Integer && this[1].a < 5) {
+			if(this[1] instanceof Expression.Integer && this[1].a < 5 && this[1].a > -1) {
 				var c0 = this[0].s(lang);
-				var cs = c0.s;
 				var j = language.precedence('*');
-				if (j > c0.p) {
-					cs = '(' + cs + ')';
+				
+				var pre = undefined;
+				var cs;
+				if(this[0] instanceof Expression.Symbol) {
+					cs = c0.s;
+				} else {
+					pre = 'float ' + cs + ' = ' + c0.s + ';';
+				
+					cs = c0.var();
+					
 				}
 				var s = cs;
 				var i;
 				for(i = 1; i < this[1].a; i++) {
 					s+= '*' + cs;
 				}
-				return c0.update('(' + s + ')');
+				return c0.update('(' + s + ')', Infinity, pre);
+			}
+			if(this[1] instanceof Expression.Integer && this[1].a == -1) {
+				var c0 = this[0].s(lang);
+				// todo: precedence not necessary
+				return c0.update('(1.0/(' + c0.s + '))');
 			}
 			if(this[1] instanceof Expression.Rational) {
 				// a^2, 3, 4, 5, 6 
-				var even = this[1].a %2 ? false : true;
+				// unsure it is gcd
+				this[1] = this[1].reduce();
+				var even = this[1].a % 2 ? false : true;
 				if(even) {
-
 					var c1 = this[1].s(lang);
 					var c0 = this[0].s(lang);
 					
 					return c0.merge(c1, 'pow(' + c0.s + ',' + c1.s  + ')');
 				} else {
 
+					// x^(a) = (x) * x^(a-1)
 					var c1 = this[1]['-'](Global.One).s(lang);
 					var c0 = this[0].s(lang);
+					console.log('ne');
 					
 					return c0.merge(c1, '((' + c0.s + ') * pow(' + c0.s + ',' + c1.s + '))');
 				}
-			} else if (this[0] instanceof Expression.NumericalReal) {
+			}
+			if (this[0] instanceof Expression.NumericalReal) {
 
 				// Neg or pos.
 				var c1 = this[1]['-'](Global.One).s(lang);
@@ -402,14 +418,13 @@ Expression.List.Real.prototype.s = function(lang) {
 				
 				return c0.merge(c1, '((' + c0.s + ') * pow(' + c0.s + ','+c1.s+'))');
 				
-			} else {
-
-				var c1 = this[1]['-'](Global.One).s(lang);
-				var c0 = this[0].s(lang);
-				
-				// Needs a new function, dependent on power.
-				return c0.merge(c1, '((' + c0.s + ') * pow(' + c0.s + ','+c1.s+'))');
 			}
+			var c1 = this[1]['-'](Global.One).s(lang);
+			var c0 = this[0].s(lang);
+				
+			// Needs a new function, dependent on power.
+			return c0.merge(c1, '((' + c0.s + ') * pow(' + c0.s + ','+c1.s+'))');
+			
 		} else if(lang === 'text/javascript') {
 			if(this[0] === Global.e) {
 				var c1 = this[1].s(lang);

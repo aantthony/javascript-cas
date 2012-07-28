@@ -129,6 +129,7 @@ _['^'] = function (x) {
 	
 };
 _.reduce = function () {
+	// mutable.
 	function gcd(a, b) {
 		if(b === 0) {
 			return a;
@@ -141,5 +142,10 @@ _.reduce = function () {
 	if(this.b === 1) {
 		return new Expression.Integer(this.a);
 	}
+	if(this.b < 0) {
+		this.a = -this.a;
+		this.b = -this.b;
+	}
+	
 	return this;
 };

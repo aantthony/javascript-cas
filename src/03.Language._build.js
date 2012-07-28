@@ -223,6 +223,7 @@ Language.build = function () {
 			return undefined;
 		}
 		s = deLaTeX(s);
+		console.log(s);
 		var last_token_type = token_types.parenopen;
 		
 		//Stack of tokens for the shunting yard algorithm
@@ -303,7 +304,7 @@ Language.build = function () {
 				    }
 				}
 			}
-			
+			console.log(token.v);
 			//Comments from http://en.wikipedia.org/wiki/Shunting-yard_algorithm
 			// Read a token.
 			// If the token is a number, then add it to the output queue.
