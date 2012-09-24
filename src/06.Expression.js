@@ -39,6 +39,7 @@ _['='] = function (x) {
 _['!='] = function (x) {
 	return new Expression.Statement(this, x, '!=');
 };
+
 _['>'] = function (x) {
 	return new Expression.Statement(this, x, '>');
 };

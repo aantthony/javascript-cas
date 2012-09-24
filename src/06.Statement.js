@@ -1,9 +1,36 @@
+Expression.TruthValue = function TruthValue(v) {
+
+};
+
+_ = Expression.TruthValue.prototype = Object.create(Expression.prototype);
+
+Expression.True = new Expression.TruthValue();
+Expression.False = new Expression.TruthValue();
+
+//Only difference:
+Expression.False['~'] = function () {
+	return Expression.True;
+};
+
+
+_['~'] = function () {
+	return Expression.False;
+};
+_['V'] = function (e) {
+	return e === Expression.True ? e : this;
+};
+_['^'] = function (e) {
+	return e === Expression.True ? this : e;
+};
+
+
 Expression.Statement = function (x, y, operator) {
 	var arr = [x,y];
 	arr.operator = operator;
 	arr.__proto__ = Expression.Statement.prototype;
 	return arr;
 };
+//todo: truth value type?
 _ = Expression.Statement.prototype = Object.create(Expression.prototype);
 _.constructor = Expression.Statement;
 _['='] = function () {

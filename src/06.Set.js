@@ -49,3 +49,25 @@ _.add = function (x) {
 _.map = function (f) {
 	return Set(Array.prototype.map.call(this, f));
 };
+_.compose = function (set) {
+	
+};
+_.cardinality = function () {
+	return this.length;
+};
+
+function InfiniteSet(x) {
+	
+}
+InfiniteSet.aleph_0 = {
+	'>': function (x) {
+		if(x instanceof Expression.NumericalReal) {
+			return Expression.True;
+		}
+	}
+};
+_ = InfiniteSet.prototype = Object.create(Set.prototype);
+
+_.cardinality = function () {
+	return InfiniteSet.cardinality;
+};

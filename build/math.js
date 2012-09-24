@@ -95,7 +95,12 @@ _.Number = function(o) {
 		return new Expression.Rational(n, d).reduce();
 	}
 	return predefined[o] || new Expression.NumericalReal(Number(o));
-};Language.build = function () {
+};/*
+Todo:
+ * Don't evaluate/compute until fully lexed (for parsing ambiguous expressions)
+*/
+
+Language.build = function () {
 	function deLaTeX(s) {
 		//Converts a latex format equation into a text based one, 
 		//where multi-character names keep a preceeding and required \ character
@@ -290,6 +295,9 @@ _.Number = function(o) {
 			},
 			function number(x) {
 				//Not correct: e.g, 3.2.5
+				if(x === '.') {
+					return false;
+				}
 				return nummustbe.indexOf(x[x.length - 1]) !== -1;
 			},
 			function operator(x) {
@@ -320,7 +328,6 @@ _.Number = function(o) {
 			return undefined;
 		}
 		s = deLaTeX(s);
-		console.log(s);
 		var last_token_type = token_types.parenopen;
 		
 		//Stack of tokens for the shunting yard algorithm
@@ -401,7 +408,7 @@ _.Number = function(o) {
 				    }
 				}
 			}
-			console.log(token.v);
+			//console.log(token.v);
 			//Comments from http://en.wikipedia.org/wiki/Shunting-yard_algorithm
 			// Read a token.
 			// If the token is a number, then add it to the output queue.
@@ -661,6 +668,7 @@ _['='] = function (x) {
 _['!='] = function (x) {
 	return new Expression.Statement(this, x, '!=');
 };
+
 _['>'] = function (x) {
 	return new Expression.Statement(this, x, '>');
 };
@@ -860,12 +868,62 @@ _.add = function (x) {
 };
 _.map = function (f) {
 	return Set(Array.prototype.map.call(this, f));
-};Expression.Statement = function (x, y, operator) {
+};
+_.compose = function (set) {
+	
+};
+_.cardinality = function () {
+	return this.length;
+};
+
+function InfiniteSet(x) {
+	
+}
+InfiniteSet.aleph_0 = {
+	'>': function (x) {
+		if(x instanceof Expression.NumericalReal) {
+			return Expression.True;
+		}
+	}
+};
+_ = InfiniteSet.prototype = Object.create(Set.prototype);
+
+_.cardinality = function () {
+	return InfiniteSet.cardinality;
+};
+Expression.TruthValue = function TruthValue(v) {
+
+};
+
+_ = Expression.TruthValue.prototype = Object.create(Expression.prototype);
+
+Expression.True = new Expression.TruthValue();
+Expression.False = new Expression.TruthValue();
+
+//Only difference:
+Expression.False['~'] = function () {
+	return Expression.True;
+};
+
+
+_['~'] = function () {
+	return Expression.False;
+};
+_['V'] = function (e) {
+	return e === Expression.True ? e : this;
+};
+_['^'] = function (e) {
+	return e === Expression.True ? this : e;
+};
+
+
+Expression.Statement = function (x, y, operator) {
 	var arr = [x,y];
 	arr.operator = operator;
 	arr.__proto__ = Expression.Statement.prototype;
 	return arr;
 };
+//todo: truth value type?
 _ = Expression.Statement.prototype = Object.create(Expression.prototype);
 _.constructor = Expression.Statement;
 _['='] = function () {
@@ -900,7 +958,7 @@ _.simplify = function() {
 	return this;
 };
 _.differentiate = function() {
-	return M.Global.Zero;
+	return Global.Zero;
 };
 _.default = function (x){
 	return this['*'](x);
@@ -1776,7 +1834,11 @@ _['^'] = function (x) {
 		throw console.error ('Unknown Type for NumericalReal ^', x, x instanceof Expression.NumericalReal);
 	}
 };
-
+_['>'] = function (x) {
+	if (x instanceof Expression.NumericalReal) {
+		return this.value > x.value ? Expression.True : Expression.False;
+	}
+};
 _.apply = function(operator, x) {
 	switch (operator){
 		case ',':
@@ -3427,14 +3489,14 @@ Expression.List.prototype.lim = function (x, y) {
 _ = Expression.Vector.prototype = Object.create(Expression.prototype);
 _.constructor = Expression.Vector;
 _[','] = function (x) {
+	
 	if(x instanceof Expression.Statement) {
 		// This is a domain restriction, (of a vector!)
 		// The result is a quantity and assertion
 		// or perhaps it is a quantity defined only when the statement is true?
 		return new Expression.Conditional(x, this, undefined);
 	}
-	this[this.length] = x;
-	return this;
+	return Expression.Vector(Array.prototype.concat.call(this, x));
 };
 _.differentiate = function (x) {
 	return Expression.Vector(Array.prototype.map.call(this, function (c) {
@@ -3470,7 +3532,7 @@ _.default = function (x) {
 		var sum = Global.Zero;
 		for (i = 0; i < l; i++) {
 			sum = sum['+'](
-				(this[i]) ['*'] (x[i])
+				(this[i]).default(x[i])
 			);
 		}
 		return sum;
@@ -3478,7 +3540,7 @@ _.default = function (x) {
 		
 	} else {
 		return Expression.Vector(Array.prototype.map.call(this, function (c) {
-			return c['*'](x);
+			return c.default(x);
 		}));
 	}
 };
@@ -3853,6 +3915,7 @@ var javascript = {
 };
 
 
+
 var exportLanguages={
 	'text/javascript': function (o,x){
 		function _(x){
@@ -4166,6 +4229,9 @@ Expression.List.Real.prototype.s = function(lang) {
 				var t_s = c1s.map(function (e){
 					return e.s;
 				});
+				if(this[0] === Global.atan) {
+					t_s = t_s.reverse();
+				}
 				var c0_s = c0.s;
 				for (i = 0; i < c1s.length; i++) {
 					c0.merge(c1s[i]);
@@ -4234,7 +4300,6 @@ Expression.List.Real.prototype.s = function(lang) {
 					// x^(a) = (x) * x^(a-1)
 					var c1 = this[1]['-'](Global.One).s(lang);
 					var c0 = this[0].s(lang);
-					console.log('ne');
 					
 					return c0.merge(c1, '((' + c0.s + ') * pow(' + c0.s + ',' + c1.s + '))');
 				}
@@ -4418,6 +4483,13 @@ Expression.Vector.prototype.s = function(lang) {
 };
 
 
+Expression.True.s = function (lang) {
+	return new Code('true');
+};
+
+Expression.False.s = function (lang) {
+	return new Code('false');
+};
 
 Expression.prototype.compile = function(x){
 	return this.s('text/javascript').compile(x);

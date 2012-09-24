@@ -24,6 +24,7 @@ var javascript = {
 };
 
 
+
 var exportLanguages={
 	'text/javascript': function (o,x){
 		function _(x){
@@ -337,6 +338,9 @@ Expression.List.Real.prototype.s = function(lang) {
 				var t_s = c1s.map(function (e){
 					return e.s;
 				});
+				if(this[0] === Global.atan) {
+					t_s = t_s.reverse();
+				}
 				var c0_s = c0.s;
 				for (i = 0; i < c1s.length; i++) {
 					c0.merge(c1s[i]);
@@ -405,7 +409,6 @@ Expression.List.Real.prototype.s = function(lang) {
 					// x^(a) = (x) * x^(a-1)
 					var c1 = this[1]['-'](Global.One).s(lang);
 					var c0 = this[0].s(lang);
-					console.log('ne');
 					
 					return c0.merge(c1, '((' + c0.s + ') * pow(' + c0.s + ',' + c1.s + '))');
 				}
@@ -589,6 +592,13 @@ Expression.Vector.prototype.s = function(lang) {
 };
 
 
+Expression.True.s = function (lang) {
+	return new Code('true');
+};
+
+Expression.False.s = function (lang) {
+	return new Code('false');
+};
 
 Expression.prototype.compile = function(x){
 	return this.s('text/javascript').compile(x);

@@ -6,14 +6,14 @@ Expression.Vector = function Vector(e) {
 _ = Expression.Vector.prototype = Object.create(Expression.prototype);
 _.constructor = Expression.Vector;
 _[','] = function (x) {
+	
 	if(x instanceof Expression.Statement) {
 		// This is a domain restriction, (of a vector!)
 		// The result is a quantity and assertion
 		// or perhaps it is a quantity defined only when the statement is true?
 		return new Expression.Conditional(x, this, undefined);
 	}
-	this[this.length] = x;
-	return this;
+	return Expression.Vector(Array.prototype.concat.call(this, x));
 };
 _.differentiate = function (x) {
 	return Expression.Vector(Array.prototype.map.call(this, function (c) {
@@ -49,7 +49,7 @@ _.default = function (x) {
 		var sum = Global.Zero;
 		for (i = 0; i < l; i++) {
 			sum = sum['+'](
-				(this[i]) ['*'] (x[i])
+				(this[i]).default(x[i])
 			);
 		}
 		return sum;
@@ -57,7 +57,7 @@ _.default = function (x) {
 		
 	} else {
 		return Expression.Vector(Array.prototype.map.call(this, function (c) {
-			return c['*'](x);
+			return c.default(x);
 		}));
 	}
 };

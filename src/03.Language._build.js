@@ -1,3 +1,8 @@
+/*
+Todo:
+ * Don't evaluate/compute until fully lexed (for parsing ambiguous expressions)
+*/
+
 Language.build = function () {
 	function deLaTeX(s) {
 		//Converts a latex format equation into a text based one, 
@@ -193,6 +198,9 @@ Language.build = function () {
 			},
 			function number(x) {
 				//Not correct: e.g, 3.2.5
+				if(x === '.') {
+					return false;
+				}
 				return nummustbe.indexOf(x[x.length - 1]) !== -1;
 			},
 			function operator(x) {
@@ -223,7 +231,6 @@ Language.build = function () {
 			return undefined;
 		}
 		s = deLaTeX(s);
-		console.log(s);
 		var last_token_type = token_types.parenopen;
 		
 		//Stack of tokens for the shunting yard algorithm
@@ -304,7 +311,7 @@ Language.build = function () {
 				    }
 				}
 			}
-			console.log(token.v);
+			//console.log(token.v);
 			//Comments from http://en.wikipedia.org/wiki/Shunting-yard_algorithm
 			// Read a token.
 			// If the token is a number, then add it to the output queue.

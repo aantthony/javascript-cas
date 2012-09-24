@@ -6,7 +6,7 @@ _.simplify = function() {
 	return this;
 };
 _.differentiate = function() {
-	return M.Global.Zero;
+	return Global.Zero;
 };
 _.default = function (x){
 	return this['*'](x);

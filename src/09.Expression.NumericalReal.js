@@ -183,7 +183,11 @@ _['^'] = function (x) {
 		throw console.error ('Unknown Type for NumericalReal ^', x, x instanceof Expression.NumericalReal);
 	}
 };
-
+_['>'] = function (x) {
+	if (x instanceof Expression.NumericalReal) {
+		return this.value > x.value ? Expression.True : Expression.False;
+	}
+};
 _.apply = function(operator, x) {
 	switch (operator){
 		case ',':

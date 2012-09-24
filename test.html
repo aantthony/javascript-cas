@@ -10,6 +10,11 @@ M.Expression.prototype.glsl = function () {
 	return this.s('x-shader/x-fragment').s;
 }
 c.x = M('x', c);
+c.y = M('y', c);
+c.z = M('z', c);
+c.r = M('x,y,z', c);
+c.nabla = M('\\frac{d}{dr}', c);
+
 M.Expression.prototype.tree = function () {
 	return this;
 };
