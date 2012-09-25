@@ -553,7 +553,6 @@ Language.build = function () {
 			//who gives?
 			return rpn_stack;
 		}
-		console.log('rpn:', rpn_stack);
 		function evaluate(x) {
 			if(x === undefined) {
 				return;
