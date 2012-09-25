@@ -29,7 +29,8 @@
     console.warn(err.replace(/^Error\: /, 'Deprecated: '));
 }
 
-var startTime = new Date();function Language(language) {
+var startTime = new Date();var crossProduct = String.fromCharCode(215);
+function Language(language) {
 	var operators = {};
 	var op_precedence = 0;
 	
@@ -228,7 +229,7 @@ Language.build = function () {
 			'gt': '>',
 			'left|': '\\abs(',
 			'right|': ')',
-			'times': '*',
+			'times': crossProduct,
 		//	':': '',
 			'left(': '(',
 			'right)': ')',
@@ -252,7 +253,7 @@ Language.build = function () {
     		symbol: 7
 		},
 		nummustbe = '1234567890.',
-		operator_str_list = ['+', '-', '@', '*', '/', '^', '++', '=', '!', ',', '@-', '@+', '_', '#', '<', '<=', '>', '>=', '%'],
+		operator_str_list = ['+', '-', '@', '*', '/', '^', '++', '=', '!', ',', '@-', '@+', '_', '#', '<', '<=', '>', '>=', '%', '.', crossProduct],
 		parenopenmustbe = '([{',
 		parenclosemustbe = '}\'])',
 		varcannotbe = operator_str_list.join('') + parenopenmustbe + parenclosemustbe + nummustbe,
@@ -365,13 +366,19 @@ Language.build = function () {
 				} else {
 					// Pop the top n values from the stack.
 					var spliced = rpn_stack.splice( - n, n);
-					//var values = ExpressionWithArray(spliced, token.v);
+					////var values = ExpressionWithArray(spliced, token.v);
 					// TODO: check non-binary operators
-					// var values = spliced[0].apply(token.v, spliced.slice(1)[0]);
-					var values = spliced[0][token.v](spliced.splice(1)[0]);
+					//// var values = spliced[0].apply(token.v, spliced.slice(1)[0]);
+					
+					
+					//var values = spliced[0][token.v](spliced.splice(1)[0]);
+					
+					
 					// Evaluate the operator, with the values as arguments.
-					//var evaled=(' ('+values[0]+token.v+values[1]+')');
+					// //var evaled=(' ('+values[0]+token.v+values[1]+')');
 					// Push the returned results, if any, back onto the stack.
+					var values = [spliced[0], spliced.splice(1)[0]];
+					values.operator = token.v;
 					rpn_stack.push(values);
 				}
 			}
@@ -546,12 +553,22 @@ Language.build = function () {
 			//who gives?
 			return rpn_stack;
 		}
-		
+		console.log('rpn:', rpn_stack);
+		function evaluate(x) {
+			if(x === undefined) {
+				return;
+			}
+			if (x.__proto__ === Array.prototype) {
+				return evaluate(x[0])[x.operator](evaluate(x[1]));
+			}
+			return x;
+		}
+		var result = evaluate(rpn_stack[0]);
 		// Free variables: (these could be used to quickly check which variables an equation has).
 		// Perhaps every expression should have such a context, but maybe that would take too much ram.
-		rpn_stack[0].unbound = free_context;
-		rpn_stack[0].bound = bound_context;
-		return rpn_stack[0];
+		result.unbound = free_context;
+		result.bound = bound_context;
+		return result;
 	};
 };//Language.prototype.parse = function(str, context, output) {
 //	output.push(str);
@@ -582,6 +599,7 @@ var language = new Language([
 	[['-'], L],
 	[['∫', '∑'], R, 1],
 	[['*', '%'], R],
+	[crossProduct, R],
 	[['@+', '@-', '@±'], R, 1], //unary plus/minus
 	[['¬'], L, 1],
 	['default', R, 2], //I changed this to R for 5sin(t)
@@ -690,6 +708,10 @@ _['*'] = function (x) {
 		return this;
 	}
 	return new Expression.List([this, x], '*');
+};
+
+_[crossProduct] = function (x) {
+	return this['*'](x);
 };
 _.default = function (x) {
 	return this['*'](x);
@@ -3496,7 +3518,7 @@ _[','] = function (x) {
 		// or perhaps it is a quantity defined only when the statement is true?
 		return new Expression.Conditional(x, this, undefined);
 	}
-	return Expression.Vector(Array.prototype.concat.call(this, x));
+	return Expression.Vector(Array.prototype.concat.call(this, [x]));
 };
 _.differentiate = function (x) {
 	return Expression.Vector(Array.prototype.map.call(this, function (c) {
@@ -3516,11 +3538,12 @@ _.cross = function (x) {
 	*/
 	
 	return new Expression.Vector([
-		this[1]['*'](x[2])['-'](this[2]['*'](x[1])),
-		this[2]['*'](x[0])['-'](this[0]['*'](x[2])),
-		this[0]['*'](x[1])['-'](this[1]['*'](x[0]))
+		this[1].default(x[2])['-'](this[2].default(x[1])),
+		this[2].default(x[0])['-'](this[0].default(x[2])),
+		this[0].default(x[1])['-'](this[1].default(x[0]))
 	]);
 };
+_[crossProduct] = _.cross;
 _.default = function (x) {
 	var l = this.length;
 	if (x instanceof Expression.Vector) {

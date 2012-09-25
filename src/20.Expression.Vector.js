@@ -13,7 +13,7 @@ _[','] = function (x) {
 		// or perhaps it is a quantity defined only when the statement is true?
 		return new Expression.Conditional(x, this, undefined);
 	}
-	return Expression.Vector(Array.prototype.concat.call(this, x));
+	return Expression.Vector(Array.prototype.concat.call(this, [x]));
 };
 _.differentiate = function (x) {
 	return Expression.Vector(Array.prototype.map.call(this, function (c) {
@@ -33,11 +33,12 @@ _.cross = function (x) {
 	*/
 	
 	return new Expression.Vector([
-		this[1]['*'](x[2])['-'](this[2]['*'](x[1])),
-		this[2]['*'](x[0])['-'](this[0]['*'](x[2])),
-		this[0]['*'](x[1])['-'](this[1]['*'](x[0]))
+		this[1].default(x[2])['-'](this[2].default(x[1])),
+		this[2].default(x[0])['-'](this[0].default(x[2])),
+		this[0].default(x[1])['-'](this[1].default(x[0]))
 	]);
 };
+_[crossProduct] = _.cross;
 _.default = function (x) {
 	var l = this.length;
 	if (x instanceof Expression.Vector) {

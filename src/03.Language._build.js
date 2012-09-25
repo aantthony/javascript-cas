@@ -131,7 +131,7 @@ Language.build = function () {
 			'gt': '>',
 			'left|': '\\abs(',
 			'right|': ')',
-			'times': '*',
+			'times': crossProduct,
 		//	':': '',
 			'left(': '(',
 			'right)': ')',
@@ -155,7 +155,7 @@ Language.build = function () {
     		symbol: 7
 		},
 		nummustbe = '1234567890.',
-		operator_str_list = ['+', '-', '@', '*', '/', '^', '++', '=', '!', ',', '@-', '@+', '_', '#', '<', '<=', '>', '>=', '%'],
+		operator_str_list = ['+', '-', '@', '*', '/', '^', '++', '=', '!', ',', '@-', '@+', '_', '#', '<', '<=', '>', '>=', '%', '.', crossProduct],
 		parenopenmustbe = '([{',
 		parenclosemustbe = '}\'])',
 		varcannotbe = operator_str_list.join('') + parenopenmustbe + parenclosemustbe + nummustbe,
@@ -268,13 +268,19 @@ Language.build = function () {
 				} else {
 					// Pop the top n values from the stack.
 					var spliced = rpn_stack.splice( - n, n);
-					//var values = ExpressionWithArray(spliced, token.v);
+					////var values = ExpressionWithArray(spliced, token.v);
 					// TODO: check non-binary operators
-					// var values = spliced[0].apply(token.v, spliced.slice(1)[0]);
-					var values = spliced[0][token.v](spliced.splice(1)[0]);
+					//// var values = spliced[0].apply(token.v, spliced.slice(1)[0]);
+					
+					
+					//var values = spliced[0][token.v](spliced.splice(1)[0]);
+					
+					
 					// Evaluate the operator, with the values as arguments.
-					//var evaled=(' ('+values[0]+token.v+values[1]+')');
+					// //var evaled=(' ('+values[0]+token.v+values[1]+')');
 					// Push the returned results, if any, back onto the stack.
+					var values = [spliced[0], spliced.splice(1)[0]];
+					values.operator = token.v;
 					rpn_stack.push(values);
 				}
 			}
@@ -449,11 +455,20 @@ Language.build = function () {
 			//who gives?
 			return rpn_stack;
 		}
-		
+		function evaluate(x) {
+			if(x === undefined) {
+				return;
+			}
+			if (x.__proto__ === Array.prototype) {
+				return evaluate(x[0])[x.operator](evaluate(x[1]));
+			}
+			return x;
+		}
+		var result = evaluate(rpn_stack[0]);
 		// Free variables: (these could be used to quickly check which variables an equation has).
 		// Perhaps every expression should have such a context, but maybe that would take too much ram.
-		rpn_stack[0].unbound = free_context;
-		rpn_stack[0].bound = bound_context;
-		return rpn_stack[0];
+		result.unbound = free_context;
+		result.bound = bound_context;
+		return result;
 	};
 };

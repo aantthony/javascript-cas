@@ -21,6 +21,7 @@ var language = new Language([
 	[['-'], L],
 	[['∫', '∑'], R, 1],
 	[['*', '%'], R],
+	[crossProduct, R],
 	[['@+', '@-', '@±'], R, 1], //unary plus/minus
 	[['¬'], L, 1],
 	['default', R, 2], //I changed this to R for 5sin(t)

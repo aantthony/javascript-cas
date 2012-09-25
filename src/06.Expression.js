@@ -62,6 +62,10 @@ _['*'] = function (x) {
 	}
 	return new Expression.List([this, x], '*');
 };
+
+_[crossProduct] = function (x) {
+	return this['*'](x);
+};
 _.default = function (x) {
 	return this['*'](x);
 };

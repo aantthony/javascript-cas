@@ -1,3 +1,4 @@
+var crossProduct = String.fromCharCode(215);
 function Language(language) {
 	var operators = {};
 	var op_precedence = 0;
