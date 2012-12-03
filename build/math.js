@@ -96,543 +96,435 @@ _.Number = function(o) {
 		return new Expression.Rational(n, d).reduce();
 	}
 	return predefined[o] || new Expression.NumericalReal(Number(o));
-};/*
-Todo:
- * Don't evaluate/compute until fully lexed (for parsing ambiguous expressions)
-*/
+};var Construct = {};
 
-Language.build = function () {
-	function deLaTeX(s) {
-		//Converts a latex format equation into a text based one, 
-		//where multi-character names keep a preceeding and required \ character
-
-		//A mess!!!!
-		var i, l = s.length;
-		//indexOf is BAD!!! It is fine only when we only have one type of \expr
-		while ((i = s.indexOf('\\begin')) != -1) {
-			var n = s.indexOf('}', i+7);
-
-			var type = s.substring(i+7,n);
-
-			var end_string = '\\end{'+type+'}';
-
-			var b = s.indexOf(end_string, n);
-			var x = s.substring(n+1,b);
-			switch (type) {
-				case 'matrix':
-
-					x = x.replace(/\\\:/g, ',').replace(/\\\\/g, ';');
-					s = s.split('');
-
-					s[i] = '[';
-					s.splice(b, end_string.length - 1);
-					s[b] = ']';
-					s.splice(n + 1, b - n - 1, x);
-					s.splice(i + 1, n + 1 - i - 1);
-					s = s.join('');
-					break;
-				default:
-					throw(new SyntaxError('Latex \\begin{' + type + '} block not understood.'))
-			}
-		}
-		while ((i = s.indexOf('\\text')) !== -1) {
-			var n = s.indexOf('}', i + 6);
-			var text = s.substring(i + 6, n);
-			
-			s = s.split('');
-			
-			s.splice(i, n - i + 1,'\\' + text);
-			s = s.join('');
-		}
-		while ((i = s.indexOf('\\frac')) !== -1) {
-			var n, good = false;
-			var deep = 0;
-			for(n = i + 5; n < l; n++){
-				if (s[n] === '{') {
-					deep++;
-				} else if(s[n] === '}') {	
-					deep--;
-					if (!deep) {
-						good = true;
-						break;
-					}
-				}
-			}
-			if (!good) {
-				throw (new SyntaxError(msg.latexParse));
-			}
-			good = false;
-			
-			if (s[n+1] !== '{') {
-				throw (new SyntaxError('Unexpected \'' + s[n+1] + '\' between \\frac operands'));
-			}
-			
-			var i2 = n + 1;
-			var n2;
-			for (n2 = i2; n2 < l; n2++) {
-				if (s[n2] === '{') {
-					deep++;
-				} else if (s[n2] === '}') {
-					
-					deep--;
-					if (!deep) {
-						good = true;
-						break;
-					} else {
-						
-					}
-				}
-			}
-			if (!good) {
-				throw (new SyntaxError(msg.latexParse));
-			}
-			s = s.split('');
-			
-			//TODO: bad idea. maybe fix requiresParen...
-			s[i+5] = '((';
-			s[n] = ')';
-			s[i2] = '(';
-			s[n2] = '))';
-			s.splice(i2, 0, '/');
-			s.splice(i, 5);
-			s = s.join('');
-			
-		}
-		s = s.replace(/\^([^\{\(])/g, '^{$1}');
-		s = s.replace(/\\left\|/g, '\\abs(');
-		s = s.replace(/\\right\|/g, ')');
-		s = s.replace(/\\\:/g, ' ');
-		s = s.replace(/\\\%/g, '%');
-		s = s.replace(/\\([a-z]+)/g, function(u, x) {
-			var s = latexexprs[x];
-			return ' '+ ((s !== undefined) ? s : ('\\' + x));
-		});
-
-		//Naughty:
-		s = s.replace(/[\[\{]/g, '(');
-		s = s.replace(/[\]\}]/g, ')');
-
-		return s;
+Construct.Number = function (o) {
+	var predefined = {
+		'0': Global.Zero,
+		'1': Global.One
+	};
+	if(predefined[o]) {
+		return predefined[o];
 	}
-	var latexexprs = {
-			'cdot': '*',
-			'vee': '∨',
-			'wedge': '&&',
-			'neg': '¬',
-			'left': '',
-			'right': '',
-			'pm': '±',
-			'circ': '∘',
-			//'sqrt': '\u221A',
-			'div': '/',
-		//	'%': '%',
-			'gt': '>',
-			'left|': '\\abs(',
-			'right|': ')',
-			'times': crossProduct,
-		//	':': '',
-			'left(': '(',
-			'right)': ')',
-			'left[': '[',
-			'right]': ']',
-			'ge': '>=',
-			'lt': '<',
-			'le': '<=',
-			'sim': '~',
-			'frac': '',
-			'backslash': '\\'
-		},
-		operators = this.operators,
-		token_types = {
-			string: 1,
-			number: 2,
-			operator: 3,
-			comment: 4,
-			parenopen: 5,
-			parenclose: 6,
-    		symbol: 7
-		},
-		nummustbe = '1234567890.',
-		operator_str_list = ['+', '-', '@', '*', '/', '^', '++', '=', '!', ',', '@-', '@+', '_', '#', '<', '<=', '>', '>=', '%', '.', crossProduct],
-		parenopenmustbe = '([{',
-		parenclosemustbe = '}\'])',
-		varcannotbe = operator_str_list.join('') + parenopenmustbe + parenclosemustbe + nummustbe,
-		default_operator = 'default',
-		match = [
-	    	function none() {
-	        	throw('NONE');
-	    	},
-			function string(x) {
-				return false;
-			},
-			function number(x) {
-				return nummustbe.indexOf(x[x.length-1]) !== -1;
-			},
-			function operator(x) {
-				return operator_str_list.indexOf(x) !== -1;
-			},
-			function comment(x) {
-				return x[x.length-1] === ' ';
-			},
-			function parenopen(x) {
-				return (x.length == 1) && (parenopenmustbe.indexOf(x) != -1);
-			},
-			function parenclose(x) {
-				return (x.length == 1) && (parenclosemustbe.indexOf(x) != -1);
-			},
-			function symbol(x) {
-		    	return /^[A-Za-z]$/.test(x[x.length-1]);
-			},
-			function Error(x) {
-		    	throw (new SyntaxError('Invalid character: \'' + x + '\''));
-			}
-		],
-		match = [
-	    	function none() {
-	        	throw('NONE');
-	    	},
-			function string(x) {
-				return false;
-			},
-			function number(x) {
-				//Not correct: e.g, 3.2.5
-				if(x === '.') {
-					return false;
-				}
-				return nummustbe.indexOf(x[x.length - 1]) !== -1;
-			},
-			function operator(x) {
-				return operator_str_list.indexOf(x) !== -1;
-			},
-			function comment(x) {
-				return x[x.length-1] === ' ';
-			},
-			function parenopen(x) {
-				return (x.length == 1) && (parenopenmustbe.indexOf(x) != -1);
-			},
-			function parenclose(x) {
-				return (x.length == 1) && (parenclosemustbe.indexOf(x) != -1);
-			},
-			function symbol(x) {
-				if(x[0] === '\\') {
-					return (x.length === 1) || /^[A-Za-z]$/.test(x[x.length-1]);
-				}
-				return x.length === 1 && /^[A-Za-z]$/.test(x[0]);
-			},
-			function Error(x) {
-		    	throw (new SyntaxError('Invalid character: \'' + x + '\''));
-			}
-		],
-		names = match.map(function(e) {return e.name;});
-	this.parse = function (s, context) {
-		if(s === '') {
-			return undefined;
-		}
-		s = deLaTeX(s);
-		var last_token_type = token_types.parenopen;
+	
+	if (/^[\d]+$/.test(o)) {
+		return new Expression.Integer(Number(o));
+	} else if(/^[\d]*\.[\d]+$/.test(o)){
+		var d_place = o.indexOf(".");
+		// 12.345 -> 12345 / 1000
+		// 00.5 -> 5/10
+		var denom_p = o.length - d_place - 1;
+		var d = Math.pow(10, denom_p);
+		var n = Number(o.replace(".", ""));
 		
-		//Stack of tokens for the shunting yard algorithm
-		var stack = [];
-		//Stack of tokens for RPN notation. ('evaluated' to a tree representation)
-		var rpn_stack = [];
-		
-		var free_context = {};
-		var bound_context = {};
-		function bind(x) {
-			var j = free_context[x];
-			delete free_context[x];
-			return j;
-		}
-		
-		//The evelauation part of the shunting yard algorithm.
-		function next_rpn(token) {
-			// While there are input tokens left
-			// Read the next token from input.
-			// If the token is a value
-			if (token.t === token_types.number || token.t === token_types.symbol) {
-				// Push it onto the stack.
-				rpn_stack.push(token.v);
-			}
-			// Otherwise,
-			else {
-				//the token is an operator (operator here includes both operators, and functions).
-				// It is known a priori that the operator takes n arguments.
-				var n = operators[token.v][2];
-				// If there are fewer than n values on the stack
-				if (rpn_stack.length < n) {
-					// (Error) The user has not input sufficient values in the expression.
-					throw (new SyntaxError('The \'' + token.v + '\' operator requires exactly ' + n + ' operands, whereas only ' + rpn_stack.length + ' ' + (rpn_stack.length === 1 ? 'was ': 'were ') + 'supplied'));
-					// Else,
-				} else {
-					// Pop the top n values from the stack.
-					var spliced = rpn_stack.splice( - n, n);
-					////var values = ExpressionWithArray(spliced, token.v);
-					// TODO: check non-binary operators
-					//// var values = spliced[0].apply(token.v, spliced.slice(1)[0]);
-					
-					
-					//var values = spliced[0][token.v](spliced.splice(1)[0]);
-					
-					
-					// Evaluate the operator, with the values as arguments.
-					// //var evaled=(' ('+values[0]+token.v+values[1]+')');
-					// Push the returned results, if any, back onto the stack.
-					var values = [spliced[0], spliced.splice(1)[0]];
-					values.operator = token.v;
-					rpn_stack.push(values);
-				}
-			}
-		}
+		return new Expression.Rational(n, d).reduce();
+	}
+	return predefined[o] || new Expression.NumericalReal(Number(o));
+};
+Construct.String = function (s) {
+	return s;
+};
+var Global = {};/* Jison generated parser */
+var calculator = (function(){
+var parser = {trace: function trace() { },
+yy: {},
+symbols_: {"error":2,"expressions":3,"e":4,"EOF":5,"s":6,"+":7,"-":8,"*":9,"/":10,"^":11,"!":12,"%":13,"(":14,")":15,"FRAC":16,"{":17,"}":18,"NUMBER":19,"E":20,"PI":21,"=":22,"&&":23,"$accept":0,"$end":1},
+terminals_: {2:"error",5:"EOF",7:"+",8:"-",9:"*",10:"/",11:"^",12:"!",13:"%",14:"(",15:")",16:"FRAC",17:"{",18:"}",19:"NUMBER",20:"E",21:"PI",22:"=",23:"&&"},
+productions_: [0,[3,2],[3,2],[4,3],[4,3],[4,3],[4,2],[4,3],[4,3],[4,2],[4,2],[4,2],[4,3],[4,7],[4,1],[4,1],[4,1],[6,3],[6,3]],
+performAction: function anonymous(yytext,yyleng,yylineno,yy,yystate,$$,_$) {
 
-		//Shunting yard algorithm inside out.
-		//Because the algorithm reads one token at a time, we can just
-		//give it the token as soon as we get that token (from the tokenizer/parser), and
-		//instead of pushing to a temporary array, just call next_token(token).
-		//The same applies to the RPN evaluator (above)
-		function next_token(token) {
-		    if (token.t === token_types.symbol) {
-				if (token.v[0] === '\\') {
-					//Latex names
-					token.v = token.v.substring(1);
-				}
-				//'Keyword' search: eg. break, if. Stuff like that.
-				if (operators[token.v]) {
-					token.t = token_types.operator;
-				} else if (token.v === 'false') {
-					token.v = false;
-				} else if (token.v === 'true') {
-					token.v = true;
-				} else if (token.v === 'Infinity') {
-					token.v = Infinity;
-				} else if (typeof token.v === 'string') {
-				    if (context[token.v]) {
-				        //Make .v a pointer to the referenced object.
-				        token.v = bound_context[token.v] = context[token.v];
-					} else if (free_context[token.v]) {
-						token.v = free_context[token.v];
-				    } else {
-    				    token.v = free_context[token.v] = new Expression.Symbol.Real(token.v);
-				    }
-				}
-			}
-			//console.log(token.v);
-			//Comments from http://en.wikipedia.org/wiki/Shunting-yard_algorithm
-			// Read a token.
-			// If the token is a number, then add it to the output queue.
-			if (token.t === token_types.number || token.t === token_types.symbol) {
-				if (token.t == token_types.number) {
-					token.v = language.Number(token.v);
-					//token.v = new Expression.NumericalReal(Number(token.v), 0);
-				}
-				next_rpn(token);
-			}
-			// If the token is an operator
-			if (token.t === token_types.operator) {
-				//, o1, then:
-				var o1 = token;
-				var o1precedence = operators[o1.v][1];
-				//var o1associative=associativity(o1.v);
-				var o1associative = operators[o1.v][0];
-				// ('o2 ' is assumed to exist)
-				var o2;
-				// while
-				while (
-				//there is an operator token, o2, at the top of the stack
-				(stack.length && (o2 = stack[stack.length - 1]).t === token_types.operator)
-				//and
-				&&
-				// either
-				(
-				//o1 is left-associative and its precedence is less than or equal to that of o2,
-				(o1associative == left && o1precedence <= operators[o2.v][1])
-				//or
-				||
-				//o1 is right-associative and its precedence is less than that of o2
-				(o1associative != left && o1precedence < operators[o2.v][1])
-
-				)
-
-				) {
-					// pop o2 off the stack, onto the output queue;
-					next_rpn(stack.pop());
-				}
-
-				// push o1 onto the stack.
-				stack.push(o1);
-			}
-			// If the token is a left parenthesis,
-			if (token.t === token_types.parenopen) {
-				//then push it onto the stack.
-				stack.push(token);
-			}
-			// If the token is a right parenthesis:
-			if (token.t === token_types.parenclose) {
-				// Until the token at the top of the stack is a left parenthesis,
-				while (stack[stack.length - 1].t !== token_types.parenopen) {
-					// If the stack runs out without finding a left parenthesis, then
-					if (!stack.length) {
-						//there are mismatched parentheses.
-						throw (new SyntaxError(msg.parenMismatch));
-					}
-					// pop operators off the stack onto the output queue.
-					next_rpn(stack.pop());
-				}
-
-				// Pop the left parenthesis from the stack, but not onto the output queue.
-				if (stack.pop().t !== token_types.parenopen) {
-					throw ('Pop the left parenthesis from the stack: Not found ! ')
-				}
-			}
-		}
-		function next_raw_token(str, t) {
-		    if(t === token_types.comment) {
-		        return;
-		    }
-		    if (t !== token_types.operator && t !== token_types.parenclose) {
-		        if(last_token_type !== token_types.parenopen) {
-    		        if(last_token_type !== token_types.operator) {
-    		            next_raw_token(default_operator, token_types.operator);
-    		        }
-    		    }
-		    } else if (t === token_types.operator && !language.postfix(str)) {
-				if (last_token_type === token_types.parenopen || last_token_type === token_types.operator) {
-					if (language.unary(str)) {
-						str = language.unary(str);
-					}
-				}
-			}
-		    next_token({v: str, t: t});
-		    last_token_type = t;
-		}
-		var i = 0;
-		var l = s.length;
-		var current_token = s[0];
-		var t;
-		// 8 : Object.keys(token_types).count + 1
-		for (t = 1; t < 8; t++) {
-			if (match[t](current_token)) {
-				break;
-			}
-		}
-        for (i = 1; i < l; i++) {
-            var ds = s[i];
-            var cds = current_token + ds;
-            if (match[t](cds)) {
-                current_token = cds;
-            } else {
-                var nt;
-                for (nt = 1; nt < 8; nt++) {
-                    if (match[nt](ds)) {
-                        break;
+var $0 = $$.length - 1;
+switch (yystate) {
+case 1: return $$[$0-1]; 
+break;
+case 2: return $$[$0-1]; 
+break;
+case 3:this.$ = $$[$0-2]['+']($$[$0]);
+break;
+case 4:this.$ = $$[$0-2]['-']($$[$0]);
+break;
+case 5:this.$ = $$[$0-2]['*']($$[$0]);
+break;
+case 6:this.$ = $$[$0-1].default($$[$0]);
+break;
+case 7:this.$ = $$[$0-2]['/']($$[$0]);
+break;
+case 8:this.$ = $$[$0-2]['^']($$[$0]);
+break;
+case 9:
+          this.$ = $$[$0-1]['factorial']();
+        
+break;
+case 10:this.$ = $$[$0-1]['%']();
+break;
+case 11:this.$ = $$[$0]['@-']();
+break;
+case 12:this.$ = $$[$0-1];
+break;
+case 13:this.$ = $$[$0-4]['/']($$[$0-1]);
+break;
+case 14:this.$ = Construct.Number(yytext);
+break;
+case 15:this.$ = Global.e;
+break;
+case 16:this.$ = Global.pi;
+break;
+case 17:this.$ = $$[$0-2]['=']($$[$0]);
+break;
+case 18:this.$ = $$[$0-2]['&&']($$[$0]);
+break;
+}
+},
+table: [{3:1,4:2,6:3,8:[1,4],14:[1,5],16:[1,6],19:[1,7],20:[1,8],21:[1,9]},{1:[3]},{4:14,5:[1,10],7:[1,11],8:[1,12],9:[1,13],10:[1,15],11:[1,16],12:[1,17],13:[1,18],14:[1,5],16:[1,6],19:[1,7],20:[1,8],21:[1,9],22:[1,19]},{5:[1,20],23:[1,21]},{4:22,8:[1,4],14:[1,5],16:[1,6],19:[1,7],20:[1,8],21:[1,9]},{4:23,8:[1,4],14:[1,5],16:[1,6],19:[1,7],20:[1,8],21:[1,9]},{17:[1,24]},{5:[2,14],7:[2,14],8:[2,14],9:[2,14],10:[2,14],11:[2,14],12:[2,14],13:[2,14],14:[2,14],15:[2,14],16:[2,14],18:[2,14],19:[2,14],20:[2,14],21:[2,14],22:[2,14],23:[2,14]},{5:[2,15],7:[2,15],8:[2,15],9:[2,15],10:[2,15],11:[2,15],12:[2,15],13:[2,15],14:[2,15],15:[2,15],16:[2,15],18:[2,15],19:[2,15],20:[2,15],21:[2,15],22:[2,15],23:[2,15]},{5:[2,16],7:[2,16],8:[2,16],9:[2,16],10:[2,16],11:[2,16],12:[2,16],13:[2,16],14:[2,16],15:[2,16],16:[2,16],18:[2,16],19:[2,16],20:[2,16],21:[2,16],22:[2,16],23:[2,16]},{1:[2,1]},{4:25,8:[1,4],14:[1,5],16:[1,6],19:[1,7],20:[1,8],21:[1,9]},{4:26,8:[1,4],14:[1,5],16:[1,6],19:[1,7],20:[1,8],21:[1,9]},{4:27,8:[1,4],14:[1,5],16:[1,6],19:[1,7],20:[1,8],21:[1,9]},{4:14,5:[2,6],7:[1,11],8:[1,12],9:[1,13],10:[1,15],11:[1,16],12:[1,17],13:[1,18],14:[1,5],15:[2,6],16:[1,6],18:[2,6],19:[1,7],20:[1,8],21:[1,9],22:[2,6],23:[2,6]},{4:28,8:[1,4],14:[1,5],16:[1,6],19:[1,7],20:[1,8],21:[1,9]},{4:29,8:[1,4],14:[1,5],16:[1,6],19:[1,7],20:[1,8],21:[1,9]},{5:[2,9],7:[2,9],8:[2,9],9:[2,9],10:[2,9],11:[2,9],12:[2,9],13:[2,9],14:[2,9],15:[2,9],16:[2,9],18:[2,9],19:[2,9],20:[2,9],21:[2,9],22:[2,9],23:[2,9]},{5:[2,10],7:[2,10],8:[2,10],9:[2,10],10:[2,10],11:[2,10],12:[2,10],13:[2,10],14:[2,10],15:[2,10],16:[2,10],18:[2,10],19:[2,10],20:[2,10],21:[2,10],22:[2,10],23:[2,10]},{4:30,8:[1,4],14:[1,5],16:[1,6],19:[1,7],20:[1,8],21:[1,9]},{1:[2,2]},{4:32,6:31,8:[1,4],14:[1,5],16:[1,6],19:[1,7],20:[1,8],21:[1,9]},{4:14,5:[2,11],7:[2,11],8:[2,11],9:[2,11],10:[2,11],11:[2,11],12:[2,11],13:[2,11],14:[1,5],15:[2,11],16:[1,6],18:[2,11],19:[1,7],20:[1,8],21:[1,9],22:[2,11],23:[2,11]},{4:14,7:[1,11],8:[1,12],9:[1,13],10:[1,15],11:[1,16],12:[1,17],13:[1,18],14:[1,5],15:[1,33],16:[1,6],19:[1,7],20:[1,8],21:[1,9]},{4:34,8:[1,4],14:[1,5],16:[1,6],19:[1,7],20:[1,8],21:[1,9]},{4:14,5:[2,3],7:[2,3],8:[2,3],9:[1,13],10:[1,15],11:[1,16],12:[1,17],13:[1,18],14:[1,5],15:[2,3],16:[1,6],18:[2,3],19:[1,7],20:[1,8],21:[1,9],22:[2,3],23:[2,3]},{4:14,5:[2,4],7:[2,4],8:[2,4],9:[2,11],10:[2,11],11:[2,11],12:[2,11],13:[2,11],14:[1,5],15:[2,4],16:[1,6],18:[2,4],19:[1,7],20:[1,8],21:[1,9],22:[2,4],23:[2,4]},{4:14,5:[2,5],7:[2,5],8:[2,5],9:[2,5],10:[2,5],11:[1,16],12:[1,17],13:[1,18],14:[1,5],15:[2,5],16:[1,6],18:[2,5],19:[1,7],20:[1,8],21:[1,9],22:[2,5],23:[2,5]},{4:14,5:[2,7],7:[2,7],8:[2,7],9:[2,7],10:[2,7],11:[1,16],12:[1,17],13:[1,18],14:[1,5],15:[2,7],16:[1,6],18:[2,7],19:[1,7],20:[1,8],21:[1,9],22:[2,7],23:[2,7]},{4:14,5:[2,8],7:[2,8],8:[2,8],9:[2,8],10:[2,8],11:[2,8],12:[1,17],13:[1,18],14:[1,5],15:[2,8],16:[1,6],18:[2,8],19:[1,7],20:[1,8],21:[1,9],22:[2,8],23:[2,8]},{4:14,5:[2,17],7:[1,11],8:[1,12],9:[1,13],10:[1,15],11:[1,16],12:[1,17],13:[1,18],14:[1,5],16:[1,6],19:[1,7],20:[1,8],21:[1,9],23:[2,17]},{5:[2,18],23:[2,18]},{4:14,7:[1,11],8:[1,12],9:[1,13],10:[1,15],11:[1,16],12:[1,17],13:[1,18],14:[1,5],16:[1,6],19:[1,7],20:[1,8],21:[1,9],22:[1,19]},{5:[2,12],7:[2,12],8:[2,12],9:[2,12],10:[2,12],11:[2,12],12:[2,12],13:[2,12],14:[2,12],15:[2,12],16:[2,12],18:[2,12],19:[2,12],20:[2,12],21:[2,12],22:[2,12],23:[2,12]},{4:14,7:[1,11],8:[1,12],9:[1,13],10:[1,15],11:[1,16],12:[1,17],13:[1,18],14:[1,5],16:[1,6],18:[1,35],19:[1,7],20:[1,8],21:[1,9]},{17:[1,36]},{4:37,8:[1,4],14:[1,5],16:[1,6],19:[1,7],20:[1,8],21:[1,9]},{4:14,7:[1,11],8:[1,12],9:[1,13],10:[1,15],11:[1,16],12:[1,17],13:[1,18],14:[1,5],16:[1,6],18:[1,38],19:[1,7],20:[1,8],21:[1,9]},{5:[2,13],7:[2,13],8:[2,13],9:[2,13],10:[2,13],11:[2,13],12:[2,13],13:[2,13],14:[2,13],15:[2,13],16:[2,13],18:[2,13],19:[2,13],20:[2,13],21:[2,13],22:[2,13],23:[2,13]}],
+defaultActions: {10:[2,1],20:[2,2]},
+parseError: function parseError(str, hash) {
+    throw new Error(str);
+},
+parse: function parse(input) {
+    var self = this, stack = [0], vstack = [null], lstack = [], table = this.table, yytext = "", yylineno = 0, yyleng = 0, recovering = 0, TERROR = 2, EOF = 1;
+    this.lexer.setInput(input);
+    this.lexer.yy = this.yy;
+    this.yy.lexer = this.lexer;
+    this.yy.parser = this;
+    if (typeof this.lexer.yylloc == "undefined")
+        this.lexer.yylloc = {};
+    var yyloc = this.lexer.yylloc;
+    lstack.push(yyloc);
+    var ranges = this.lexer.options && this.lexer.options.ranges;
+    if (typeof this.yy.parseError === "function")
+        this.parseError = this.yy.parseError;
+    function popStack(n) {
+        stack.length = stack.length - 2 * n;
+        vstack.length = vstack.length - n;
+        lstack.length = lstack.length - n;
+    }
+    function lex() {
+        var token;
+        token = self.lexer.lex() || 1;
+        if (typeof token !== "number") {
+            token = self.symbols_[token] || token;
+        }
+        return token;
+    }
+    var symbol, preErrorSymbol, state, action, a, r, yyval = {}, p, len, newState, expected;
+    while (true) {
+        state = stack[stack.length - 1];
+        if (this.defaultActions[state]) {
+            action = this.defaultActions[state];
+        } else {
+            if (symbol === null || typeof symbol == "undefined") {
+                symbol = lex();
+            }
+            action = table[state] && table[state][symbol];
+        }
+        if (typeof action === "undefined" || !action.length || !action[0]) {
+            var errStr = "";
+            if (!recovering) {
+                expected = [];
+                for (p in table[state])
+                    if (this.terminals_[p] && p > 2) {
+                        expected.push("'" + this.terminals_[p] + "'");
                     }
+                if (this.lexer.showPosition) {
+                    errStr = "Parse error on line " + (yylineno + 1) + ":\n" + this.lexer.showPosition() + "\nExpecting " + expected.join(", ") + ", got '" + (this.terminals_[symbol] || symbol) + "'";
+                } else {
+                    errStr = "Parse error on line " + (yylineno + 1) + ": Unexpected " + (symbol == 1?"end of input":"'" + (this.terminals_[symbol] || symbol) + "'");
                 }
-                next_raw_token(current_token, t);
-                t = nt;
-                current_token = ds;
+                this.parseError(errStr, {text: this.lexer.match, token: this.terminals_[symbol] || symbol, line: this.lexer.yylineno, loc: yyloc, expected: expected});
             }
         }
-        next_raw_token(current_token, t);
+        if (action[0] instanceof Array && action.length > 1) {
+            throw new Error("Parse Error: multiple actions possible at state: " + state + ", token: " + symbol);
+        }
+        switch (action[0]) {
+        case 1:
+            stack.push(symbol);
+            vstack.push(this.lexer.yytext);
+            lstack.push(this.lexer.yylloc);
+            stack.push(action[1]);
+            symbol = null;
+            if (!preErrorSymbol) {
+                yyleng = this.lexer.yyleng;
+                yytext = this.lexer.yytext;
+                yylineno = this.lexer.yylineno;
+                yyloc = this.lexer.yylloc;
+                if (recovering > 0)
+                    recovering--;
+            } else {
+                symbol = preErrorSymbol;
+                preErrorSymbol = null;
+            }
+            break;
+        case 2:
+            len = this.productions_[action[1]][1];
+            yyval.$ = vstack[vstack.length - len];
+            yyval._$ = {first_line: lstack[lstack.length - (len || 1)].first_line, last_line: lstack[lstack.length - 1].last_line, first_column: lstack[lstack.length - (len || 1)].first_column, last_column: lstack[lstack.length - 1].last_column};
+            if (ranges) {
+                yyval._$.range = [lstack[lstack.length - (len || 1)].range[0], lstack[lstack.length - 1].range[1]];
+            }
+            r = this.performAction.call(yyval, yytext, yyleng, yylineno, this.yy, action[1], vstack, lstack);
+            if (typeof r !== "undefined") {
+                return r;
+            }
+            if (len) {
+                stack = stack.slice(0, -1 * len * 2);
+                vstack = vstack.slice(0, -1 * len);
+                lstack = lstack.slice(0, -1 * len);
+            }
+            stack.push(this.productions_[action[1]][0]);
+            vstack.push(yyval.$);
+            lstack.push(yyval._$);
+            newState = table[stack[stack.length - 2]][stack[stack.length - 1]];
+            stack.push(newState);
+            break;
+        case 3:
+            return true;
+        }
+    }
+    return true;
+}
+};
+/* Jison generated lexer */
+var lexer = (function(){
+var lexer = ({EOF:1,
+parseError:function parseError(str, hash) {
+        if (this.yy.parser) {
+            this.yy.parser.parseError(str, hash);
+        } else {
+            throw new Error(str);
+        }
+    },
+setInput:function (input) {
+        this._input = input;
+        this._more = this._less = this.done = false;
+        this.yylineno = this.yyleng = 0;
+        this.yytext = this.matched = this.match = '';
+        this.conditionStack = ['INITIAL'];
+        this.yylloc = {first_line:1,first_column:0,last_line:1,last_column:0};
+        if (this.options.ranges) this.yylloc.range = [0,0];
+        this.offset = 0;
+        return this;
+    },
+input:function () {
+        var ch = this._input[0];
+        this.yytext += ch;
+        this.yyleng++;
+        this.offset++;
+        this.match += ch;
+        this.matched += ch;
+        var lines = ch.match(/(?:\r\n?|\n).*/g);
+        if (lines) {
+            this.yylineno++;
+            this.yylloc.last_line++;
+        } else {
+            this.yylloc.last_column++;
+        }
+        if (this.options.ranges) this.yylloc.range[1]++;
 
-		//Shunting yard algorithm:
-		// (The final part that does not read tokens)
-		// When there are no more tokens to read:
-		// While there are still operator tokens in the stack:
-		while (stack.length) {
-			var the_operator;
-			// If the operator token on the top of the stack is a parenthesis, then
-			var t__ = (the_operator = stack.pop()).t;
-			if ((t__ === token_types.parenopen) || (t__ === token_types.parenclose)) {
-				//there are mismatched parentheses.
-				throw ('There are mismatched parentheses.');
-			}
-			//Pop the operator onto the output queue.
-			next_rpn(the_operator);
-		}
-		if (rpn_stack.length !== 1) {
-			throw('Stack not the right size!');
-			//who gives?
-			return rpn_stack;
-		}
-		function evaluate(x) {
-			if(x === undefined) {
-				return;
-			}
-			if (x.__proto__ === Array.prototype) {
-				return evaluate(x[0])[x.operator](evaluate(x[1]));
-			}
-			return x;
-		}
-		var result = evaluate(rpn_stack[0]);
-		// Free variables: (these could be used to quickly check which variables an equation has).
-		// Perhaps every expression should have such a context, but maybe that would take too much ram.
-		result.unbound = free_context;
-		result.bound = bound_context;
-		return result;
-	};
-};//Language.prototype.parse = function(str, context, output) {
-//	output.push(str);
-//};
+        this._input = this._input.slice(1);
+        return ch;
+    },
+unput:function (ch) {
+        var len = ch.length;
+        var lines = ch.split(/(?:\r\n?|\n)/g);
 
-// See Language._build (exec on new Language())
+        this._input = ch + this._input;
+        this.yytext = this.yytext.substr(0, this.yytext.length-len-1);
+        //this.yyleng -= len;
+        this.offset -= len;
+        var oldLines = this.match.split(/(?:\r\n?|\n)/g);
+        this.match = this.match.substr(0, this.match.length-1);
+        this.matched = this.matched.substr(0, this.matched.length-1);
 
-var Global = {};
-var left, right;
-var L = left = 0;
-var R = right = 1;
+        if (lines.length-1) this.yylineno -= lines.length-1;
+        var r = this.yylloc.range;
 
-var language = new Language([
-	[';'],			/*L / R makes no difference???!??!? */
-	[','],
-	[['=', '+=', '-=', '*=', '/=', '%=', '&=', '^=', '|='],R],
-	[['?',':'],R,2],
-	[['∨']],
-	[['&&']],
-	[['|']],
-	[['??????']],//XOR
-	[['&']],
-	[['==', '≠', '!==', '===']],
-	[['<', '<=', '>', '>='],L],
-	[['>>', '<<']],
-	['±', R, 2],
-	[['+'], true],
-	[['-'], L],
-	[['∫', '∑'], R, 1],
-	[['*', '%'], R],
-	[crossProduct, R],
-	[['@+', '@-', '@±'], R, 1], //unary plus/minus
-	[['¬'], L, 1],
-	['default', R, 2], //I changed this to R for 5sin(t)
-	['∘', R, 2],
-	[['/']],
-	[['^']],//e**x
-	['!', L, 1],
-	[['~'], R, 1], //bitwise negation
-	[['++', '++', '.', '->'],L,1],
-	[['::']],
-	[['_'], L, 2],
-	['var', R, 1],
-	['break', R, 0],
-	['throw', R, 1],
-	['\'', L, 1],
-	['\u221A', R, 1], // Sqrt
-	['#', R, 1]	/*anonymous function*/
-]);
+        this.yylloc = {first_line: this.yylloc.first_line,
+          last_line: this.yylineno+1,
+          first_column: this.yylloc.first_column,
+          last_column: lines ?
+              (lines.length === oldLines.length ? this.yylloc.first_column : 0) + oldLines[oldLines.length - lines.length].length - lines[0].length:
+              this.yylloc.first_column - len
+          };
 
-/*
- Language spec columns in order of _increasing precedence_:
- * operator string representation(s). These are different operators, but share all properties.
- * Associativity
- * Operand count (Must be a fixed number) 
- * (TODO??) commute group? - or should this be derived?
- * (TODO?) associative? commutative?  - Should be calculated?
- * (TODO?) Identity?
-*/
+        if (this.options.ranges) {
+            this.yylloc.range = [r[0], r[0] + this.yyleng - len];
+        }
+        return this;
+    },
+more:function () {
+        this._more = true;
+        return this;
+    },
+less:function (n) {
+        this.unput(this.match.slice(n));
+    },
+pastInput:function () {
+        var past = this.matched.substr(0, this.matched.length - this.match.length);
+        return (past.length > 20 ? '...':'') + past.substr(-20).replace(/\n/g, "");
+    },
+upcomingInput:function () {
+        var next = this.match;
+        if (next.length < 20) {
+            next += this._input.substr(0, 20-next.length);
+        }
+        return (next.substr(0,20)+(next.length > 20 ? '...':'')).replace(/\n/g, "");
+    },
+showPosition:function () {
+        var pre = this.pastInput();
+        var c = new Array(pre.length + 1).join("-");
+        return pre + this.upcomingInput() + "\n" + c+"^";
+    },
+next:function () {
+        if (this.done) {
+            return this.EOF;
+        }
+        if (!this._input) this.done = true;
 
-var mathematica = new Language([
-	[';'],
-	[','],
-	[['=', '+=']]
-]);function Context() {
+        var token,
+            match,
+            tempMatch,
+            index,
+            col,
+            lines;
+        if (!this._more) {
+            this.yytext = '';
+            this.match = '';
+        }
+        var rules = this._currentRules();
+        for (var i=0;i < rules.length; i++) {
+            tempMatch = this._input.match(this.rules[rules[i]]);
+            if (tempMatch && (!match || tempMatch[0].length > match[0].length)) {
+                match = tempMatch;
+                index = i;
+                if (!this.options.flex) break;
+            }
+        }
+        if (match) {
+            lines = match[0].match(/(?:\r\n?|\n).*/g);
+            if (lines) this.yylineno += lines.length;
+            this.yylloc = {first_line: this.yylloc.last_line,
+                           last_line: this.yylineno+1,
+                           first_column: this.yylloc.last_column,
+                           last_column: lines ? lines[lines.length-1].length-lines[lines.length-1].match(/\r?\n?/)[0].length : this.yylloc.last_column + match[0].length};
+            this.yytext += match[0];
+            this.match += match[0];
+            this.matches = match;
+            this.yyleng = this.yytext.length;
+            if (this.options.ranges) {
+                this.yylloc.range = [this.offset, this.offset += this.yyleng];
+            }
+            this._more = false;
+            this._input = this._input.slice(match[0].length);
+            this.matched += match[0];
+            token = this.performAction.call(this, this.yy, this, rules[index],this.conditionStack[this.conditionStack.length-1]);
+            if (this.done && this._input) this.done = false;
+            if (token) return token;
+            else return;
+        }
+        if (this._input === "") {
+            return this.EOF;
+        } else {
+            return this.parseError('Lexical error on line '+(this.yylineno+1)+'. Unrecognized text.\n'+this.showPosition(),
+                    {text: "", token: null, line: this.yylineno});
+        }
+    },
+lex:function lex() {
+        var r = this.next();
+        if (typeof r !== 'undefined') {
+            return r;
+        } else {
+            return this.lex();
+        }
+    },
+begin:function begin(condition) {
+        this.conditionStack.push(condition);
+    },
+popState:function popState() {
+        return this.conditionStack.pop();
+    },
+_currentRules:function _currentRules() {
+        return this.conditions[this.conditionStack[this.conditionStack.length-1]].rules;
+    },
+topState:function () {
+        return this.conditionStack[this.conditionStack.length-2];
+    },
+pushState:function begin(condition) {
+        this.begin(condition);
+    }});
+lexer.options = {};
+lexer.performAction = function anonymous(yy,yy_,$avoiding_name_collisions,YY_START) {
+
+var YYSTATE=YY_START
+switch($avoiding_name_collisions) {
+case 0:/* skip whitespace */
+break;
+case 1:return 19
+break;
+case 2:return 22
+break;
+case 3:return 9
+break;
+case 4:return 10
+break;
+case 5:return 8
+break;
+case 6:return 7
+break;
+case 7:return 23
+break;
+case 8:return 11
+break;
+case 9:return 12
+break;
+case 10:return 13
+break;
+case 11:return 14
+break;
+case 12:return 15
+break;
+case 13:return 17
+break;
+case 14:return 18
+break;
+case 15:return 21
+break;
+case 16:return 20
+break;
+case 17:return 16
+break;
+case 18:return 5
+break;
+case 19:return 'INVALID'
+break;
+}
+};
+lexer.rules = [/^(?:\s+)/,/^(?:[0-9]+(\.[0-9]+)?\b)/,/^(?:=)/,/^(?:\*)/,/^(?:\/)/,/^(?:-)/,/^(?:\+)/,/^(?:&&)/,/^(?:\^)/,/^(?:!)/,/^(?:%)/,/^(?:\()/,/^(?:\))/,/^(?:\{)/,/^(?:\})/,/^(?:PI\b)/,/^(?:E\b)/,/^(?:\\frac\b)/,/^(?:$)/,/^(?:.)/];
+lexer.conditions = {"INITIAL":{"rules":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19],"inclusive":true}};
+return lexer;})()
+parser.lexer = lexer;
+function Parser () { this.yy = {}; }Parser.prototype = parser;parser.Parser = Parser;
+return new Parser;
+})();
+if (typeof require !== 'undefined' && typeof exports !== 'undefined') {
+exports.parser = calculator;
+exports.Parser = calculator.Parser;
+exports.parse = function () { return calculator.parse.apply(calculator, arguments); }
+exports.main = function commonjsMain(args) {
+    if (!args[1])
+        throw new Error('Usage: '+args[0]+' FILE');
+    var source, cwd;
+    if (typeof process !== 'undefined') {
+        source = require('fs').readFileSync(require('path').resolve(args[1]), "utf8");
+    } else {
+        source = require("file").path(require("file").cwd()).join(args[1]).read({charset: "utf-8"});
+    }
+    return exports.parser.parse(source);
+}
+if (typeof module !== 'undefined' && require.main === module) {
+  exports.main(typeof process !== 'undefined' ? process.argv.slice(1) : require("system").args);
+}
+}function Context() {
 	
 }
 _ = Context.prototype = Object.create(Global);
@@ -644,7 +536,30 @@ _.impliesExpression = function(expr) {
 };
 _.learn = function(expr) {
 	this.equations.push(expr);
-};function Expression(e, c) {
+};/*
+Todo:
+ * Don't evaluate/compute until fully lexed (for parsing ambiguous expressions)
+*/
+
+Language.build = function () {
+
+	this.parse = function (s, context) {
+		if(s === '') {
+			return undefined;
+		}
+		console.log('parsing: ', s);
+		var j = calculator.parse(s);
+		return j;
+		console.log(rpn_stack[0]);
+		var result = evaluate(rpn_stack[0]);
+		// Free variables: (these could be used to quickly check which variables an equation has).
+		// Perhaps every expression should have such a context, but maybe that would take too much ram.
+		result.unbound = free_context;
+		result.bound = bound_context;
+		return result;
+	};
+};
+window.calc = calculator;function Expression(e, c) {
 	var n = language.parse(e, c);
 	return n;
 }
@@ -971,7 +886,64 @@ _.solve = function (vars) {
 	(1,2,3) - x = 0 (solve for x)
 	*/
 	return a_b.roots(vars);
-};Expression.Constant = function() {
+};
+var left, right;
+var L = left = 0;
+var R = right = 1;
+
+var language = new Language([
+	[';'],			/*L / R makes no difference???!??!? */
+	[','],
+	[['=', '+=', '-=', '*=', '/=', '%=', '&=', '^=', '|='],R],
+	[['?',':'],R,2],
+	[['∨']],
+	[['&&']],
+	[['|']],
+	[['??????']],//XOR
+	[['&']],
+	[['==', '≠', '!==', '===']],
+	[['<', '<=', '>', '>='],L],
+	[['>>', '<<']],
+	['±', R, 2],
+	[['+'], true],
+	[['-'], L],
+	[['∫', '∑'], R, 1],
+	[['*', '%'], R],
+	[crossProduct, R],
+	[['@+', '@-', '@±'], R, 1], //unary plus/minus
+	[['¬'], L, 1],
+	['default', R, 2], //I changed this to R for 5sin(t)
+	['∘', R, 2],
+	[['/']],
+	[['^']],//e**x
+	['!', L, 1],
+	[['~'], R, 1], //bitwise negation
+	[['++', '++', '.', '->'],L,1],
+	[['::']],
+	[['_'], L, 2],
+	['var', R, 1],
+	['break', R, 0],
+	['throw', R, 1],
+	['\'', L, 1],
+	['\u221A', R, 1], // Sqrt
+	['#', R, 1]	/*anonymous function*/
+]);
+
+/*
+ Language spec columns in order of _increasing precedence_:
+ * operator string representation(s). These are different operators, but share all properties.
+ * Associativity
+ * Operand count (Must be a fixed number) 
+ * (TODO??) commute group? - or should this be derived?
+ * (TODO?) associative? commutative?  - Should be calculated?
+ * (TODO?) Identity?
+*/
+
+var mathematica = new Language([
+	[';'],
+	[','],
+	[['=', '+=']]
+]);Expression.Constant = function() {
 	throw new Error('Expression.Constant created directly');
 };
 _ = Expression.Constant.prototype = Object.create(Expression.prototype);

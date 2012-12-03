@@ -3,6 +3,8 @@ if [ ! -d build ]; then
 	mkdir build
 fi
 rm build/math.js
+cp ./grammar/calculator.js ./src/04.grammar.js
+
 cat \
 	$(for i in src/*.js ; do printf "%s\n" "$i" ; done | sort -n) \
 	> build/math.js
