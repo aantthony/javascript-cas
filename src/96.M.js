@@ -1,11 +1,11 @@
 // Note that it is M.Global, and NOT just Global (so the user can set M.Global)
 function M(a, b) {
-    var ne = Expression(a, b || M.Global);
-	return ne;
+	var e = Expression(a, b || M.Global);
+	return e;
 }
 
 M.toString = function() {
-	return 'function M() {\n    /*!\n     *  Math JavaScript Library v3.0.0\n     *  https://github.com/aantthony/javascript-cas\n     *  \n     *  Copyright 2010 Anthony Foster. All rights reserved.\n     */\n    [awesome code]\n}';
+	return 'function M(expression, context) {\n    /*!\n     *  Math JavaScript Library v3.9.1\n     *  https://github.com/aantthony/javascript-cas\n     *  \n     *  Copyright 2010 Anthony Foster. All rights reserved.\n     */\n    [awesome code]\n}';
 };
 
 //Allow creation of new Context externally

@@ -1,4 +1,5 @@
 
+// For GLSL type checking when compiling
 var glsl={
 	'void':1,
 	'vec3':2,
@@ -12,6 +13,8 @@ var glsl={
 	'mat4':12,
 	'func':20
 };
+
+// Javascript types
 var javascript = {
 	'Boolean': 1,
 	'Number': 2,
@@ -24,9 +27,8 @@ var javascript = {
 };
 
 
-
 var exportLanguages={
-	'text/javascript': function (o,x){
+	'text/javascript': function (o, x){
 		function _(x){
 			return '('+x+')';
 		}
@@ -97,7 +99,7 @@ var exportLanguages={
 				throw('Could not translate operator: \''+o+'\' into javscript!');
 		}
 	},
-	'x-shader/x-fragment':function(o, x){
+	'x-shader/x-fragment': function(o, x){
 		//http://www.opengl.org/registry/doc/GLSLangSpec.Full.1.20.8.pdf
 		function _(x) {
 			return '(' + x + ')';
@@ -177,7 +179,7 @@ var exportLanguages={
 					return {s:S_(x[0])+'*'+S_(x[1]),t:glsl.fp, p: p};
 				}
 			case '#':
-				throw('Anonymous functions not supported.');
+				throw('Anonymous functions not yet supported.');
 			case '√':
 				return {s:'sqrt('+x[0].s+')',t:glsl.fp, p: p};
 			case '!':
@@ -272,6 +274,8 @@ function Code (s, pre){
 	this.p = Infinity;
 }
 _ = Code.prototype;
+
+// For faster evaluation multiple statments. For example (x+3)^2 will first calculate x+3, and so on.
 _.var = function () {
 	return 't' + (this.vars++).toString(36);
 }
@@ -294,6 +298,7 @@ _.update = function (str, p, pre) {
 	this.s = str;
 	return this;
 }
+// Javascript compliation
 _.compile = function (x) {
 	return Function(x, this.pre.join('\n') + 'return ' + this.s);
 };
@@ -377,10 +382,11 @@ Expression.List.Real.prototype.s = function(lang) {
 				if(this[0] instanceof Expression.Symbol) {
 					cs = c0.s;
 				} else {
-					pre = 'float ' + cs + ' = ' + c0.s + ';';
-				
+					
 					cs = c0.var();
 					
+					pre = 'float ' + cs + ' = ' + c0.s + ';';
+				
 				}
 				var s = cs;
 				var i;

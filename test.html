@@ -12,7 +12,7 @@ M.Expression.prototype.glsl = function () {
 c.x = M('x', c);
 c.y = M('y', c);
 c.z = M('z', c);
-c.r = M('x,y,z', c);
+c.r = M('(x,y,z)', c);
 c.nabla = M('\\frac{d}{dr}', c);
 
 M.Expression.prototype.tree = function () {
@@ -30,5 +30,6 @@ function tree(x) {
 M.Expression.List.Real.prototype.tree = function () {
 	return [this.operator].concat(Array.prototype.map.call(this, tree));
 };
+var tests = ["\\frac{d}{dx}\\sin2x", "\\frac{d}{dx}x^2"]
 console.log(M('\\sqrt{2} x'));
 </script>

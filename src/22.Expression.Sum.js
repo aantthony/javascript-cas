@@ -13,7 +13,7 @@ Expression.Sum.Real = function Summation_Real(x,a,b,f_unbound) {
 	this.f = f_unbound;
 	this.a = a;
 	this.b = b;
-
+	
 	if(!(this.x instanceof Expression.Symbol.Real)) {
 		throw('Can only sum over reals in javascript');
 	}

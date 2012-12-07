@@ -5,16 +5,13 @@ Expression.Vector = function Vector(e) {
 
 _ = Expression.Vector.prototype = Object.create(Expression.prototype);
 _.constructor = Expression.Vector;
-_[','] = function (x) {
+_[',.'] = function (x) {
 	
-	if(x instanceof Expression.Statement) {
-		// This is a domain restriction, (of a vector!)
-		// The result is a quantity and assertion
-		// or perhaps it is a quantity defined only when the statement is true?
-		return new Expression.Conditional(x, this, undefined);
-	}
+	
 	return Expression.Vector(Array.prototype.concat.call(this, [x]));
+	
 };
+
 _.differentiate = function (x) {
 	return Expression.Vector(Array.prototype.map.call(this, function (c) {
 		return c.differentiate(x);

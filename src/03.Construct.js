@@ -26,3 +26,11 @@ Construct.Number = function (o) {
 Construct.String = function (s) {
 	return s;
 };
+Construct.Single = function (s) {
+	// Single latex chars for x^3, x^y etc (NOT x^{abc})
+	var n = Math.round(s);
+	if(n == s) {
+		return new Expression.Integer(n);
+	}
+	return s;
+};
