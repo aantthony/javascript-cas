@@ -135,8 +135,8 @@ Construct.Single = function (s) {
 var calculator = (function(){
 var parser = {trace: function trace() { },
 yy: {},
-symbols_: {"error":2,"expressions":3,"S":4,"EOF":5,"e":6,"stmt":7,"=":8,"!=":9,"<":10,">":11,"<=":12,">=":13,"csl":14,",":15,"vector":16,"(":17,")":18,"+":19,"-":20,"*":21,"/":22,"POWER{":23,"}":24,"_{":25,"_SINGLE":26,"SQRT{":27,"FRAC{":28,"{":29,"^SINGLE":30,"identifier":31,"number":32,"IDENTIFIER":33,"LONGIDENTIFIER":34,"DECIMAL":35,"INTEGER":36,"$accept":0,"$end":1},
-terminals_: {2:"error",5:"EOF",8:"=",9:"!=",10:"<",11:">",12:"<=",13:">=",15:",",17:"(",18:")",19:"+",20:"-",21:"*",22:"/",23:"POWER{",24:"}",25:"_{",26:"_SINGLE",27:"SQRT{",28:"FRAC{",29:"{",30:"^SINGLE",33:"IDENTIFIER",34:"LONGIDENTIFIER",35:"DECIMAL",36:"INTEGER"},
+symbols_: {"error":2,"expressions":3,"S":4,"EOF":5,"e":6,"stmt":7,"=":8,"!=":9,"<=":10,"<":11,">":12,">=":13,"csl":14,",":15,"vector":16,"(":17,")":18,"+":19,"-":20,"*":21,"/":22,"POWER{":23,"}":24,"_{":25,"_SINGLE":26,"SQRT{":27,"FRAC{":28,"{":29,"^SINGLE":30,"identifier":31,"number":32,"IDENTIFIER":33,"LONGIDENTIFIER":34,"DECIMAL":35,"INTEGER":36,"$accept":0,"$end":1},
+terminals_: {2:"error",5:"EOF",8:"=",9:"!=",10:"<=",11:"<",12:">",13:">=",15:",",17:"(",18:")",19:"+",20:"-",21:"*",22:"/",23:"POWER{",24:"}",25:"_{",26:"_SINGLE",27:"SQRT{",28:"FRAC{",29:"{",30:"^SINGLE",33:"IDENTIFIER",34:"LONGIDENTIFIER",35:"DECIMAL",36:"INTEGER"},
 productions_: [0,[3,2],[4,1],[4,1],[7,3],[7,3],[7,3],[7,3],[7,3],[7,3],[14,3],[14,3],[16,3],[6,3],[6,3],[6,3],[6,3],[6,4],[6,4],[6,2],[6,3],[6,6],[6,2],[6,2],[6,2],[6,3],[6,1],[6,1],[6,1],[31,1],[31,1],[32,1],[32,1]],
 performAction: function anonymous(yytext,yyleng,yylineno,yy,yystate,$$,_$) {
 
@@ -152,11 +152,11 @@ case 4:this.$ = ['=', $$[$0-2], $$[$0]];
 break;
 case 5:this.$ = ['!=', $$[$0-2], $$[$0]];
 break;
-case 6:this.$ = ['<', $$[$0-2], $$[$0]];
+case 6:this.$ = ['<=', $$[$0-2], $$[$0]];
 break;
-case 7:this.$ = ['>', $$[$0-2], $$[$0]];
+case 7:this.$ = ['<', $$[$0-2], $$[$0]];
 break;
-case 8:this.$ = ['<=', $$[$0-2], $$[$0]];
+case 8:this.$ = ['>', $$[$0-2], $$[$0]];
 break;
 case 9:this.$ = ['>=', $$[$0-2], $$[$0]];
 break;
@@ -504,11 +504,11 @@ case 5:return 27
 break;
 case 6:return 21
 break;
-case 7:return 12
+case 7:return 10
 break;
 case 8:return 13
 break;
-case 9:return 9
+case 9:return 'NE'
 break;
 case 10:return 34
 break;
@@ -532,9 +532,9 @@ case 19:return 19
 break;
 case 20:return 10
 break;
-case 21:return 11
+case 21:return 13
 break;
-case 22:return 13
+case 22:return 11
 break;
 case 23:return 12
 break;
@@ -574,12 +574,10 @@ case 40:return ']'
 break;
 case 41:return 5
 break;
-case 42:return 'INVALID'
-break;
 }
 };
-lexer.rules = [/^(?:\s+)/,/^(?:\$[^\$]*\$)/,/^(?:\\left\()/,/^(?:\\right\))/,/^(?:\\frac\{)/,/^(?:\\sqrt\{)/,/^(?:\\cdot\b)/,/^(?:\\le\b)/,/^(?:\\ge\b)/,/^(?:\\ne\b)/,/^(?:\\[a-zA-Z]+)/,/^(?:[a-zA-Z])/,/^(?:[0-9]+\.[0-9]*)/,/^(?:[0-9]+)/,/^(?:=)/,/^(?:\*)/,/^(?:\.)/,/^(?:\/)/,/^(?:-)/,/^(?:\+)/,/^(?:<)/,/^(?:>)/,/^(?:>=)/,/^(?:>=)/,/^(?:!=)/,/^(?:&&)/,/^(?:_[^\(\{])/,/^(?:\^[^\(\{])/,/^(?:_\{)/,/^(?:\^\{)/,/^(?:!)/,/^(?:%)/,/^(?:,)/,/^(?:\?)/,/^(?::)/,/^(?:\()/,/^(?:\))/,/^(?:\{)/,/^(?:\})/,/^(?:\[)/,/^(?:\])/,/^(?:$)/,/^(?:.)/];
-lexer.conditions = {"INITIAL":{"rules":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42],"inclusive":true}};
+lexer.rules = [/^(?:\s+)/,/^(?:\$[^\$]*\$)/,/^(?:\\left\()/,/^(?:\\right\))/,/^(?:\\frac\{)/,/^(?:\\sqrt\{)/,/^(?:\\cdot\b)/,/^(?:\\l[e])/,/^(?:\\g[e])/,/^(?:\\n[e])/,/^(?:\\[a-zA-Z]+)/,/^(?:[a-zA-Z])/,/^(?:[0-9]+\.[0-9]*)/,/^(?:[0-9]+)/,/^(?:=)/,/^(?:\*)/,/^(?:\.)/,/^(?:\/)/,/^(?:-)/,/^(?:\+)/,/^(?:<=)/,/^(?:>=)/,/^(?:<)/,/^(?:>)/,/^(?:!=)/,/^(?:&&)/,/^(?:_[^\(\{])/,/^(?:\^[^\(\{])/,/^(?:_\{)/,/^(?:\^\{)/,/^(?:!)/,/^(?:%)/,/^(?:,)/,/^(?:\?)/,/^(?::)/,/^(?:\()/,/^(?:\))/,/^(?:\{)/,/^(?:\})/,/^(?:\[)/,/^(?:\])/,/^(?:$)/];
+lexer.conditions = {"INITIAL":{"rules":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41],"inclusive":true}};
 return lexer;})()
 parser.lexer = lexer;
 function Parser () { this.yy = {}; }Parser.prototype = parser;parser.Parser = Parser;
@@ -719,6 +717,7 @@ Language.build = function () {
 		
 		// Parse using context free grammar ([graph]/grammar/calculator.jison)
 		var ast = calculator.parse(s);
+		window.ast = ast;
 		var result = evaluate(ast);
 		result._ast = ast;
 		if(root !== context) {
@@ -729,7 +728,69 @@ Language.build = function () {
 		result.bound = bound;
 		return result;
 	};
+	window.calculator = calculator;
 };
+calculator.lexer.next__ = function () {
+		if (this.done) {
+				return this.EOF;
+		}
+		if (!this._input) this.done = true;
+
+		var token,
+				match,
+				tempMatch,
+				index,
+				col,
+				lines;
+		if (!this._more) {
+				this.yytext = '';
+				this.match = '';
+		}
+		var rules = this._currentRules();
+		for (var i=0;i < rules.length; i++) {
+				tempMatch = this._input.match(this.rules[rules[i]]);
+				if (tempMatch) {
+						match = tempMatch;
+						index = i;
+						break;
+				}
+		}
+		
+		if (match) {
+				lines = match[0].match(/(?:\r\n?|\n).*/g);
+				if (lines) this.yylineno += lines.length;
+				this.yylloc = {first_line: this.yylloc.last_line,
+											 last_line: this.yylineno+1,
+											 first_column: this.yylloc.last_column,
+											 last_column: lines ? lines[lines.length-1].length-lines[lines.length-1].match(/\r?\n?/)[0].length : this.yylloc.last_column + match[0].length};
+				this.yytext += match[0];
+				this.match += match[0];
+				this.matches = match;
+				this.yyleng = this.yytext.length;
+				if (this.options.ranges) {
+						this.yylloc.range = [this.offset, this.offset += this.yyleng];
+				}
+				this._more = false;
+				this._input = this._input.slice(match[0].length);
+				this.matched += match[0];
+				token = this.performAction.call(this, this.yy, this, rules[index],this.conditionStack[this.conditionStack.length-1]);
+				if (this.done && this._input) this.done = false;
+				if (token) return token;
+				else return;
+		}
+		if (this._input === "") {
+				return this.EOF;
+		} else {
+			console.log('input', this._input);
+				return this.parseError('Lexical error on line '+(this.yylineno+1)+'. Unrecognized text.\n'+this.showPosition(),
+								{text: "", token: null, line: this.yylineno});
+		}
+};
+
+// Need to get rid of the \b
+// calculator.lexer.rules[7] = /^(?:\\le)/;
+// alert(calculator.lexer.rules[7]);
+
 function Expression(e, c) {
 	var n = language.parse(e, c);
 	return n;

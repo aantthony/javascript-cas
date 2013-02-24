@@ -12,10 +12,10 @@
 "\frac{"              return 'FRAC{'
 "\sqrt{"              return 'SQRT{'
 "\cdot"               return '*'
-"\le"                 return '<='
-"\ge"                 return '>='
-"\ne"                 return '!='
-\\[a-zA-Z]+           return 'LONGIDENTIFIER'
+\\l[e]                  return '<='
+\\g[e]                 return '>='
+\\n[e]                 return 'NE'
+\\[a-zA-Z]+        return 'LONGIDENTIFIER'
 [a-zA-Z]              return 'IDENTIFIER'
 [0-9]+\.[0-9]*        return 'DECIMAL'
 [0-9]+                return 'INTEGER'
@@ -25,10 +25,10 @@
 "/"                   return '/'
 "-"                   return '-'
 "+"                   return '+'
+"<="                  return '<='
+">="                  return '>='
 "<"                   return '<'
 ">"                   return '>'
-">="                  return '>='
-">="                  return '<='
 "!="                  return '!='
 "&&"                  return '&&'
 _[^\(\{]              return '_SINGLE'
@@ -47,7 +47,7 @@ _[^\(\{]              return '_SINGLE'
 "["                   return '['
 "]"                   return ']'
 <<EOF>>               return 'EOF'
-.                     return 'INVALID'
+// .                     debugger; return 'INVALID'
 
 /lex
 
@@ -85,9 +85,9 @@ S
 stmt
     : e '=' e                       {$$ = ['=', $1, $3];}
     | e '!=' e                      {$$ = ['!=', $1, $3];}
+    | e '<=' e                      {$$ = ['<=', $1, $3];}
     | e '<' e                       {$$ = ['<', $1, $3];}
     | e '>' e                       {$$ = ['>', $1, $3];}
-    | e '<=' e                      {$$ = ['<=', $1, $3];}
     | e '>=' e                      {$$ = ['>=', $1, $3];}
     ;
 csl
