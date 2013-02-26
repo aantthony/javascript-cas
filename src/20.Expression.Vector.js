@@ -63,7 +63,7 @@ _['*'] = _.default;
 _['+'] = function (x, op) {
 	var l = this.length;
 	if(l != x.length) {
-		throw('Vector Dimension mismatch.');
+		throw(new MathError('Vector Dimension mismatch.'));
 	}
 	var i;
 	var n = new Array(l);
@@ -73,7 +73,7 @@ _['+'] = function (x, op) {
 	return Expression.Vector(n);
 };
 _['-'] = function (x) {
-	return _.call(this, x, '-');
+	return this['+'](x, '-');
 };
 _['/'] = function (x) {
 	if (x instanceof Expression.Vector) {

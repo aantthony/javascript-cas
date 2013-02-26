@@ -14,7 +14,7 @@ M['Context'] = Context;
 M['Expression'] = Expression;
 //Allow modification of global context
 M['Global'] = Global;
-
+M['Error'] = MathError;
 var extensions = {};
 M['register'] = function (name, installer){
 	if(Expression.prototype[name]) {

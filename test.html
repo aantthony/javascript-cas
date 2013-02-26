@@ -5,6 +5,26 @@ function log(math) {
   document.body.appendChild(math.image());
   document.body.appendChild(document.createElement("br"));
 }
+function watchObject(obj) {
+	var keys = Object.keys(obj);
+	var n = {};
+	keys.forEach(function (key) {
+		n.__defineGetter__(key, function () {
+			console.warn('Request key: ', key);
+			debugger;
+			return obj[key];
+		});
+		n.__defineSetter__(key, function (val) {
+			console.warn('Set key: ', key);
+			debugger;
+			return obj[key] = val;
+		})
+	});
+	if(obj.__proto__ !== Object.prototype) {
+		n.__proto__ = watchObject(obj.__proto__)
+	}
+	return n;
+}
 var c = new M.Context();
 M.Expression.prototype.glsl = function () {
 	return this.s('x-shader/x-fragment').s;

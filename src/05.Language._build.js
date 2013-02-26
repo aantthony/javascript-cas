@@ -113,3 +113,14 @@ Language.build = function () {
 		return result;
 	};
 };
+
+
+calculator.parseError = function (str, hash) {
+	
+	// {text: this.lexer.match, token: this.terminals_[symbol] || symbol, line: this.lexer.yylineno, loc: yyloc, expected: expected}
+	
+	
+	var er = new SyntaxError(str);
+	er.line = hash.line;
+	throw er;
+};
