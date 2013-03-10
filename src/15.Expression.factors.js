@@ -211,9 +211,7 @@ Expression.List.Real.prototype.factors = function (vars, yes, no, collect_recip)
 			return;
 	}
 };
-window.test = function (str){
-	M(str || "x+x+x+x",c ).factors([c.x], function (x){console.log("Y", x);}, function (x){console.log("N", x);})
-};
+
 (function () {
 	Expression.prototype.factors = function (vars) {
 	return new Multiset();
