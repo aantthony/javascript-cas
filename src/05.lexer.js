@@ -1,3 +1,5 @@
+// No longer in use since I found a trick to prevent jison's default parser from adding '\b's everywhere.
+
 calculator.lexer.next__ = function () {
 		if (this.done) {
 				return this.EOF;

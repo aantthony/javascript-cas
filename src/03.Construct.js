@@ -1,6 +1,6 @@
 var Construct = {};
 
-// These functions constitute map strings from the parser to javascript-cas objects.
+// These functions map strings from the parser to javascript-cas objects.
 
 Construct.Number = function (o) {
 	var predefined = {

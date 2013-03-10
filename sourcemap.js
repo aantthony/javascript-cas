@@ -1,8 +1,20 @@
+/*
+
+ Since all the javascript files are packed into one, seeing an error "Error of line 4330 of math.js" becomes a massive pain.
+ 
+ So this script, can be run as "node sourcemap.js 4330" and it will find:
+ 
+ "Found in src/50.Expresssion.List.toTypedString.js on line 171"
+ 
+ Much better!
+ 
+*/
+
 var fs = require('fs');
 var sys = require('util');
 var exec = require('child_process').exec;
 var child;
-if(isNaN(process.argv[2])){
+if (isNaN(process.argv[2])) {
 	throw('Usage: node lookup.js line_number');
 }
 Array.prototype.mapAsync = function (f) {
@@ -19,7 +31,7 @@ Array.prototype.mapAsync = function (f) {
 				f(self[i], function (n){
 					arr[i] = n;
 					count++;
-					if(count === l) {
+					if (count === l) {
 						finish(arr);
 					}
 				});

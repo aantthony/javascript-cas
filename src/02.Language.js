@@ -1,4 +1,13 @@
-var crossProduct = String.fromCharCode(215);
+var crossProduct = String.fromCharCode(215); // &times; character
+
+/*
+  The language class represents both a parser, and information about precedence of operators for string exporter.
+  
+  These really should be seperate.
+  
+  At the moment, information is doubled up since precedence of the default language is specified in both the .jison grammar and default_language.js. There is most likely no way around this.
+  
+*/
 function Language(language) {
 	var operators = {};
 	var op_precedence = 0;

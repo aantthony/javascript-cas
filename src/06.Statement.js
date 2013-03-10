@@ -7,18 +7,22 @@ _ = extend(Expression.TruthValue, Expression);
 Expression.True = new Expression.TruthValue();
 Expression.False = new Expression.TruthValue();
 
-//Only difference:
+//Only difference: NOT operator
 Expression.False['~'] = function () {
 	return Expression.True;
 };
 
-
+// negation operator
 _['~'] = function () {
 	return Expression.False;
 };
+
+// disjunction
 _['V'] = function (e) {
 	return e === Expression.True ? e : this;
 };
+
+// conjunction
 _['^'] = function (e) {
 	return e === Expression.True ? this : e;
 };
@@ -27,12 +31,14 @@ _['^'] = function (e) {
 Expression.Statement = function (x, y, operator) {
 	var arr = [x,y];
 	arr.operator = operator;
+	
+	// subclass an array
 	arr.__proto__ = Expression.Statement.prototype;
 	return arr;
 };
 //todo: truth value type?
-_ = Expression.Statement.prototype = Object.create(Expression.prototype);
-_.constructor = Expression.Statement;
+_ = exyend(Expression.Statement, Expression);
+
 _['='] = function () {
 	
 };

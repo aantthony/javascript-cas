@@ -35,7 +35,16 @@
     console.warn(err.replace(/^Error\: /, 'Deprecated: '));
 }
 
-var startTime = new Date();var crossProduct = String.fromCharCode(215);
+var startTime = new Date();var crossProduct = String.fromCharCode(215); // &times; character
+
+/*
+  The language class represents both a parser, and information about precedence of operators for string exporter.
+  
+  These really should be seperate.
+  
+  At the moment, information is doubled up since precedence of the default language is specified in both the .jison grammar and default_language.js. There is most likely no way around this.
+  
+*/
 function Language(language) {
 	var operators = {};
 	var op_precedence = 0;
@@ -116,7 +125,7 @@ function MathError(str) {
 };
 _ = extend(MathError, Error);var Construct = {};
 
-// These functions constitute map strings from the parser to javascript-cas objects.
+// These functions map strings from the parser to javascript-cas objects.
 
 Construct.Number = function (o) {
 	var predefined = {
@@ -151,9 +160,10 @@ Construct.Single = function (s) {
 		return new Expression.Integer(n);
 	}
 	return s;
-};var Global = {};
+};
 // The global object is the global context. It will have functions like sin, cos, tan, etc.
-/* Jison generated parser */
+
+var Global = {};/* Jison generated parser */
 var calculator = (function(){
 var parser = {trace: function trace() { },
 yy: {},
@@ -623,7 +633,13 @@ exports.main = function commonjsMain(args) {
 if (typeof module !== 'undefined' && require.main === module) {
   exports.main(typeof process !== 'undefined' ? process.argv.slice(1) : require("system").args);
 }
-}function Context() {
+}/*
+ Contexts contain the set of all current variables, and restrictions/assumptions on their type and value.
+ 
+ Contradictions should perhaps trigger an error. (e.g., storing y = 2x+1, and y = 2x + 2 in the same context)
+*/
+
+function Context() {
 	
 }
 _ = Context.prototype = Object.create(Global);
@@ -760,7 +776,9 @@ calculator.parseError = function (str, hash) {
 	var er = new SyntaxError(str);
 	er.line = hash.line;
 	throw er;
-};calculator.lexer.next__ = function () {
+};// No longer in use since I found a trick to prevent jison's default parser from adding '\b's everywhere.
+
+calculator.lexer.next__ = function () {
 		if (this.done) {
 				return this.EOF;
 		}
@@ -821,12 +839,18 @@ calculator.parseError = function (str, hash) {
 // calculator.lexer.rules[7] = /^(?:\\le)/;
 // alert(calculator.lexer.rules[7]);
 
+/*
+
+	The root javascript cas class:
+	
+	All objects returned by M(...) must be Expression object.
+	
+*/
+
 function Expression(e, c) {
 	var n = language.parse(e, c);
 	return n;
 }
-
-// All objects returned by M(...) must be Expression object.
 
 _ = Expression.prototype;
 
@@ -843,7 +867,7 @@ _.imageURL = function () {
 	return 'http://latex.codecogs.com/gif.latex?' +
 		encodeURIComponent(this.s('text/latex').s);
 };
-_.image = function () {
+_.renderLaTeX = function () {
 	var image = new Image();
 	image.src = this.imageURL();
 	return image;
@@ -881,10 +905,14 @@ _['<='] = function (x) {
 	return new Expression.Statement(this, x, '<=');
 };
 
-
+// crossProduct is the '&times;' character
 _[crossProduct] = function (x) {
 	return this['*'](x);
 };
+
+// The default operator occurs when two expressions are adjacent to eachother: S -> e e.
+// Depending on the type, it usually represents associative multiplication.
+// See below for the default '*' operator implementation.
 _.default = function (x) {
 	return this['*'](x);
 };
@@ -913,7 +941,8 @@ _['%'] = function (x) {
 	return new Expression.List([this, x], '%');
 };
 
-// This may look like we are assuming that x is a number, but this doesn't matter.
+// This may look like we are assuming that x is a number, but really the important assumption is simply that it is finite. Thus infinities and indeterminates should ALWAYS override this operator
+
 _['*'] = function (x) {
 	if(x === Global.Zero) {
 		return x;
@@ -928,6 +957,11 @@ _['*'] = function (x) {
 
 
 // =========== List ============ //
+
+/*
+
+	Expression.List should be avoided whenever Expression.List.Real can be used. However, knowing when to use Real is an impossible (?) task, so sometimes this will have to do as a fallback.
+*/
 Expression.List = function(e, operator) {
 	e.__proto__ = Expression.List.prototype;
 	e.operator = operator;
@@ -935,6 +969,7 @@ Expression.List = function(e, operator) {
 };
 _ = extend(Expression.List, Expression);
 
+// Substition x -> y
 _.sub = function (x, y) {
 	var a = this[0].sub(x, y);
 	if(this.length === 1) {
@@ -1101,18 +1136,22 @@ _ = extend(Expression.TruthValue, Expression);
 Expression.True = new Expression.TruthValue();
 Expression.False = new Expression.TruthValue();
 
-//Only difference:
+//Only difference: NOT operator
 Expression.False['~'] = function () {
 	return Expression.True;
 };
 
-
+// negation operator
 _['~'] = function () {
 	return Expression.False;
 };
+
+// disjunction
 _['V'] = function (e) {
 	return e === Expression.True ? e : this;
 };
+
+// conjunction
 _['^'] = function (e) {
 	return e === Expression.True ? this : e;
 };
@@ -1121,12 +1160,14 @@ _['^'] = function (e) {
 Expression.Statement = function (x, y, operator) {
 	var arr = [x,y];
 	arr.operator = operator;
+	
+	// subclass an array
 	arr.__proto__ = Expression.Statement.prototype;
 	return arr;
 };
 //todo: truth value type?
-_ = Expression.Statement.prototype = Object.create(Expression.prototype);
-_.constructor = Expression.Statement;
+_ = exyend(Expression.Statement, Expression);
+
 _['='] = function () {
 	
 };

@@ -1,9 +1,15 @@
+/*
+
+	The root javascript cas class:
+	
+	All objects returned by M(...) must be Expression objects.
+	
+*/
+
 function Expression(e, c) {
 	var n = language.parse(e, c);
 	return n;
 }
-
-// All objects returned by M(...) must be Expression object.
 
 _ = Expression.prototype;
 
@@ -20,7 +26,7 @@ _.imageURL = function () {
 	return 'http://latex.codecogs.com/gif.latex?' +
 		encodeURIComponent(this.s('text/latex').s);
 };
-_.image = function () {
+_.renderLaTeX = function () {
 	var image = new Image();
 	image.src = this.imageURL();
 	return image;
@@ -58,10 +64,14 @@ _['<='] = function (x) {
 	return new Expression.Statement(this, x, '<=');
 };
 
-
+// crossProduct is the '&times;' character
 _[crossProduct] = function (x) {
 	return this['*'](x);
 };
+
+// The default operator occurs when two expressions are adjacent to eachother: S -> e e.
+// Depending on the type, it usually represents associative multiplication.
+// See below for the default '*' operator implementation.
 _.default = function (x) {
 	return this['*'](x);
 };
@@ -90,7 +100,8 @@ _['%'] = function (x) {
 	return new Expression.List([this, x], '%');
 };
 
-// This may look like we are assuming that x is a number, but this doesn't matter.
+// This may look like we are assuming that x is a number, but really the important assumption is simply that it is finite. Thus infinities and indeterminates should ALWAYS override this operator
+
 _['*'] = function (x) {
 	if(x === Global.Zero) {
 		return x;
@@ -105,6 +116,11 @@ _['*'] = function (x) {
 
 
 // =========== List ============ //
+
+/*
+
+	Expression.List should be avoided whenever Expression.List.Real can be used. However, knowing when to use Real is an impossible (?) task, so sometimes this will have to do as a fallback.
+*/
 Expression.List = function(e, operator) {
 	e.__proto__ = Expression.List.prototype;
 	e.operator = operator;
@@ -112,6 +128,7 @@ Expression.List = function(e, operator) {
 };
 _ = extend(Expression.List, Expression);
 
+// Substition x -> y
 _.sub = function (x, y) {
 	var a = this[0].sub(x, y);
 	if(this.length === 1) {
