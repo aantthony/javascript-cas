@@ -1,0 +1,49 @@
+.pln {
+    color: black
+}
+@media screen,print,projection {.str {
+    color: #7F12B2;
+}
+.kwd {
+    color: #066;
+}
+.com {
+    color: #888;
+    font-style: italic
+}
+.typ {
+    color: #812;
+}
+.lit {
+    color: #066
+}
+.pun,.opn,.clo {
+    color: #660
+}
+.tag {
+    color: #A61700
+}
+.atn {
+    color: #077
+}
+.atv {
+    color: #7F12B2
+}
+.dec,.var {
+    color: #606
+}
+.fun {
+    color: red
+}
+
+}
+
+pre.prettyprint {
+    
+}
+ol.linenums {
+    color: #bbb;
+    margin-top: 0;
+    margin-bottom: 0;
+    margin-left: 30px
+}

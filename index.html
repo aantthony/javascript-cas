@@ -2,39 +2,61 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-us" lang="en-us">
 <head>
    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
-   <title>Javascript CAS (Beta)</title>
+   <title>Javascript CAS</title>
+   <link rel='stylesheet' href="www_assets/css/bootstrap.min.css" type="text/css" media="all" />
+   <link rel='stylesheet' href="www_assets/css/prettify.css" type="text/css" media="all" />
    <meta name="author" content="Anthony" />
-    <link rel="stylesheet" href="/css/screen.css" type="text/css" media="screen, projection" />
-    <script type="text/javascript">
-  var _gaq = _gaq || [];
-  _gaq.push(['_setAccount', 'UA-20673813-1']);
-  _gaq.push(['_trackPageview']);
-
-  (function() {
-    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-  })();
-</script>
+    <link rel="stylesheet" href="www_assets/css/screen.css" type="text/css" media="screen, projection" />
+<!-- @todo: Insert Google Analytics -->
 </head>
 <body>
-<header>
-    <aside>
-        <a href="/contact">Contact</a>
-        <a href="http://twitter.com/aantthony">Twitter: aantthony</a>
-    </aside>
-    <a href="/" style="display:block;float:left"><img src="http://gravatar.com/avatar/b5c83649658d9d33c68d9a29790a9238?s=128" width="128" height="128" /></a><h1><a href="/" id="root">Anthony Foster</a></h1>
-</header>
-<div class="page">
- <div id="home">
-    <h1>Javascript-Cas</h1>
-    <ul class="posts">
-        <li><a href="http://aantthony.github.com/javascript-cas/cas/"><div class="icon"><img src="http://aantthony.github.com/javascript-cas/icon.png" width="64" /></div></a> <a href="http://aantthony.github.com/javascript-cas/cas/">Try it now</a> - Javascript Computer Algebra System / Symbolic Math Library</li>
-    </ul>
-</div>
-<a href="http://twitter.com/aantthony" class="twitter-follow-button">Follow @aantthony</a>
-<script src="http://platform.twitter.com/widgets.js" type="text/javascript"></script>
-</div>
- <footer>Anthony Foster</footer>
+  <a href="http://github.com/aantthony/contextmenu"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png" alt="Fork me on GitHub"></a>
+  <div class="header">
+    <div class="container">
+      <h1>JavaScript-CAS</h1>
+      <p>A simple, expandable computer algebra system library. <small>Licence: LGPL</small></p>
+    </div>
+  </div>
+  <div class="container page">
+    <div class="main">
+      
+      <div style="text-align: center">
+        <img src="icon.png" />
+          
+          <h1>Do math in JavaScript!</h1>
+      </div>
+      <hr />
+        
+      <div class="row">
+        <div class="span7">
+          <p>
+            Javascript CAS is a simple computer algebra system designed for client-side use in web apps (and node.js too).
+          </p>
+          <p>
+            Including math.js in your web pages will create a single global object <code class="prettyprint">M(str, context)</code>, which is a function that parses a latex expression string.
+          </p>
+        </div>
+        <div class="span4">
+          <div>
+            Github repository:
+            <li><a href="#">github://aantthony/javascript-cas</a></li>
+          </div>
+          <div>
+            License:
+            <li><a href="#">LGPL</a></li>
+          </div>
+          
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="container footer">
+    <div class="main">
+        Copyright &copy; 2012 <a href="http://twitter.com/aantthony/" title="Follow me on Twitter">@aantthony</a></div>
+    </div>
+  </div>
+    <script type="text/javascript" src="www_assets/prettify.js"></script>
+    <script type="text/javascript"> prettyPrint();</script>
+    <script type="text/javascript" src="build/math.js"></script>
 </body>
 </html>
