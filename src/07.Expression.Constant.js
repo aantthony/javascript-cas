@@ -1,7 +1,7 @@
 Expression.Constant = function() {
 	throw new Error('Expression.Constant created directly');
 };
-_ = Expression.Constant.prototype = Object.create(Expression.prototype);
+_ = extend(Expression.Constant, Expression);
 _.simplify = function() {
 	return this;
 };

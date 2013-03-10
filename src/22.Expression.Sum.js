@@ -5,8 +5,7 @@ Expression.Sum = function Summation(x, a, b, f_unbound) {
 	this.b = b;
 };
 // TODO: It is always real?
-_ = Expression.Sum.prototype = Object.create(Expression.Symbol.Real.prototype);
-_.constructor = Expression.Sum;
+_ = extend(Expression.Sum, Expression.Symbol.Real);
 
 Expression.Sum.Real = function Summation_Real(x,a,b,f_unbound) {
 	this.x = x;

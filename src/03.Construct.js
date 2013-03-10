@@ -1,5 +1,7 @@
 var Construct = {};
 
+// These functions constitute map strings from the parser to javascript-cas objects.
+
 Construct.Number = function (o) {
 	var predefined = {
 		'0': Global.Zero,

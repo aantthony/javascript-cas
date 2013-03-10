@@ -2,8 +2,8 @@
 function Infinitesimal(x) {
 	this.x = x;
 }
-_ = Infinitesimal.prototype = Object.create(Expression.prototype);
-_.constructor = Infinitesimal;
+_ = extend(Infinitesimal, Expression);
+
 _['+'] = function (x) {
 	if(x instanceof Infinitesimal) {
 		throw('Infinitesimal addition');
@@ -27,7 +27,7 @@ _['*'] = function (x) {
 	}
 	this.x = this.x['*'](x);
 };
-_.s = function(lang) {
+_.s = function (lang) {
 	if(lang !== 'text/latex') {
 		throw ('Infinitesimal numbers cannot be exported to programming languages');
 	}
@@ -43,8 +43,7 @@ function Derivative(x) {
 	// technically should be a function / operator
 	this.x = x;
 }
-_ = Derivative.prototype = Object.create(Expression.Function.prototype);
-_.constructor = Derivative;
+_ = extend(Derivative, Expression.Function);
 _.default = function (x) {
 	return x.differentiate(this.x);
 };

@@ -27,245 +27,7 @@ var javascript = {
 };
 
 
-var exportLanguages={
-	'text/javascript': function (o, x){
-		function _(x){
-			return '('+x+')';
-		}
-		// TODO: Fails on f(x)^2
-		var p = o === undefined ? language.precedence('default') : language.precedence(o);
-		function S_(x){
-			if(x.p<=p){
-				return _(x.s);
-			}
-			return x.s;
-		}
-		switch(o){
-			case '=':
-				return {s:S_(x[0])+o+S_(x[1]), t: javascript.assignment, p: p};
-			case '&&':
-			case '<':
-			case '>':
-			case '>=':
-			case '<=':
-			case '!==':
-			case '!=':
-			case '==':
-			case '===':
-			
-				return {s:S_(x[0])+o+S_(x[1]), t: javascript.Boolean, p: p};
-			
-			case '+':
-			case '-':
-			case '/':
-			case '*':
-			case '?':
-			case ':':
-			case ',':
-			case '>>':
-			case '<<':
-			case '&':
-			case '%':
-				return {s:S_(x[0])+o+S_(x[1]), t: javascript.Number, p: p};
-			case '_':
-				if(x[0].t === javascript.ref && (x[1].t === javascript.ref || x[1].t == javascript.Number)){
-					return {s:S_(x[0])+o+S_(x[1]), t: javascript.ref, p: p};
-				}else{
-					throw('Operator \'_\' does not exist in javaScript for those types.');
-				}
-			case '~':
-				return {s:o+S_(x[0]),t:javascript.Number, p: p};
-			case '@-':
-			case '@+':
-				return {s:o.substring(1)+S_(x[0]),t:javascript.Number, p: p};
-			case '^':
-				return {s:'Math.pow('+x[0].s+','+x[1].s+')',t:javascript.Number, p: p};
-			case undefined:
-				if(x[0].t===javascript.Function){
-					return {s:x[0].s+'('+x[1].s+')',t:javascript.Number, p: p};
-				}else{
-					//this is ugly:
-					p=language.precedence('*');
-					return {s:S_(x[0])+'*'+S_(x[1]),t:javascript.Number, p: p};
-				}
-			case '#':
-				//p=precedence('return ');
-				return {s:'function(x){return '+x[0].s+'}', t:javascript.Function, p: p};
-			case '√':
-				return {s:'Math.sqrt('+x[0].s+')',t:javascript.Number, p: p};
-			case '!':
-				return {s:'factorial('+x[1].s+')',t:javascript.Number, p: p};
-			default:
-				throw('Could not translate operator: \''+o+'\' into javscript!');
-		}
-	},
-	'x-shader/x-fragment': function(o, x){
-		//http://www.opengl.org/registry/doc/GLSLangSpec.Full.1.20.8.pdf
-		function _(x) {
-			return '(' + x + ')';
-		}
-		// TODO: Fails on f(x)^2
-		var p = o === undefined ? language.precedence('default') : language.precedence(o);
-		function S_(x) {
-			if(x.p <= p){
-				return _(x.s);
-			}
-			return x.s;
-		}
-		switch(o){
-			case '&&':
-			case '||':
-				if(x[0].t === x[1].t && x[1].t === glsl.bool){
-					return {s:S_(x[0])+o+S_(x[1]), t: glsl.bool, p: p};
-				}
-				throw('Operands must also be boolean values');
-			case '==':
-			case '<':
-			case '>':
-			case '<=':
-			case '>=':
-			case '!=':
-				if(x[0].t !== x[1].t){
-					throw('The equality operators and assignment operator are only allowed if the two operands are same size and type.');
-				}
-				return {s:S_(x[0])+o+S_(x[1]), t: glsl.bool, p: p};
-			
-			case ':':
-				if(x[0].t !== x[1].t){
-					throw('Switching groups must be the same type');
-				}
-				
-				return {s:S_(x[0])+o+S_(x[1]), t: x[1].t, p: p};
-			case '?':
-				if(x[0].t !== glsl.bool){
-					throw('Must be boolean type');
-				}
-				return {s:S_(x[0])+o+S_(x[1]), t: x[1].t, p: p};
-				
-			case '+':
-			case '-':
-			case ',':
-				if(x[0].t !== x[1].t){
-					throw('Types don\'t match: '+x[0].t+', '+x[1].t);
-				}
-				return {s:S_(x[0])+o+S_(x[1]), t: glsl.fp, p: p};
-			case '*':
-			case '/':
-				return {s:S_(x[0])+o+S_(x[1]), t: glsl.fp, p: p};
-			case '_':
-				/*if(a.t === types.variable && (b.t === types.variable || b.t == types.number)){
-					return {s:S_(a)+o+S_(b), t: glsl.float, p: p};
-				}else{
-					throw('Operator '_' does not exist in javaScript for those types.');
-				}*/
-				throw('Write this later.');
-			case '~':
-				return {s:o+S_(x[0]),t:javascript.Number, p: p};
-			case '@-':
-			case '@+':
-				return {s:o.substring(1)+S_(x[0]),t:glsl.fp, p: p};
-			case '^':
-				//TODO: remove this hack
-				if (x[0].s === '2.718281828459045e+0') {
-					return {s: 'exp('+x[1].s+')', t: glsl.fp, p: p};
-				}
-				return {s:'pow('+x[0].s+','+x[1].s+')',t:glsl.fp, p: p};
-			case undefined:
-				if(x[0].t===glsl.func){
-					return {s:x[0].s+'('+x[1].s+')',t:glsl.fp, p: p};
-				}else{
-					//this is ugly:
-					p=language.precedence('*');
-					return {s:S_(x[0])+'*'+S_(x[1]),t:glsl.fp, p: p};
-				}
-			case '#':
-				throw('Anonymous functions not yet supported.');
-			case '√':
-				return {s:'sqrt('+x[0].s+')',t:glsl.fp, p: p};
-			case '!':
-				//requirements....
-				return {s:'factorial('+x[0].s+')',t:glsl.fp, p: p};
-			case '%':
-				return {s: 'mod('+x[0].s+','+x[1].s+')',t:glsl.fp, p:p};
-			case '&':
-			case '|':
-			//case '%':
-			case '~':
-			case '>>':
-			case '<<':
-				throw('Reserved');
-			default:
-				throw('Could not translate operator: \''+o+'\' into glsl!');
-		}
-	},
-	'text/latex':function(o,x){
-		function _(x){
-			return '\\left('+x+'\\right)';
-		}
-		// TODO: Fails on f(x)^2
-		var p = o === undefined ? language.precedence('default') : language.precedence(o);
-		function S_(x, e){
-			if(e){
-				if(x.p < p){
-					return _(x.s);
-				}
-				return x.s;
-			}
-			if(x.p === p) {
-				return language.assoc(o) === true ? x.s : _(x.s);
-			} else if(x.p <= p){
-				return _(x.s);
-			}
-			return x.s;
-		}
-		switch(o){
-			case '/':
-				return {s:'\\frac{'+x[0].s+'}{'+x[1].s+'}',t:javascript.Number, p: p};
-			case '^':
-			case '_':
-				return {s:S_(x[0])+o+'{'+x[1].s+'}',t:javascript.ref, p: p};
-			case undefined:
-			//TODO: CLEANUP, check types
-				if (x[0].s === '\\sqrt') {
-					return {s: '\\sqrt{'+x[1].s + '}',t:javascript.Number, p: p};
-				} else if (x[0].s === '\\abs') {
-					return {s: '\\left|'+x[1].s + '\\right|',t:javascript.Number, p: p};
-				}
-				return {s: S_(x[0], 1) + ' ' + S_(x[1], 1), t: javascript.Number, p: p};
-				return {s:S_(x[0])+_(x[1].s),t:javascript.Number, p: p};
-			//case '√':
-			//	return {s:'\\sqrt{'+x[0].s+'}',t:javascript.Number, p: p};
-			case '#':
-				return {s:o+_(x[0].s),t:javascript.Fumber};
-			case ',':
-				return {
-					s: '\\left('+x.map(S_).join(o)+'\\right)',
-					t: javascript.Array,
-					p: p
-				};
-		}
-		if(o[0]=='@'){
-			return {s:o[1]+S_(x[0]),t:javascript.Number, p: p};
-		}
-		if(language.postfix(o)){
-			return {s:S_(x[0])+o, t:javascript.Number, p: p};
-		}
-		var self=this;
-		var os={
-				//'*':'\\cdot ',
-				'*':' ',
-				'∨':'\\vee ',
-				'&&':'\\wedge ',
-				'±':'\\pm ',
-				'∘':'\\circ '
-		};
-		return {
-			s: x.map(S_).join(os[o] || o),
-			t: javascript.Number,
-			p: p
-		};
-	}
-};
+
 var defLang = language;
 function Code (s, pre){
 	this.pre = [] || pre;
@@ -601,6 +363,20 @@ Expression.Vector.prototype._s = function(lang) {
 };
 
 
+Expression.Statement.prototype._s = function (lang) {
+	var p = language.precedence(this.operator);
+	function _(x) {
+		if(p > x.p){
+			return paren(x.s);
+		}
+		return x.s;
+	}
+	
+	var c0 = this[0]._s(lang);
+	var c1 = this[1]._s(lang);
+	
+	return c0.merge(c1, _(c0) + this.operator + _(c1), p);
+};
 Expression.True._s = function (lang) {
 	return new Code('true');
 };
@@ -622,5 +398,4 @@ Expression.prototype.compile = function(x){
 Expression.prototype.glslFunction = function(type, name, args){
 	return this.s('x-shader/x-fragment').glslFunction(type, name, args)
 };
-
 

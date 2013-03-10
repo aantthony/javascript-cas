@@ -5,8 +5,8 @@ Expression.List.Real = function List_Real(x, operator) {
 	}
 	return x;
 };
-_ = Expression.List.Real.prototype = Object.create(Expression.List.prototype);
-_.constructor = Expression.List.Real;
+_ = extend(Expression.List.Real, Expression.List);
+
 _.realimag = function (){
 	return Expression.List.ComplexCartesian([
 		this,

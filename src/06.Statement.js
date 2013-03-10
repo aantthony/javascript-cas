@@ -2,7 +2,7 @@ Expression.TruthValue = function TruthValue(v) {
 
 };
 
-_ = Expression.TruthValue.prototype = Object.create(Expression.prototype);
+_ = extend(Expression.TruthValue, Expression);
 
 Expression.True = new Expression.TruthValue();
 Expression.False = new Expression.TruthValue();

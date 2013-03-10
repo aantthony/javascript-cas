@@ -1,10 +1,9 @@
 Expression.Symbol = function Symbol(str) {
-    //Req: str is a String
+	//Req: str is a String
 	this.symbol = str;
 };
 
-_ = Expression.Symbol.prototype = Object.create(Expression.prototype);
-_.constructor = Expression.Symbol;
+_ = extend(Expression.Symbol, Expression);
 
 _.differentiate = function (x) {
 	return this === x ? Global.One : Global.Zero;

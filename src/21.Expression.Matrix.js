@@ -5,8 +5,7 @@ Expression.Matrix = function (e, r, c) {
 	return e;
 };
 
-_ = Expression.Matrix.prototype = Object.create(Expression.prototype);
-_.constructor = Expression.Matrix;
+_ = extend(Expression.Matrix, Expression);
 _.default = _['*'] = function (x) {
 	if(x.constructor === Expression.Matrix) {
 		// Broken

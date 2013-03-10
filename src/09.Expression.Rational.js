@@ -2,8 +2,8 @@ Expression.Rational = function Rational(a, b) {
 	this.a = a;
 	this.b = b;
 };
-_ = Expression.Rational.prototype = Object.create(Expression.NumericalReal.prototype); // --> constant
-_.constructor = Expression.Rational;
+_ = extend(Expression.Rational, Expression.NumericalReal); // --> constant
+
 _.__defineGetter__("value", function () {
 	return this.a / this.b;
 });

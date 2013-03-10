@@ -6,8 +6,8 @@ Expression.Function = function (p) {
 	this.derivative = p.derivative;
 	this.realimag = p.realimag;
 };
-_ = Expression.Function.prototype = Object.create(Expression.prototype);
-_.constructor = Expression.Function;
+_ = extend(Expression.Function, Expression);
+
 _.default = function (argument) {
 	return ;
 };
@@ -18,7 +18,7 @@ _.differentiate = function () {
 	throw('Function has no derivative defined.');
 }
 
-_.s = function (lang) {
+_._s = function (lang) {
 	if (this[lang]) {
 		return new Code(this[lang]);
 	}

@@ -6,8 +6,7 @@ Expression.Conditional = function Conditional(cond, a, b) {
 	this.a = a;
 	this.b = b || Global.undefined;
 };
-_ = Expression.Conditional.prototype = Object.create(Expression.prototype);
-_.constructor = Expression.Conditional;
+_ = extend(Expression.Conditional, Expression);
 
 _.s = function (lang) {
 	throw('Not real... too confusing');

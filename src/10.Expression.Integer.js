@@ -1,9 +1,8 @@
 Expression.Integer = function Integer(x) {
 	this.a = x;
 };
-_ = Expression.Integer.prototype = Object.create(Expression.Rational.prototype);
+_ = extend(Expression.Integer, Expression.Rational);
 _.b = 1;
-_.constructor = Expression.Integer;
 
 _['+'] = function (x) {
 	if (x instanceof Expression.Integer) {

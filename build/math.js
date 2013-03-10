@@ -21,7 +21,13 @@
 
 (function(undefined){
 	"use strict";
-	var _;function deprecated(message){
+	var _;
+	
+	function extend(sub, sup) {
+  	var _ = sub.prototype = Object.create(sup.prototype);
+  	_.constructor = sub;
+  	return _;
+	}function deprecated(message){
 	var err = new Error(message).stack;
 	if(!err){
 		return console.warn('Deprecated: ' + message);
@@ -96,12 +102,21 @@ _.Number = function(o) {
 		return new Expression.Rational(n, d).reduce();
 	}
 	return predefined[o] || new Expression.NumericalReal(Number(o));
-};function MathError(str) {
+};/*
+
+ Errors used by javascript-cas:
+  - SyntaxError (parsing errors)
+  - MathError ()
+  ? ReferenceError (reference to variable not defined in context) (not currently thrown)
+
+*/
+
+function MathError(str) {
 	this.message = str;
 };
-MathError.prototype = Object.create(Error.prototype);
+_ = extend(MathError, Error);var Construct = {};
 
-var Construct = {};
+// These functions constitute map strings from the parser to javascript-cas objects.
 
 Construct.Number = function (o) {
 	var predefined = {
@@ -136,7 +151,9 @@ Construct.Single = function (s) {
 		return new Expression.Integer(n);
 	}
 	return s;
-};var Global = {};/* Jison generated parser */
+};var Global = {};
+// The global object is the global context. It will have functions like sin, cos, tan, etc.
+/* Jison generated parser */
 var calculator = (function(){
 var parser = {trace: function trace() { },
 yy: {},
@@ -722,7 +739,6 @@ Language.build = function () {
 		
 		// Parse using context free grammar ([graph]/grammar/calculator.jison)
 		var ast = calculator.parse(s);
-		
 		var result = evaluate(ast);
 		result._ast = ast;
 		if(root !== context) {
@@ -809,18 +825,23 @@ function Expression(e, c) {
 	var n = language.parse(e, c);
 	return n;
 }
-//_ = Object.create(Array.prototype);
-//_ = {};
+
+// All objects returned by M(...) must be Expression object.
+
 _ = Expression.prototype;
+
+// Trigger an error when a math expression is used with the javascript + operator:
+_.toString = null;
 _.valueOf = null;
+
 _.identity = function () {
-    deprecated('Slow');
+	deprecated('Slow');
 	return this;
 };
 
-_.toString = null;
 _.imageURL = function () {
-	return 'http://latex.codecogs.com/gif.latex?' + encodeURIComponent(this.s('text/latex').s);
+	return 'http://latex.codecogs.com/gif.latex?' +
+		encodeURIComponent(this.s('text/latex').s);
 };
 _.image = function () {
 	var image = new Image();
@@ -833,7 +854,7 @@ _.sub = function () {
 _.lim = function (x, y) {
 	return this.sub(x, y);
 };
-// Global Root operators:
+
 _[','] = function (x) {
 	if(x instanceof Expression.Statement) {
 		return new Expression.Conditional(x, this);
@@ -860,15 +881,6 @@ _['<='] = function (x) {
 	return new Expression.Statement(this, x, '<=');
 };
 
-_['*'] = function (x) {
-	if(x === Global.Zero) {
-		return x;
-	}
-	if(x === Global.One) {
-		return this;
-	}
-	return new Expression.List([this, x], '*');
-};
 
 _[crossProduct] = function (x) {
 	return this['*'](x);
@@ -901,22 +913,27 @@ _['%'] = function (x) {
 	return new Expression.List([this, x], '%');
 };
 
-
-
-
+// This may look like we are assuming that x is a number, but this doesn't matter.
+_['*'] = function (x) {
+	if(x === Global.Zero) {
+		return x;
+	}
+	if(x === Global.One) {
+		return this;
+	}
+	return new Expression.List([this, x], '*');
+};
 
 
 
 
 // =========== List ============ //
 Expression.List = function(e, operator) {
-    e.__proto__ = Expression.List.prototype;
+	e.__proto__ = Expression.List.prototype;
 	e.operator = operator;
 	return e;
 };
-_ = Expression.List.prototype = Object.create(_);
-_.constructor = Expression.List;
-
+_ = extend(Expression.List, Expression);
 
 _.sub = function (x, y) {
 	var a = this[0].sub(x, y);
@@ -925,9 +942,11 @@ _.sub = function (x, y) {
 	}
 	var b = this[1].sub(x, y);
 	
+	// Re-evaluate:
 	return a[this.operator || 'default'](b);
 };
 
+// @ signifies a unary operator. eg: "y = @-2" <==> y = -2. Users never input or see @.
 _['@-'] = function () {
 	if(this.operator === '@-') {
 		return this[0];
@@ -1077,7 +1096,7 @@ Expression.TruthValue = function TruthValue(v) {
 
 };
 
-_ = Expression.TruthValue.prototype = Object.create(Expression.prototype);
+_ = extend(Expression.TruthValue, Expression);
 
 Expression.True = new Expression.TruthValue();
 Expression.False = new Expression.TruthValue();
@@ -1192,7 +1211,7 @@ var mathematica = new Language([
 ]);Expression.Constant = function() {
 	throw new Error('Expression.Constant created directly');
 };
-_ = Expression.Constant.prototype = Object.create(Expression.prototype);
+_ = extend(Expression.Constant, Expression);
 _.simplify = function() {
 	return this;
 };
@@ -1202,12 +1221,11 @@ _.differentiate = function() {
 _.default = function (x){
 	return this['*'](x);
 };Expression.Symbol = function Symbol(str) {
-    //Req: str is a String
+	//Req: str is a String
 	this.symbol = str;
 };
 
-_ = Expression.Symbol.prototype = Object.create(Expression.prototype);
-_.constructor = Expression.Symbol;
+_ = extend(Expression.Symbol, Expression);
 
 _.differentiate = function (x) {
 	return this === x ? Global.One : Global.Zero;
@@ -1498,8 +1516,8 @@ Expression.Function = function (p) {
 	this.derivative = p.derivative;
 	this.realimag = p.realimag;
 };
-_ = Expression.Function.prototype = Object.create(Expression.prototype);
-_.constructor = Expression.Function;
+_ = extend(Expression.Function, Expression);
+
 _.default = function (argument) {
 	return ;
 };
@@ -1510,7 +1528,7 @@ _.differentiate = function () {
 	throw('Function has no derivative defined.');
 }
 
-_.s = function (lang) {
+_._s = function (lang) {
 	if (this[lang]) {
 		return new Code(this[lang]);
 	}
@@ -1554,9 +1572,8 @@ _.default = function (x) {
 	this._imag = imag;
 };
 
-_ = Expression.NumericalComplex.prototype = Object.create(Expression.Constant.prototype);
+_ = extend(Expression.NumericalComplex, Expression.Constant);
 
-_.constructor = Expression.NumericalComplex;
 _.real = function() {
 	return new Expression.NumericalReal(this._real);
 };
@@ -1817,8 +1834,7 @@ _['!'] = function (){
 	this.a = a;
 	this.b = b || Global.undefined;
 };
-_ = Expression.Conditional.prototype = Object.create(Expression.prototype);
-_.constructor = Expression.Conditional;
+_ = extend(Expression.Conditional, Expression);
 
 _.s = function (lang) {
 	throw('Not real... too confusing');
@@ -1892,9 +1908,8 @@ Expression.NumericalReal = function NumericalReal(e) {
 	this.value = e;
 };
 
-_ = Expression.NumericalReal.prototype = Object.create(Expression.NumericalComplex.prototype);
+_ = extend(Expression.NumericalReal, Expression.NumericalComplex);
 
-_.constructor = Expression.NumericalReal;
 Object.defineProperty(_, "_real", {
 	get: function () {
 		return this.value;
@@ -2077,6 +2092,25 @@ _['>'] = function (x) {
 	if (x instanceof Expression.NumericalReal) {
 		return this.value > x.value ? Expression.True : Expression.False;
 	}
+	return _.__proto__['>'].call(this, x);
+};
+_['<'] = function (x) {
+	if (x instanceof Expression.NumericalReal) {
+		return this.value < x.value ? Expression.True : Expression.False;
+	}
+	return _.__proto__['<'].call(this, x);
+};
+_['<='] = function (x) {
+	if (x instanceof Expression.NumericalReal) {
+		return this.value <= x.value ? Expression.True : Expression.False;
+	}
+	return _.__proto__['<='].call(this, x);
+};
+_['>='] = function (x) {
+	if (x instanceof Expression.NumericalReal) {
+		return this.value >= x.value ? Expression.True : Expression.False;
+	}
+	return _.__proto__['>='].call(this, x);
 };
 _.apply = function(operator, x) {
 	switch (operator){
@@ -2270,8 +2304,8 @@ Expression.Rational = function Rational(a, b) {
 	this.a = a;
 	this.b = b;
 };
-_ = Expression.Rational.prototype = Object.create(Expression.NumericalReal.prototype); // --> constant
-_.constructor = Expression.Rational;
+_ = extend(Expression.Rational, Expression.NumericalReal); // --> constant
+
 _.__defineGetter__("value", function () {
 	return this.a / this.b;
 });
@@ -2420,9 +2454,8 @@ _.reduce = function () {
 Expression.Integer = function Integer(x) {
 	this.a = x;
 };
-_ = Expression.Integer.prototype = Object.create(Expression.Rational.prototype);
+_ = extend(Expression.Integer, Expression.Rational);
 _.b = 1;
-_.constructor = Expression.Integer;
 
 _['+'] = function (x) {
 	if (x instanceof Expression.Integer) {
@@ -2612,8 +2645,8 @@ Expression.List.ComplexPolar = function (x){
 	x.__proto__ = Expression.List.ComplexPolar.prototype;
 	return x;
 }
-_ = Expression.List.ComplexPolar.prototype = Object.create(Expression.prototype);
-_.constructor = Expression.List.ComplexPolar;
+_ = extend(Expression.List.ComplexPolar, Expression);
+
 _.polar = function(){
 	return this;
 };
@@ -2846,19 +2879,18 @@ Expression.List.prototype.realimag = function() {
 	which requires two evaluations of f(x).
 
 */
-Expression.List.ComplexCartesian = function ComplexCartesian(x){
+Expression.List.ComplexCartesian = function ComplexCartesian(x) {
 	x.__proto__ = Expression.List.ComplexCartesian.prototype;
 	return x;
 };
-_ = Expression.List.ComplexCartesian.prototype = Object.create(Expression.prototype);
-_.constructor = Expression.List.ComplexCartesian;
-_.realimag = function(){
+_ = extend(Expression.List.ComplexCartesian, Expression);
+_.realimag = function () {
 	return this;
 };
-_.real = function(){
+_.real = function () {
 	return this[0];
 };
-_.imag = function(){
+_.imag = function () {
 	return this[1];
 };
 _.conjugate = function () {
@@ -2991,7 +3023,7 @@ _.differentiate = function (x) {
 };
 
 
-_.apply = function(o, x){
+_.apply = function(o, x) {
 	//TODO: ensure this has an imaginary part. If it doesn't it is a huge waste of computation
 	if (x.constructor === this.constructor) {
 		switch(o) {
@@ -3096,8 +3128,8 @@ _.apply = function(o, x){
 	}
 	return x;
 };
-_ = Expression.List.Real.prototype = Object.create(Expression.List.prototype);
-_.constructor = Expression.List.Real;
+_ = extend(Expression.List.Real, Expression.List);
+
 _.realimag = function (){
 	return Expression.List.ComplexCartesian([
 		this,
@@ -3539,6 +3571,10 @@ Expression.List.prototype.dep = function (vars) {
 		//vars.influcenes.true(this);
 		return true;
 	}
+	if(this.operator && this.operator[0] === '@') {
+		// Unary operator
+		return false;
+	}
 	if (this[1].dep(vars)) {
 		// vars.influcenes.true(this);
 		return true;
@@ -3631,8 +3667,8 @@ Expression.List.Real.prototype.roots = function (vars) {
 function Infinitesimal(x) {
 	this.x = x;
 }
-_ = Infinitesimal.prototype = Object.create(Expression.prototype);
-_.constructor = Infinitesimal;
+_ = extend(Infinitesimal, Expression);
+
 _['+'] = function (x) {
 	if(x instanceof Infinitesimal) {
 		throw('Infinitesimal addition');
@@ -3656,7 +3692,7 @@ _['*'] = function (x) {
 	}
 	this.x = this.x['*'](x);
 };
-_.s = function(lang) {
+_.s = function (lang) {
 	if(lang !== 'text/latex') {
 		throw ('Infinitesimal numbers cannot be exported to programming languages');
 	}
@@ -3672,8 +3708,7 @@ function Derivative(x) {
 	// technically should be a function / operator
 	this.x = x;
 }
-_ = Derivative.prototype = Object.create(Expression.Function.prototype);
-_.constructor = Derivative;
+_ = extend(Derivative, Expression.Function);
 _.default = function (x) {
 	return x.differentiate(this.x);
 };
@@ -3725,8 +3760,8 @@ Expression.List.prototype.lim = function (x, y) {
 	return e;
 };
 
-_ = Expression.Vector.prototype = Object.create(Expression.prototype);
-_.constructor = Expression.Vector;
+_ = extend(Expression.Vector, Expression);
+
 _[',.'] = function (x) {
 	
 	
@@ -3904,8 +3939,7 @@ Expression.Matrix = function (e, r, c) {
 	return e;
 };
 
-_ = Expression.Matrix.prototype = Object.create(Expression.prototype);
-_.constructor = Expression.Matrix;
+_ = extend(Expression.Matrix, Expression);
 _.default = _['*'] = function (x) {
 	if(x.constructor === Expression.Matrix) {
 		// Broken
@@ -3956,8 +3990,7 @@ Expression.Sum = function Summation(x, a, b, f_unbound) {
 	this.b = b;
 };
 // TODO: It is always real?
-_ = Expression.Sum.prototype = Object.create(Expression.Symbol.Real.prototype);
-_.constructor = Expression.Sum;
+_ = extend(Expression.Sum, Expression.Symbol.Real);
 
 Expression.Sum.Real = function Summation_Real(x,a,b,f_unbound) {
 	this.x = x;
@@ -4155,245 +4188,7 @@ var javascript = {
 };
 
 
-var exportLanguages={
-	'text/javascript': function (o, x){
-		function _(x){
-			return '('+x+')';
-		}
-		// TODO: Fails on f(x)^2
-		var p = o === undefined ? language.precedence('default') : language.precedence(o);
-		function S_(x){
-			if(x.p<=p){
-				return _(x.s);
-			}
-			return x.s;
-		}
-		switch(o){
-			case '=':
-				return {s:S_(x[0])+o+S_(x[1]), t: javascript.assignment, p: p};
-			case '&&':
-			case '<':
-			case '>':
-			case '>=':
-			case '<=':
-			case '!==':
-			case '!=':
-			case '==':
-			case '===':
-			
-				return {s:S_(x[0])+o+S_(x[1]), t: javascript.Boolean, p: p};
-			
-			case '+':
-			case '-':
-			case '/':
-			case '*':
-			case '?':
-			case ':':
-			case ',':
-			case '>>':
-			case '<<':
-			case '&':
-			case '%':
-				return {s:S_(x[0])+o+S_(x[1]), t: javascript.Number, p: p};
-			case '_':
-				if(x[0].t === javascript.ref && (x[1].t === javascript.ref || x[1].t == javascript.Number)){
-					return {s:S_(x[0])+o+S_(x[1]), t: javascript.ref, p: p};
-				}else{
-					throw('Operator \'_\' does not exist in javaScript for those types.');
-				}
-			case '~':
-				return {s:o+S_(x[0]),t:javascript.Number, p: p};
-			case '@-':
-			case '@+':
-				return {s:o.substring(1)+S_(x[0]),t:javascript.Number, p: p};
-			case '^':
-				return {s:'Math.pow('+x[0].s+','+x[1].s+')',t:javascript.Number, p: p};
-			case undefined:
-				if(x[0].t===javascript.Function){
-					return {s:x[0].s+'('+x[1].s+')',t:javascript.Number, p: p};
-				}else{
-					//this is ugly:
-					p=language.precedence('*');
-					return {s:S_(x[0])+'*'+S_(x[1]),t:javascript.Number, p: p};
-				}
-			case '#':
-				//p=precedence('return ');
-				return {s:'function(x){return '+x[0].s+'}', t:javascript.Function, p: p};
-			case '√':
-				return {s:'Math.sqrt('+x[0].s+')',t:javascript.Number, p: p};
-			case '!':
-				return {s:'factorial('+x[1].s+')',t:javascript.Number, p: p};
-			default:
-				throw('Could not translate operator: \''+o+'\' into javscript!');
-		}
-	},
-	'x-shader/x-fragment': function(o, x){
-		//http://www.opengl.org/registry/doc/GLSLangSpec.Full.1.20.8.pdf
-		function _(x) {
-			return '(' + x + ')';
-		}
-		// TODO: Fails on f(x)^2
-		var p = o === undefined ? language.precedence('default') : language.precedence(o);
-		function S_(x) {
-			if(x.p <= p){
-				return _(x.s);
-			}
-			return x.s;
-		}
-		switch(o){
-			case '&&':
-			case '||':
-				if(x[0].t === x[1].t && x[1].t === glsl.bool){
-					return {s:S_(x[0])+o+S_(x[1]), t: glsl.bool, p: p};
-				}
-				throw('Operands must also be boolean values');
-			case '==':
-			case '<':
-			case '>':
-			case '<=':
-			case '>=':
-			case '!=':
-				if(x[0].t !== x[1].t){
-					throw('The equality operators and assignment operator are only allowed if the two operands are same size and type.');
-				}
-				return {s:S_(x[0])+o+S_(x[1]), t: glsl.bool, p: p};
-			
-			case ':':
-				if(x[0].t !== x[1].t){
-					throw('Switching groups must be the same type');
-				}
-				
-				return {s:S_(x[0])+o+S_(x[1]), t: x[1].t, p: p};
-			case '?':
-				if(x[0].t !== glsl.bool){
-					throw('Must be boolean type');
-				}
-				return {s:S_(x[0])+o+S_(x[1]), t: x[1].t, p: p};
-				
-			case '+':
-			case '-':
-			case ',':
-				if(x[0].t !== x[1].t){
-					throw('Types don\'t match: '+x[0].t+', '+x[1].t);
-				}
-				return {s:S_(x[0])+o+S_(x[1]), t: glsl.fp, p: p};
-			case '*':
-			case '/':
-				return {s:S_(x[0])+o+S_(x[1]), t: glsl.fp, p: p};
-			case '_':
-				/*if(a.t === types.variable && (b.t === types.variable || b.t == types.number)){
-					return {s:S_(a)+o+S_(b), t: glsl.float, p: p};
-				}else{
-					throw('Operator '_' does not exist in javaScript for those types.');
-				}*/
-				throw('Write this later.');
-			case '~':
-				return {s:o+S_(x[0]),t:javascript.Number, p: p};
-			case '@-':
-			case '@+':
-				return {s:o.substring(1)+S_(x[0]),t:glsl.fp, p: p};
-			case '^':
-				//TODO: remove this hack
-				if (x[0].s === '2.718281828459045e+0') {
-					return {s: 'exp('+x[1].s+')', t: glsl.fp, p: p};
-				}
-				return {s:'pow('+x[0].s+','+x[1].s+')',t:glsl.fp, p: p};
-			case undefined:
-				if(x[0].t===glsl.func){
-					return {s:x[0].s+'('+x[1].s+')',t:glsl.fp, p: p};
-				}else{
-					//this is ugly:
-					p=language.precedence('*');
-					return {s:S_(x[0])+'*'+S_(x[1]),t:glsl.fp, p: p};
-				}
-			case '#':
-				throw('Anonymous functions not yet supported.');
-			case '√':
-				return {s:'sqrt('+x[0].s+')',t:glsl.fp, p: p};
-			case '!':
-				//requirements....
-				return {s:'factorial('+x[0].s+')',t:glsl.fp, p: p};
-			case '%':
-				return {s: 'mod('+x[0].s+','+x[1].s+')',t:glsl.fp, p:p};
-			case '&':
-			case '|':
-			//case '%':
-			case '~':
-			case '>>':
-			case '<<':
-				throw('Reserved');
-			default:
-				throw('Could not translate operator: \''+o+'\' into glsl!');
-		}
-	},
-	'text/latex':function(o,x){
-		function _(x){
-			return '\\left('+x+'\\right)';
-		}
-		// TODO: Fails on f(x)^2
-		var p = o === undefined ? language.precedence('default') : language.precedence(o);
-		function S_(x, e){
-			if(e){
-				if(x.p < p){
-					return _(x.s);
-				}
-				return x.s;
-			}
-			if(x.p === p) {
-				return language.assoc(o) === true ? x.s : _(x.s);
-			} else if(x.p <= p){
-				return _(x.s);
-			}
-			return x.s;
-		}
-		switch(o){
-			case '/':
-				return {s:'\\frac{'+x[0].s+'}{'+x[1].s+'}',t:javascript.Number, p: p};
-			case '^':
-			case '_':
-				return {s:S_(x[0])+o+'{'+x[1].s+'}',t:javascript.ref, p: p};
-			case undefined:
-			//TODO: CLEANUP, check types
-				if (x[0].s === '\\sqrt') {
-					return {s: '\\sqrt{'+x[1].s + '}',t:javascript.Number, p: p};
-				} else if (x[0].s === '\\abs') {
-					return {s: '\\left|'+x[1].s + '\\right|',t:javascript.Number, p: p};
-				}
-				return {s: S_(x[0], 1) + ' ' + S_(x[1], 1), t: javascript.Number, p: p};
-				return {s:S_(x[0])+_(x[1].s),t:javascript.Number, p: p};
-			//case '√':
-			//	return {s:'\\sqrt{'+x[0].s+'}',t:javascript.Number, p: p};
-			case '#':
-				return {s:o+_(x[0].s),t:javascript.Fumber};
-			case ',':
-				return {
-					s: '\\left('+x.map(S_).join(o)+'\\right)',
-					t: javascript.Array,
-					p: p
-				};
-		}
-		if(o[0]=='@'){
-			return {s:o[1]+S_(x[0]),t:javascript.Number, p: p};
-		}
-		if(language.postfix(o)){
-			return {s:S_(x[0])+o, t:javascript.Number, p: p};
-		}
-		var self=this;
-		var os={
-				//'*':'\\cdot ',
-				'*':' ',
-				'∨':'\\vee ',
-				'&&':'\\wedge ',
-				'±':'\\pm ',
-				'∘':'\\circ '
-		};
-		return {
-			s: x.map(S_).join(os[o] || o),
-			t: javascript.Number,
-			p: p
-		};
-	}
-};
+
 var defLang = language;
 function Code (s, pre){
 	this.pre = [] || pre;
@@ -4729,6 +4524,20 @@ Expression.Vector.prototype._s = function(lang) {
 };
 
 
+Expression.Statement.prototype._s = function (lang) {
+	var p = language.precedence(this.operator);
+	function _(x) {
+		if(p > x.p){
+			return paren(x.s);
+		}
+		return x.s;
+	}
+	
+	var c0 = this[0]._s(lang);
+	var c1 = this[1]._s(lang);
+	
+	return c0.merge(c1, _(c0) + this.operator + _(c1), p);
+};
 Expression.True._s = function (lang) {
 	return new Code('true');
 };
@@ -4750,7 +4559,6 @@ Expression.prototype.compile = function(x){
 Expression.prototype.glslFunction = function(type, name, args){
 	return this.s('x-shader/x-fragment').glslFunction(type, name, args)
 };
-
 
 //Use complex numbers by default
 Expression.Numerical = Expression.Complex;

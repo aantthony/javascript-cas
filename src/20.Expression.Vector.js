@@ -3,8 +3,8 @@ Expression.Vector = function Vector(e) {
 	return e;
 };
 
-_ = Expression.Vector.prototype = Object.create(Expression.prototype);
-_.constructor = Expression.Vector;
+_ = extend(Expression.Vector, Expression);
+
 _[',.'] = function (x) {
 	
 	

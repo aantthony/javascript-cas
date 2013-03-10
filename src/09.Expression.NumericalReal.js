@@ -2,9 +2,8 @@ Expression.NumericalReal = function NumericalReal(e) {
 	this.value = e;
 };
 
-_ = Expression.NumericalReal.prototype = Object.create(Expression.NumericalComplex.prototype);
+_ = extend(Expression.NumericalReal, Expression.NumericalComplex);
 
-_.constructor = Expression.NumericalReal;
 Object.defineProperty(_, "_real", {
 	get: function () {
 		return this.value;
@@ -187,6 +186,25 @@ _['>'] = function (x) {
 	if (x instanceof Expression.NumericalReal) {
 		return this.value > x.value ? Expression.True : Expression.False;
 	}
+	return _.__proto__['>'].call(this, x);
+};
+_['<'] = function (x) {
+	if (x instanceof Expression.NumericalReal) {
+		return this.value < x.value ? Expression.True : Expression.False;
+	}
+	return _.__proto__['<'].call(this, x);
+};
+_['<='] = function (x) {
+	if (x instanceof Expression.NumericalReal) {
+		return this.value <= x.value ? Expression.True : Expression.False;
+	}
+	return _.__proto__['<='].call(this, x);
+};
+_['>='] = function (x) {
+	if (x instanceof Expression.NumericalReal) {
+		return this.value >= x.value ? Expression.True : Expression.False;
+	}
+	return _.__proto__['>='].call(this, x);
 };
 _.apply = function(operator, x) {
 	switch (operator){

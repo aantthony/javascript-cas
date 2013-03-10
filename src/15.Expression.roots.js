@@ -21,6 +21,10 @@ Expression.List.prototype.dep = function (vars) {
 		//vars.influcenes.true(this);
 		return true;
 	}
+	if(this.operator && this.operator[0] === '@') {
+		// Unary operator
+		return false;
+	}
 	if (this[1].dep(vars)) {
 		// vars.influcenes.true(this);
 		return true;

@@ -3,9 +3,8 @@ Expression.NumericalComplex = function(real, imag) {
 	this._imag = imag;
 };
 
-_ = Expression.NumericalComplex.prototype = Object.create(Expression.Constant.prototype);
+_ = extend(Expression.NumericalComplex, Expression.Constant);
 
-_.constructor = Expression.NumericalComplex;
 _.real = function() {
 	return new Expression.NumericalReal(this._real);
 };

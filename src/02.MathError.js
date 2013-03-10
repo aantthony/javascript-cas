@@ -1,5 +1,13 @@
+/*
+
+ Errors used by javascript-cas:
+  - SyntaxError (parsing errors)
+  - MathError ()
+  ? ReferenceError (reference to variable not defined in context) (not currently thrown)
+
+*/
+
 function MathError(str) {
 	this.message = str;
 };
-MathError.prototype = Object.create(Error.prototype);
-
+_ = extend(MathError, Error);

@@ -12,19 +12,18 @@
 	which requires two evaluations of f(x).
 
 */
-Expression.List.ComplexCartesian = function ComplexCartesian(x){
+Expression.List.ComplexCartesian = function ComplexCartesian(x) {
 	x.__proto__ = Expression.List.ComplexCartesian.prototype;
 	return x;
 };
-_ = Expression.List.ComplexCartesian.prototype = Object.create(Expression.prototype);
-_.constructor = Expression.List.ComplexCartesian;
-_.realimag = function(){
+_ = extend(Expression.List.ComplexCartesian, Expression);
+_.realimag = function () {
 	return this;
 };
-_.real = function(){
+_.real = function () {
 	return this[0];
 };
-_.imag = function(){
+_.imag = function () {
 	return this[1];
 };
 _.conjugate = function () {
@@ -157,7 +156,7 @@ _.differentiate = function (x) {
 };
 
 
-_.apply = function(o, x){
+_.apply = function(o, x) {
 	//TODO: ensure this has an imaginary part. If it doesn't it is a huge waste of computation
 	if (x.constructor === this.constructor) {
 		switch(o) {
