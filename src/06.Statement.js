@@ -37,7 +37,7 @@ Expression.Statement = function (x, y, operator) {
 	return arr;
 };
 //todo: truth value type?
-_ = exyend(Expression.Statement, Expression);
+_ = extend(Expression.Statement, Expression);
 
 _['='] = function () {
 	

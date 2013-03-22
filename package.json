@@ -1,43 +1,46 @@
 {
-	"name": "javascript-cas",
-	"preferGlobal": "true",
-	"version": "0.0.1",
-	"author": "aantthony <graph.tk@gmail.com>",
-	"description": "Computer Algebra System",
-	"contributors": [ 
-		{
-			"name": "aantthony",
-			"email": "graph.tk@gmail.com"
-		}
-	],
-	"bin": {
-		"http-server": "./bin/javascript-cas"
-	},
-	"scripts": {
-		"start": "node ./bin/javascript-cas",
-		"test": "vows --spec --isolate",
-		"predeploy": "echo This will be run before deploying the app",
-		"postdeploy": "echo This will be run after deploying the app"
-	},
-	"main": "./lib/javascript-cas",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/aantthony/javascript-cas.git"
-	},
-	"keywords": [
-		"math",
-		"algebra",
-		"CAS",
-		"logic"
-	],
-	"dependencies" : {
-		"jison": "*"
-	},
-	"analyze": false,
-	"bundledDependencies": [
-	],  
-	"license": "LGPL",
-	"engines": {
-		"node": ">=0.6"
-	}
+  "name": "javascript-cas",
+  "preferGlobal": "true",
+  "version": "3.0.1",
+  "author": "aantthony <graph.tk@gmail.com>",
+  "description": "Computer Algebra System",
+  "contributors": [
+    "aantthony <graph.tk@gmail.com>"
+  ],
+  "bin": {
+    "javascript-cas": "./bin/javascript-cas"
+  },
+  "scripts": {
+    "start": "node ./bin/javascript-cas",
+    "test": "vows --spec --isolate",
+    "predeploy": "echo This will be run before deploying the app",
+    "postdeploy": "echo This will be run after deploying the app"
+  },
+  "main": "./lib/javascript-cas",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aantthony/javascript-cas.git"
+  },
+  "keywords": [
+    "math",
+    "algebra",
+    "CAS",
+    "logic"
+  ],
+  "analyze": false,
+  "license": "LGPL",
+  "engines": {
+    "node": ">=0.6"
+  },
+  "readmeFilename": "README.md",
+  "bundleDependencies": [],
+  "directories": {
+    "test": "tests"
+  },
+  "devDependencies": {
+    "grunt": "~0.4.1",
+    "jison": "~0.4.2",
+    "grunt-contrib-uglify": "*",
+    "grunt-contrib-concat": "*"
+  }
 }
