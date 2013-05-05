@@ -1,6 +1,5 @@
 {
   "name": "javascript-cas",
-  "preferGlobal": "true",
   "version": "3.0.1",
   "author": "aantthony <graph.tk@gmail.com>",
   "description": "Computer Algebra System",
@@ -27,7 +26,6 @@
     "CAS",
     "logic"
   ],
-  "analyze": false,
   "license": "LGPL",
   "engines": {
     "node": ">=0.6"
