@@ -9,3 +9,6 @@
   	_.constructor = sub;
   	return _;
 	}
+    if(typeof require !== 'undefined') {
+        require.main = null;
+    }

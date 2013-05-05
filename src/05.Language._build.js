@@ -3,6 +3,9 @@ Todo:
  * Don't evaluate/compute until fully lexed (for parsing ambiguous expressions)
 */
 
+var calculator = parser;
+
+
 Language.build = function () {
 	this.parse = function (s, base) {
 		if(s === '') {

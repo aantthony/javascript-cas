@@ -51,7 +51,7 @@ module.exports = function(grunt) {
 		};
 		try {
 			var Parser = require('jison').Parser,
-					parser = new Parser(grammar, {debug: true});
+				parser = new Parser(grammar, {debug: true});
 		} finally {
 			console.log = _;
 		}
