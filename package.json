@@ -6,9 +6,6 @@
   "contributors": [
     "aantthony <graph.tk@gmail.com>"
   ],
-  "bin": {
-    "javascript-cas": "./bin/javascript-cas"
-  },
   "scripts": {
     "start": "node ./bin/javascript-cas",
     "test": "vows --spec --isolate",
