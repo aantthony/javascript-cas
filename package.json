@@ -15,7 +15,7 @@
     "predeploy": "echo This will be run before deploying the app",
     "postdeploy": "echo This will be run after deploying the app"
   },
-  "main": "./lib/javascript-cas",
+  "main": "./build/javascript-cas.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/aantthony/javascript-cas.git"

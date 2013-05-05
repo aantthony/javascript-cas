@@ -821,6 +821,210 @@ calculator.lexer.next__ = function () {
 // alert(calculator.lexer.rules[7]);
 
 ;/*
+// TODO: Linked list?
+function Multiset(x) {
+	x.__proto__ = Multiset.prototype;
+	return x;
+}
+Multiset.prototype.intersect = function () {
+	
+};
+Multiset.prototype.union = function (x){
+	return Multiset(Array.prototype.concat.call(this, x));
+};
+Multiset.prototype.add = function (x){
+	this[this.length] = x;
+	return this;
+};
+Multiset.prototype.remove = function (x) {
+	var i = this.indexOf(x);
+	this[i] = this[this.length - 1];
+	this.length--;
+	return this;
+};
+Multiset.prototype.map = function (x) {
+	return Multiset(Array.prototype.map.call(this, x));
+};
+Multiset.prototype.filter = function (x) {
+	return Multiset(Array.prototype.filter.call(this, x));
+};
+*/
+function MultiSet(A, m) {
+	this.A = A || [];
+	this.m = m || [];
+}
+_ = MultiSet.prototype;
+_.add = function (x) {
+	// CHeck if it already exists
+	var i = this.A.indexOf(x);
+	if (i === -1) {
+		var l = this.length;
+		this.A[l] = x;
+		this.m[l] = 1;
+	} else {
+		this.m[i]++;
+	}
+	return this;
+};
+_.remove = function (x) {
+	var i = this.A.indexOf(x);
+	this.m[i]--;
+	return this;
+};
+_.intersect = function (x) {
+	// -> Multiset
+	throw ('What is multiset intersection?');
+};
+_.map = function (x) {
+	// Assumes x has no side effects and is not many to one
+	// TODO: Should this supply m(A) ?
+	return MultiSet(Array.prototype.map.call(this.A, x), this.m);
+};
+MultiSet.fromArray = function (arr) {
+	throw ('NYI');
+	// O(n^2 ?)
+	var A = [];
+	var m = [];
+	return new MultiSet(A, m);
+};;function Set(x) {
+	x.__proto__ = Set.prototype;
+	return x;
+};
+_ = Set.prototype;
+_.intersect = function (set) {
+	// O(n^2)
+	var i;
+	var i_l = this.length;
+	var j;
+	var j_l = set.length;
+	var s = new Set([]);
+	for (i = 0; i < i_l; i++) {
+		// Find in second set:
+		for (j = 0; j < j_l; j++) {
+			var a = this[i];
+			var b = set[j];
+			if (a === b) {
+				s[s.length] = (a);
+				break;
+			}
+			var my_val = (a)['-'](b);
+			if(my_val === Global.Zero) {
+				s[s.length] = (a);
+				break;
+			}
+		}
+	}
+	return a;
+}; 
+_.union = function (set) {
+	// TODO: check for duplicates
+	return Set(Array.prototype.concat.call(this, set));
+}
+_.remove = function (x) {
+	// O(1 + lookup[n])
+	var i = this.indexOf(x);
+	this[i] = this[this.length - 1];
+	this.length--;
+	return this;
+}
+_.add = function (x) {
+	// O(1 + lookup[n])
+	if (this.indexOf(x) === -1) {
+		this[this.length] = x;
+	}
+	return this;
+};
+_.map = function (f) {
+	return Set(Array.prototype.map.call(this, f));
+};
+_.compose = function (set) {
+	
+};
+_.cardinality = function () {
+	return this.length;
+};
+
+function InfiniteSet(x) {
+	
+}
+InfiniteSet.aleph_0 = {
+	'>': function (x) {
+		if(x instanceof Expression.NumericalReal) {
+			return Expression.True;
+		}
+	}
+};
+_ = InfiniteSet.prototype = Object.create(Set.prototype);
+
+_.cardinality = function () {
+	return InfiniteSet.cardinality;
+};
+;Expression.TruthValue = function TruthValue(v) {
+
+};
+
+_ = extend(Expression.TruthValue, Expression);
+
+Expression.True = new Expression.TruthValue();
+Expression.False = new Expression.TruthValue();
+
+//Only difference: NOT operator
+Expression.False['~'] = function () {
+	return Expression.True;
+};
+
+// negation operator
+_['~'] = function () {
+	return Expression.False;
+};
+
+// disjunction
+_['V'] = function (e) {
+	return e === Expression.True ? e : this;
+};
+
+// conjunction
+_['^'] = function (e) {
+	return e === Expression.True ? this : e;
+};
+
+
+Expression.Statement = function (x, y, operator) {
+	var arr = [x,y];
+	arr.operator = operator;
+	
+	// subclass an array
+	arr.__proto__ = Expression.Statement.prototype;
+	return arr;
+};
+//todo: truth value type?
+_ = extend(Expression.Statement, Expression);
+
+_['='] = function () {
+	
+};
+_['<'] = function () {
+	// a < b < c
+	// (a < b) = b
+	// b < c
+	
+	// a < (b < c)
+	// a < b .. (b < c) = b
+	// (a < b) = a.
+};
+_.solve = function (vars) {
+	// a = b
+	// If b has an additive inverse?
+	
+	// a - b = 0
+	var a_b = (this.a)['-'](this.b);
+	/*
+	Examples:
+	(1,2,3) - (x,y,z) = 0 (solve for x,y,z)
+	(1,2,3) - x = 0 (solve for x)
+	*/
+	return a_b.roots(vars);
+};;/*
 
 	The root javascript cas class:
 	
@@ -969,145 +1173,6 @@ _['@-'] = function () {
 	}
 	return new Expression.List([this], '@-');
 };
-;/*
-// TODO: Linked list?
-function Multiset(x) {
-	x.__proto__ = Multiset.prototype;
-	return x;
-}
-Multiset.prototype.intersect = function () {
-	
-};
-Multiset.prototype.union = function (x){
-	return Multiset(Array.prototype.concat.call(this, x));
-};
-Multiset.prototype.add = function (x){
-	this[this.length] = x;
-	return this;
-};
-Multiset.prototype.remove = function (x) {
-	var i = this.indexOf(x);
-	this[i] = this[this.length - 1];
-	this.length--;
-	return this;
-};
-Multiset.prototype.map = function (x) {
-	return Multiset(Array.prototype.map.call(this, x));
-};
-Multiset.prototype.filter = function (x) {
-	return Multiset(Array.prototype.filter.call(this, x));
-};
-*/
-function MultiSet(A, m) {
-	this.A = A || [];
-	this.m = m || [];
-}
-_ = MultiSet.prototype;
-_.add = function (x) {
-	// CHeck if it already exists
-	var i = this.A.indexOf(x);
-	if (i === -1) {
-		var l = this.length;
-		this.A[l] = x;
-		this.m[l] = 1;
-	} else {
-		this.m[i]++;
-	}
-	return this;
-};
-_.remove = function (x) {
-	var i = this.A.indexOf(x);
-	this.m[i]--;
-	return this;
-};
-_.intersect = function (x) {
-	// -> Multiset
-	throw ('What is multiset intersection?');
-};
-_.map = function (x) {
-	// Assumes x has no side effects and is not many to one
-	// TODO: Should this supply m(A) ?
-	return MultiSet(Array.prototype.map.call(this.A, x), this.m);
-};
-MultiSet.fromArray = function (arr) {
-	throw ('NYI');
-	// O(n^2 ?)
-	var A = [];
-	var m = [];
-	return new MultiSet(A, m);
-};;function Set(x) {
-	x.__proto__ = Set.prototype;
-	return x;
-};
-_ = Set.prototype;
-_.intersect = function (set) {
-	// O(n^2)
-	var i;
-	var i_l = this.length;
-	var j;
-	var j_l = set.length;
-	var s = new Set([]);
-	for (i = 0; i < i_l; i++) {
-		// Find in second set:
-		for (j = 0; j < j_l; j++) {
-			var a = this[i];
-			var b = set[j];
-			if (a === b) {
-				s[s.length] = (a);
-				break;
-			}
-			var my_val = (a)['-'](b);
-			if(my_val === Global.Zero) {
-				s[s.length] = (a);
-				break;
-			}
-		}
-	}
-	return a;
-}; 
-_.union = function (set) {
-	// TODO: check for duplicates
-	return Set(Array.prototype.concat.call(this, set));
-}
-_.remove = function (x) {
-	// O(1 + lookup[n])
-	var i = this.indexOf(x);
-	this[i] = this[this.length - 1];
-	this.length--;
-	return this;
-}
-_.add = function (x) {
-	// O(1 + lookup[n])
-	if (this.indexOf(x) === -1) {
-		this[this.length] = x;
-	}
-	return this;
-};
-_.map = function (f) {
-	return Set(Array.prototype.map.call(this, f));
-};
-_.compose = function (set) {
-	
-};
-_.cardinality = function () {
-	return this.length;
-};
-
-function InfiniteSet(x) {
-	
-}
-InfiniteSet.aleph_0 = {
-	'>': function (x) {
-		if(x instanceof Expression.NumericalReal) {
-			return Expression.True;
-		}
-	}
-};
-_ = InfiniteSet.prototype = Object.create(Set.prototype);
-
-_.cardinality = function () {
-	return InfiniteSet.cardinality;
-};
 ;
 var left, right;
 var L = left = 0;
@@ -1165,72 +1230,7 @@ var mathematica = new Language([
 	[';'],
 	[','],
 	[['=', '+=']]
-]);;Expression.TruthValue = function TruthValue(v) {
-
-};
-
-_ = extend(Expression.TruthValue, Expression);
-
-Expression.True = new Expression.TruthValue();
-Expression.False = new Expression.TruthValue();
-
-//Only difference: NOT operator
-Expression.False['~'] = function () {
-	return Expression.True;
-};
-
-// negation operator
-_['~'] = function () {
-	return Expression.False;
-};
-
-// disjunction
-_['V'] = function (e) {
-	return e === Expression.True ? e : this;
-};
-
-// conjunction
-_['^'] = function (e) {
-	return e === Expression.True ? this : e;
-};
-
-
-Expression.Statement = function (x, y, operator) {
-	var arr = [x,y];
-	arr.operator = operator;
-	
-	// subclass an array
-	arr.__proto__ = Expression.Statement.prototype;
-	return arr;
-};
-//todo: truth value type?
-_ = extend(Expression.Statement, Expression);
-
-_['='] = function () {
-	
-};
-_['<'] = function () {
-	// a < b < c
-	// (a < b) = b
-	// b < c
-	
-	// a < (b < c)
-	// a < b .. (b < c) = b
-	// (a < b) = a.
-};
-_.solve = function (vars) {
-	// a = b
-	// If b has an additive inverse?
-	
-	// a - b = 0
-	var a_b = (this.a)['-'](this.b);
-	/*
-	Examples:
-	(1,2,3) - (x,y,z) = 0 (solve for x,y,z)
-	(1,2,3) - x = 0 (solve for x)
-	*/
-	return a_b.roots(vars);
-};;Expression.Constant = function() {
+]);;Expression.Constant = function() {
 	throw new Error('Expression.Constant created directly');
 };
 _ = extend(Expression.Constant, Expression);
