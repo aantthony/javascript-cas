@@ -1,21 +1,23 @@
 {
   "name": "javascript-cas",
-  "version": "3.0.1",
-  "author": "aantthony <graph.tk@gmail.com>",
+  "version": "3.0.2",
+  "author": "Anthony Foster <graph.tk@gmail.com>",
+  "main": "index.js",
+  "browserify": "dist/math.js",
   "description": "Computer Algebra System",
   "contributors": [
     "aantthony <graph.tk@gmail.com>"
   ],
   "scripts": {
     "start": "node ./bin/javascript-cas",
-    "test": "vows --spec --isolate",
+    "test": "vows --isolate --spec",
     "predeploy": "echo This will be run before deploying the app",
     "postdeploy": "echo This will be run after deploying the app"
   },
-  "main": "./build/javascript-cas.js",
+  "homepage": "http://af.id.au/javascript-cas/",
   "repository": {
     "type": "git",
-    "url": "https://github.com/aantthony/javascript-cas.git"
+    "url": "git://github.com/aantthony/javascript-cas.git"
   },
   "keywords": [
     "math",
@@ -28,14 +30,12 @@
     "node": ">=0.6"
   },
   "readmeFilename": "README.md",
-  "bundleDependencies": [],
-  "directories": {
-    "test": "tests"
-  },
   "devDependencies": {
     "grunt": "~0.4.1",
     "jison": "~0.4.2",
     "grunt-contrib-uglify": "*",
-    "grunt-contrib-concat": "*"
+    "grunt-contrib-concat": "*",
+    "grunt-browserify2": "~0.1.6",
+    "vows": "~0.7.0"
   }
 }
