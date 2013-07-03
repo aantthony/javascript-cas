@@ -45,13 +45,13 @@ case 17:this.$ = ['^', $$[$0-3], $$[$0-1]];
 break;
 case 18:this.$ = ['_', $$[$0-3], $$[$0-1]];
 break;
-case 19:this.$ = ['_', $$[$0-1], Construct.Single(yytext.substring(1))];
+case 19:this.$ = ['_', $$[$0-1], {type: 'Single', primitive: yytext.substring(1)}];
 break;
 case 20:this.$ = ['sqrt', $$[$0-1]];
 break;
 case 21:this.$ = ['frac', $$[$0-4], $$[$0-1]];
 break;
-case 22:this.$ = ['^', $$[$0-1], Construct.Single(yytext.substring(1))];
+case 22:this.$ = ['^', $$[$0-1], {type: 'Single', primitive: yytext.substring(1)}];
 break;
 case 23:this.$ = ['@-', $$[$0]]
 break;
@@ -69,9 +69,9 @@ case 29:this.$ = yytext;
 break;
 case 30:this.$ = yytext.substring(1);
 break;
-case 31:this.$ = Construct.Number(yytext);
+case 31:this.$ = {type: 'Number', primitive: yytext};
 break;
-case 32:this.$ = Construct.Number(yytext);
+case 32:this.$ = {type: 'Number', primitive: yytext};
 break;
 }
 },

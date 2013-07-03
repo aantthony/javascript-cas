@@ -12,10 +12,10 @@
 "\frac{"              return 'FRAC{'
 "\sqrt{"              return 'SQRT{'
 "\cdot"               return '*'
-\\l[e]                  return '<='
-\\g[e]                 return '>='
-\\n[e]                 return 'NE'
-\\[a-zA-Z]+        return 'LONGIDENTIFIER'
+\\l[e]                return '<='
+\\g[e]                return '>='
+\\n[e]                return 'NE'
+\\[a-zA-Z]+           return 'LONGIDENTIFIER'
 [a-zA-Z]              return 'IDENTIFIER'
 [0-9]+\.[0-9]*        return 'DECIMAL'
 [0-9]+                return 'INTEGER'
@@ -104,10 +104,10 @@ e
     | e '/' e                       {$$ = ['/', $1, $3];}
     | e 'POWER{' e '}'              {$$ = ['^', $1, $3];}
     | e '_{' S '}'                  {$$ = ['_', $1, $3];}
-    | e '_SINGLE'                   {$$ = ['_', $1, Construct.Single(yytext.substring(1))];}
+    | e '_SINGLE'                   {$$ = ['_', $1, {type: 'Single', primitive: yytext.substring(1)}];}
     | 'SQRT{' e '}'                 {$$ = ['sqrt', $2];}
     | 'FRAC{' e '}' '{' e '}'       {$$ = ['frac', $2, $5];}
-    | e '^SINGLE'                   {$$ = ['^', $1, Construct.Single(yytext.substring(1))];}
+    | e '^SINGLE'                   {$$ = ['^', $1, {type: 'Single', primitive: yytext.substring(1)}];}
     | '-' e %prec UMINUS            {$$ = ['@-', $2]}
     | e e %prec BDEFAULT            {$$ = ['default', $1, $2];}
     | '(' e ')'                     {$$ = $2}
@@ -123,6 +123,6 @@ identifier
     ;
 
 number
-    : DECIMAL                       {$$ = Construct.Number(yytext);}
-    | INTEGER                       {$$ = Construct.Number(yytext);}
+    : DECIMAL                       {$$ = {type: 'Number', primitive: yytext};}
+    | INTEGER                       {$$ = {type: 'Number', primitive: yytext};}
     ;
