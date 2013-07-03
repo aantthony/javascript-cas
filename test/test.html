@@ -1,9 +1,12 @@
-<script type="text/javascript" src="build/math.js"></script>
-<script type="text/javascript" src="extensions/M.Interval.js"></script>
+<script type="text/javascript" src="../build/javascript-cas.js"></script>
+<!-- <script type="text/javascript" src="extensions/M.Interval.js"></script> -->
 <script>
 function log(math) {
-  document.body.appendChild(math.image());
-  document.body.appendChild(document.createElement("br"));
+	var url = math.imageURL();
+	var img = new Image();
+	img.src = url;
+	document.body.appendChild(img);
+	document.body.appendChild(document.createElement("br"));
 }
 function watchObject(obj) {
 	var keys = Object.keys(obj);

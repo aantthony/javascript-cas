@@ -36,6 +36,8 @@
     "grunt-contrib-uglify": "*",
     "grunt-contrib-concat": "*",
     "grunt-browserify2": "~0.1.6",
-    "vows": "~0.7.0"
+    "vows": "~0.7.0",
+    "grunt-contrib-watch": "~0.4.3",
+    "grunt-contrib-jshint": "~0.4.3"
   }
 }
