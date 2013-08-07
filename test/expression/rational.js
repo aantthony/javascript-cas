@@ -43,7 +43,7 @@ describe($('x \\in \\Rational'), function () {
 
     describe($('1 / (x / y)'), function () {
         var n = M('1 / (1234 / 4321)');
-        it($('\\in \\Integer'), function () {
+        it($('\\in \\Rational'), function () {
             n.should.be.an.instanceof(M.Expression.Rational);
         })
     });
