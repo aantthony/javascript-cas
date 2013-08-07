@@ -10,7 +10,7 @@
   ],
   "scripts": {
     "start": "node ./bin/javascript-cas",
-    "test": "vows --isolate --spec",
+    "test": "./node_modules/.bin/mocha --recursive",
     "predeploy": "echo This will be run before deploying the app",
     "postdeploy": "echo This will be run after deploying the app"
   },
@@ -38,6 +38,9 @@
     "grunt-browserify2": "~0.1.6",
     "vows": "~0.7.0",
     "grunt-contrib-watch": "~0.4.3",
-    "grunt-contrib-jshint": "~0.4.3"
+    "grunt-contrib-jshint": "~0.4.3",
+    "mocha": "~1.12.0",
+    "should": "~1.2.2",
+    "colors": "~0.6.1"
   }
 }
