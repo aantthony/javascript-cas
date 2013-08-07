@@ -1,12 +1,12 @@
 {
   "name": "javascript-cas",
   "version": "3.0.2",
-  "author": "Anthony Foster <graph.tk@gmail.com>",
+  "author": "Anthony Foster <hi@af.id.au>",
   "main": "index.js",
   "browserify": "dist/math.js",
   "description": "Computer Algebra System",
   "contributors": [
-    "aantthony <graph.tk@gmail.com>"
+    "aantthony <hi@af.id.au>"
   ],
   "scripts": {
     "start": "node ./bin/javascript-cas",
@@ -29,17 +29,26 @@
   "engines": {
     "node": ">=0.6"
   },
-  "readmeFilename": "README.md",
   "devDependencies": {
     "grunt": "~0.4.1",
     "jison": "~0.4.2",
     "grunt-contrib-uglify": "*",
     "grunt-contrib-concat": "*",
     "grunt-browserify2": "~0.1.6",
-    "vows": "~0.7.0",
     "grunt-contrib-watch": "~0.4.3",
     "grunt-contrib-jshint": "~0.4.3",
     "mocha": "~1.12.0",
     "should": "~1.2.2"
+  },
+  "bugs": {
+    "url": "https://github.com/aantthony/javascript-cas/issues"
+  },
+  "bin": {
+    "javascript-cas": "javascript-cas.js"
+  },
+  "dependencies": {},
+  "directories": {
+    "example": "examples",
+    "test": "test"
   }
 }
