@@ -1,5 +1,3 @@
-require('colors');
-
 exports = module.exports = function (str) {
     var repl = [
         [/\\in/g, '∈'],
