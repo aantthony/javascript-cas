@@ -1,13 +1,16 @@
 var should = require('should'),
     $ = require('../$'),
-    M = require('../../');
+    M = require('../../'),
+    Integer = M.Expression.Integer,
+    Symbol  = M.Expression.Symbol,
+    Real    = Symbol.Real;
 
 describe($('x \\in \\Integer'), function () {
     describe('Parser', function () {
         var n = M('32322');
         it($('x \\in \\Integer'), function () {
-            n.should.be.an.instanceof(M.Expression.Integer);
-        })
+            n.should.be.an.instanceof(Integer);
+        });
         it($('x = x'), function () {
             n.a.should.equal(32322);
         });
@@ -18,31 +21,46 @@ describe($('x \\in \\Integer'), function () {
         });
     });
 
+
+    var x = new Integer(32322);
+    var y = new Integer(453);
+
     describe($('x \\cdot y'), function () {
+
         describe('= 0', function () {
+            var zero = new Integer(0);
+
             it($('\\if x = 3'), function () {
-                var zero = M('3 * 0');
-                var value = zero.compile()();
+                var n = (new Integer(3))['*'](zero);
+                var value = n.compile()();
 
                 value.should.equal(0);
             });
-            it($('\\if x = c'), function () {
-                var zero = M('c * 0');
-                var value = zero.compile()();
+            it($('\\if y = z'), function () {
+                var n = zero['*'](new Real())
+                var value = n.compile()();
+
+                value.should.equal(0);
+            });
+            it($('\\if x = z'), function () {
+                var n = new Real()['*'](zero);
+                var value = n.compile()();
 
                 value.should.equal(0);
             });
         });
+
         it($('\\in \\Integer'), function () {
-            var n = M('32322 * 12');
-            n.should.be.an.instanceof(M.Expression.Integer);
+            (x)['*'](y)
+            .should.be.an.instanceof(Integer);
         });
-        it($('= y \\cdot x'), function () {
-            var n = M('32322 * 12');
-            var m = M('12 * 32322');
 
-            n.should.be.an.instanceof(M.Expression.Integer);
-            m.should.be.an.instanceof(M.Expression.Integer);
+        it($('= y \\cdot x'), function () {
+            var n = (x)['*'](y)
+            var m = (y)['*'](x)
+
+            n.should.be.an.instanceof(Integer);
+            m.should.be.an.instanceof(Integer);
             n.a.should.equal(m.a);
         });
         it('evaluates correctly', function () {
@@ -61,20 +79,20 @@ describe($('x \\in \\Integer'), function () {
             });
         });
         it($('\\in \\Integer'), function () {
-            var n = M('32322 + 12');
-            n.should.be.an.instanceof(M.Expression.Integer);
+            var n = (x)['+'](y);
+            n.should.be.an.instanceof(Integer);
         });
         it($('= y + x'), function () {
-            var n = M('32322 + 12');
-            var m = M('12 + 32322');
+            var n = (x)['+'](y);
+            var m = (y)['+'](x);
 
-            n.should.be.an.instanceof(M.Expression.Integer);
-            m.should.be.an.instanceof(M.Expression.Integer);
+            n.should.be.an.instanceof(Integer);
+            m.should.be.an.instanceof(Integer);
             n.a.should.equal(m.a);
         });
         it('evaluates correctly', function () {
-            var n = M('32322 + 12');
-            n.a.should.equal(32322 + 12);
+            var n = (x)['+'](y);
+            n.a.should.equal(x.a + y.a);
         });
     });
 
@@ -88,18 +106,18 @@ describe($('x \\in \\Integer'), function () {
             });
         });
         it($('\\in \\Rational'), function () {
-            var n = M('323322 / 2422');
+            var n = (x)['/'](y);
             n.should.be.an.instanceof(M.Expression.Rational);
         });
         it('evaluates correctly', function () {
-            var n = M('32322 / 12');
-            n.a.should.equal(32322);
-            n.b.should.equal(12);
+            var n = (x)['/'](y);
+            n.a.should.equal(x.a);
+            n.b.should.equal(y.a);
         });
         it('compiles correctly', function () {
-            var n = M('32322 / 12');
+            var n = (x)['/'](y);
             var fn = n.compile();
-            fn().should.equal(32322 / 12);
+            fn().should.equal(x.a / y.a);
         });
     });
 });

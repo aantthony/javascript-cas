@@ -1,11 +1,14 @@
 var should = require('should'),
     $ = require('../$'),
-    M = require('../../');
+    M = require('../../'),
+    Rational = M.Expression.Rational;
 
 describe($('x \\in \\Rational'), function () {
     describe('Parser', function () {
         var n = M('32.235');
-        it($('x \\in \\Integer'))
+        it($('x \\in \\Rational'), function () {
+            n.should.be.an.instanceof(Rational)
+        });
         it($('x = x'));
         it('compiles correctly');
     });
