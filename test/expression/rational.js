@@ -5,6 +5,12 @@ var should = require('should'),
     Symbol = M.Expression.Symbol;
 
 describe($('x \\in \\Rational'), function () {
+    var x, y, zero;
+    before(function () {
+        x = new Rational(12, 19);
+        y = new Rational(3, 5);
+        zero = new Rational(0, 1);
+    });
     describe('Parser', function () {
         var n = M('32.235');
         it($('x \\in \\Rational'), function () {
@@ -28,9 +34,7 @@ describe($('x \\in \\Rational'), function () {
     });
 
     describe($('x \\cdot y'), function () {
-        var x = new Rational(12, 19);
-        var y = new Rational(3, 5);
-        var zero = new Rational(0, 1);
+        
         var z;
         before(function () {
             z = (x)['*'](y);
@@ -63,8 +67,6 @@ describe($('x \\in \\Rational'), function () {
     });
 
     describe($('x + y'), function () {
-        var x = new Rational(3,5);
-        var y = new Rational(2,3);
         var z;
         before(function () {
             z = (x)['+'](y);
@@ -83,23 +85,51 @@ describe($('x \\in \\Rational'), function () {
         it('evaluates correctly', function () {
             var d = Math.floor(z.b);
             d.should.equal(z.b);
-            (z.a / z.b).should.equal(3/5 + 2/3);
+
+            var n = Math.floor(z.a);
+            n.should.equal(z.a);
+            
+            (z.a / z.b - ((x.a/x.b) + (y.a/y.b)) < 0.0001).should.be.true;
         });
     });
 
     describe($('x / y'), function () {
-        describe('= 0', function () {
-            it($('\\if x = 0'));
+        var z;
+        before(function () {
+            z = (x)['/'](y);
         });
-        it($('\\in \\Rational'));
-        it('evaluates correctly');
-        it('compiles correctly');
+
+        describe('= 0', function () {
+            it($('\\if x = 0'), function () {
+
+            });
+        });
+        it($('\\in \\Rational'), function () {
+            z.should.be.an.instanceof(Rational);
+        });
+        it('evaluates correctly', function () {
+            var d = Math.floor(z.b);
+            d.should.equal(z.b);
+
+            var n = Math.floor(z.a);
+            n.should.equal(z.a);
+
+            (z.a / z.b - (x.a/x.b)/(y.a/y.b) < 0.0001).should.be.true;
+        });
+        it('compiles correctly', function () {
+            var r = z.compile()();
+            (r - (x.a/x.b)/(y.a/y.b) < 0.00001).should.be.true;
+        });
     });
 
     describe($('1 / (x / y)'), function () {
         var n = M('1 / (1234 / 4321)');
         it($('\\in \\Rational'), function () {
             n.should.be.an.instanceof(M.Expression.Rational);
-        })
+        });
+        it($('= y / x'), function () {
+            n.a.should.equal(4321);
+            n.b.should.equal(1234);
+        });
     });
 });
