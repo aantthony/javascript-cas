@@ -1,6 +1,6 @@
 {
   "name": "javascript-cas",
-  "version": "3.0.2",
+  "version": "3.0.3",
   "author": "Anthony Foster <hi@af.id.au>",
   "main": "index.js",
   "browserify": "dist/math.js",
