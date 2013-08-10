@@ -7,11 +7,22 @@ var should = require('should'),
     List    = M.Expression.List;
 
 describe('e2e - Derivatives', function () {
-    function functionEquality(a , b) {
+    function match(a, b, x) {
+        if (a.compile) {
+            return match(a.compile(x), b,  x);
+        }
+        if (b.compile) {
+            return match(a, b.compile(x), x);
+        }
+
         for(var i = -10; i < 10; i+= 3.2) {
             var A = a(i);
             var B = b(i);
-            A.should.equal(B);
+            if (A !== B) {
+                var fa = a.toString().replace(/\s+/g, ' ');
+                var fb = b.toString().replace(/\s+/g, ' ');
+                throw new Error('Function mismatch: at ' + i +'. Expected f(' + i + ') = ' + A + ' to equal ' + B + '\n\n' + fa + '\n' + fb + '\n');
+            }
         }
     }
     describe($('d/dx sin x'), function () {
@@ -24,6 +35,17 @@ describe('e2e - Derivatives', function () {
             d[0].should.equal(M.Global.cos);
             d[1].should.equal(x);
         })
+    });
+
+    describe($('d/dx x*x + 3'), function () {
+        match(M('\\frac{d}{dx} (x*x + 3)'), M('2x'), 'x');
+    });
+
+    describe($('d/dx x^2'), function () {
+        var expr = M('x^2');
+        var d = expr.differentiate(expr.unbound.x);
+
+        match(d, M('2x'), 'x');
     });
 
     describe($('d/dx sin (x * x)'), function () {
@@ -40,9 +62,7 @@ describe('e2e - Derivatives', function () {
             d[1][0].should.equal(x);
             d[1][1].should.equal(x);
 
-            var fn = d.compile('x');
-
-            functionEquality(fn, function (x) {return 2 * x * Math.cos(x * x)})
+            match(d, function (x) {return 2 * x * Math.cos(x * x)}, 'x')
         });
     });
 
