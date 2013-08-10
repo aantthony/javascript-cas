@@ -1,22 +1,24 @@
 javascript-cas
 ==============
 
-Javascript CAS is a simple computer algebra system designed for client-side use in web apps (and node.js too).
+Javascript CAS is a simple computer algebra system designed for client-side use in web apps (and node.js).
 
 Including math.js in your web pages will create a single global object `M(str, context)`, which is a function that parses a latex expression string.
 
 ```javascript
-var expr = M('x^2 + 3');
+var y = M('x^2 + 3');
 
 // Differentiate with respect to x
-var derivative_expr = expr.differentiate(expr.unbound.x);
+var dy = expr.differentiate(expr.unbound.x);
 
 // Compile a javascript function
-var js_func = derivative_expr.compile('x');
+var fn = dy.compile('x');
 
-// now evaluation of the deriviative is very fast:
-var x = js_func(3.1); // Returns a javascript number.
+// now evaluation of the deriviative is fast:
+var x = fn(3.1); // Returns a javascript number.
 ```
+
+[![Build Status](https://travis-ci.org/aantthony/javascript-cas.png?branch=master)](https://travis-ci.org/aantthony/javascript-cas)
 
 ### Features
 - Parsing latex expressions efficiently
