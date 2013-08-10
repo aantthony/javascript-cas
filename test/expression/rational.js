@@ -34,7 +34,7 @@ describe($('x \\in \\Rational'), function () {
         var z;
         before(function () {
             z = (x)['*'](y);
-        })
+        });
         describe('= 0', function () {
             it($('\\if x = 3'), function () {
                 var z = zero['*'](new Rational(3));
@@ -63,12 +63,28 @@ describe($('x \\in \\Rational'), function () {
     });
 
     describe($('x + y'), function () {
+        var x = new Rational(3,5);
+        var y = new Rational(2,3);
+        var z;
+        before(function () {
+            z = (x)['+'](y);
+        });
         describe('= 0', function () {
 
         });
-        it($('\\in \\Rational'));
-        it($('= y + x'));
-        it('evaluates correctly');
+        it($('\\in \\Rational'), function () {
+            z.should.be.an.instanceof(Rational);
+        });
+        it($('= y + x'), function () {
+            var A = z.compile()();
+            var B = (y)['+'](x).compile()();
+            A.should.equal(B);
+        });
+        it('evaluates correctly', function () {
+            var d = Math.floor(z.b);
+            d.should.equal(z.b);
+            (z.a / z.b).should.equal(3/5 + 2/3);
+        });
     });
 
     describe($('x / y'), function () {
