@@ -135,4 +135,25 @@ describe($('Symbol x \\in \\Real'), function () {
             fn(1,2).should.equal(1/2);
         });
     });
+    describe($('d/dx'), function () {
+        describe($('x'), function () {
+            var dx;
+            before(function () {
+                dx = x.differentiate(x);
+            })
+
+            it($('= 1'), function () {
+                dx.should.be.an.instanceof(Integer);
+                dx.a.should.equal(1);
+            })
+        })
+        describe($('y'), function () {
+            it($('= 0'), function () {
+                var dy = y.differentiate(x);
+                dy.should.be.an.instanceof(Integer);
+                dy.a.should.equal(0);
+            });
+        });
+        
+    });
 });
