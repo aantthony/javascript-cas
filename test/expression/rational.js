@@ -2,6 +2,7 @@ var should = require('should'),
     $ = require('../$'),
     M = require('../../'),
     Rational = M.Expression.Rational;
+    Symbol = M.Expression.Symbol;
 
 describe($('x \\in \\Rational'), function () {
     describe('Parser', function () {
@@ -27,13 +28,38 @@ describe($('x \\in \\Rational'), function () {
     });
 
     describe($('x \\cdot y'), function () {
+        var x = new Rational(12, 19);
+        var y = new Rational(3, 5);
+        var zero = new Rational(0, 1);
+        var z;
+        before(function () {
+            z = (x)['*'](y);
+        })
         describe('= 0', function () {
-            it($('\\if x = 3'));
-            it($('\\if x = c'));
+            it($('\\if x = 3'), function () {
+                var z = zero['*'](new Rational(3));
+                z.a.should.equal(0);
+            });
+            it($('\\if x = c'), function () {
+                var z = zero['*'](new Symbol.Real());
+            });
         });
-        it($('\\in \\Rational'));
-        it($('= y \\cdot x'));
-        it('evaluates correctly');
+        it($('\\in \\Rational'), function () {
+           z.should.be.an.instanceof(Rational);
+        });
+        it('evaluates correctly', function () {
+            var n = x.a * y.a;
+            var m = x.b * y.b;
+            var _m = Math.floor(z.b);
+            _m.should.equal(z.b);
+
+            (z.a/z.b).should.equal(n/m);
+        });
+        it($('= y \\cdot x'), function () {
+            var A = z.compile()();
+            var B = (y)['*'](x).compile()();
+            A.should.equal(B);
+        });
     });
 
     describe($('x + y'), function () {
