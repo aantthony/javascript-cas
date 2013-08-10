@@ -28,7 +28,6 @@ describe($('Symbol x \\in \\Real'), function () {
             n.unbound.x.should.equal(n);
         });
         it($('x = x'), function () {
-            console.log(n);
             n.symbol.should.equal('x');
         });
         it('compiles the identity function correctly', function () {

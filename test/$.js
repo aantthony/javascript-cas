@@ -7,6 +7,9 @@ exports = module.exports = function (str) {
         [/\\Integer/g, 'ℤ'],
         [/\\Rational/g, 'ℚ'],
         [/\\cdot/g, '·'],
+        [/\\List.Real/g, 'ℝ{*}'],
+        [/\\Symbol.Real/g, 'ℝ{A}'],
+        [/\\Real/g, 'ℝ'],
         [/\\if/g, '⇐']
     ];
 
