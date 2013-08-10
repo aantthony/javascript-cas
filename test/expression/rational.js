@@ -9,7 +9,18 @@ describe($('x \\in \\Rational'), function () {
         it($('x \\in \\Rational'), function () {
             n.should.be.an.instanceof(Rational)
         });
-        it($('x = x'));
+        it($('x = x'), function () {
+            (n.a / n.b).should.equal(32.235);
+            var fb = Math.floor(n.b);
+            fb.should.equal(n.b);
+        });
+        it('should reduce the fraction as much as possible', function () {
+            for(var i = 2; i <= n.a; i++) {
+                if (n.a % i === 0 && n.b % i === 0) {
+                    throw new Error('Common factor of ' + i);
+                }
+            }
+        })
         it('compiles correctly');
     });
 

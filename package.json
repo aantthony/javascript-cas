@@ -44,7 +44,7 @@
     "url": "https://github.com/aantthony/javascript-cas/issues"
   },
   "bin": {
-    "javascript-cas": "javascript-cas.js"
+    "javascript-cas": "./bin/javascript-cas.js"
   },
   "dependencies": {},
   "directories": {
