@@ -21,7 +21,9 @@ describe($('x \\in \\Rational'), function () {
                 }
             }
         })
-        it('compiles correctly');
+        it('compiles correctly', function () {
+            n.compile()().should.equal(32.235);
+        });
     });
 
     describe($('x \\cdot y'), function () {
