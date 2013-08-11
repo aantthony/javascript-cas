@@ -1,6 +1,6 @@
 {
   "name": "javascript-cas",
-  "version": "3.0.3",
+  "version": "3.0.4",
   "author": "Anthony Foster <hi@af.id.au>",
   "main": "index.js",
   "browserify": "dist/math.js",
@@ -11,7 +11,7 @@
   "scripts": {
     "start": "node ./bin/javascript-cas",
     "test": "./node_modules/.bin/mocha --recursive",
-    "predeploy": "echo This will be run before deploying the app",
+    "predeploy": "grunt",
     "postdeploy": "echo This will be run after deploying the app"
   },
   "homepage": "http://af.id.au/javascript-cas/",
