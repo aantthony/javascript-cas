@@ -1,6 +1,7 @@
 var should = require('should'),
     $ = require('../$'),
     M = require('../../'),
+    match = require('../match'),
     Integer = M.Expression.Integer,
     Symbol  = M.Expression.Symbol,
     Real    = Symbol.Real,
@@ -28,5 +29,27 @@ describe('Confusing expression', function () {
             d.should.be.an.instanceof(Integer);
             d.a.should.equal(0);
         })
+    });
+
+    describe('Compilation factors', function () {
+        describe($('(x-2)^3'), function () {
+            var expr;
+            before(function () {
+                expr = M('(x-2)^3');
+            });
+
+            it('should compile correctly to javascript', function () {
+                match(expr, function (x) {
+                    var k = x - 2;
+                    return k * k * k;
+                }, 'x');
+            });
+            it('should compile correctly to GLSL', function () {
+                var glsl = expr.s('x-shader/x-fragment');
+                glsl.pre.length.should.equal(1);
+            });
+            
+
+        });
     });
 });
