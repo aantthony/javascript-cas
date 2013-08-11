@@ -32,6 +32,14 @@ describe('e2e - Derivatives', function () {
         match(d, M('2x'), 'x');
     });
 
+    describe($('d/dx (-x)'), function () {
+        var x = new Real('x');
+        var expr = x['@-']();
+        var d = expr.differentiate(x);
+
+        match(d, function () {return -1}, 'x');
+    });
+
     describe($('d/dx sin (x * x)'), function () {
         it($('= 2x \\cdot cos x^2'), function () {
             var x = new Real('x');

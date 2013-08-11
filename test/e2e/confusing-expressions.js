@@ -22,6 +22,14 @@ describe('Confusing expression', function () {
             d.compile()().should.equal(-1);
         })
     });
+    describe($('1 - x'), function () {
+        it($('= 1 - x'), function () {
+            var d = M('1 - x');
+            match(d, function (x) {
+                return 1 - x;
+            }, 'x');
+        })
+    });
     describe($('d/dw (1)'), function () {
         it($('= 0'), function () {
             var expr = M('\\frac{d}{dx} (1)');
