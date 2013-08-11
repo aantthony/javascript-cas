@@ -9,7 +9,7 @@ Including math.js in your web pages will create a single global object `M(str, c
 var y = M('x^2 + 3');
 
 // Differentiate with respect to x
-var dy = expr.differentiate(expr.unbound.x);
+var dy = y.differentiate(y.unbound.x);
 
 // Compile a javascript function
 var fn = dy.compile('x');
