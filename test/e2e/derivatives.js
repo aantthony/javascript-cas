@@ -20,6 +20,15 @@ describe('e2e - Derivatives', function () {
             d[1].should.equal(x);
         })
     });
+    describe($('d/dx cos x'), function () {
+        it($('=-sin(x)'), function () {
+            var x = new Real('x');
+            var y = M.Global.cos.default(x);
+            var dy = y.differentiate(x);
+            dy.should.be.an.instanceof(List.Real);
+            match(dy, M('-\\sin(x)'), 'x');
+        });
+    })
 
     describe($('d/dx x*x + 3'), function () {
         match(M('\\frac{d}{dx} (x*x + 3)'), M('2x'), 'x');
