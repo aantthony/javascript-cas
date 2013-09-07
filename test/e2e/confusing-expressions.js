@@ -39,6 +39,20 @@ describe('Confusing expression', function () {
         })
     });
 
+    describe('Built in global.Math function:', function () {
+
+        ['sin', 'cos', 'tan'].forEach(function (fn) {
+            var latex = '\\' + fn + '(x)';
+            describe($(latex), function () {
+                it($('= Math.' + fn + '(x)'), function () {
+                    var expr = M(latex);
+                    match(expr, Math[fn], 'x');
+                });
+            });
+        })
+
+    })
+
     describe('Compilation factors', function () {
         describe($('(x-2)^3'), function () {
             var expr;
