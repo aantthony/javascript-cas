@@ -39,6 +39,22 @@ describe('Confusing expression', function () {
         })
     });
 
+    describe($('sin^2(0)'), function () {
+        it($('= 0'), function () {
+            var expr = M('\\sin^2 (0)');
+            expr.should.be.an.instanceof(M.Expression.NumericalReal);
+            expr.value.should.equal(0);
+        })
+    });
+
+    describe($('sin^2(1)'), function () {
+        it($('= 0'), function () {
+            var expr = M('\\sin^2 (1)');
+            expr.should.be.an.instanceof(M.Expression.NumericalReal);
+            expr.value.should.equal(Math.sin(1) * Math.sin(1));
+        })
+    });
+
     describe('Built in global.Math function:', function () {
 
         ['sin', 'cos', 'tan'].forEach(function (fn) {
