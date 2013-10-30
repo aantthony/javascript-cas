@@ -18,7 +18,7 @@ var fn = dy.compile('x');
 var x = fn(3.1); // Returns a javascript number.
 ```
 
-[![Build Status](https://travis-ci.org/aantthony/javascript-cas.png?branch=master)](https://travis-ci.org/aantthony/javascript-cas)
+[![Build Status](https://travis-ci.org/aantthony/javascript-cas.png?branch=master)](https://travis-ci.org/aantthony/javascript-cas) [![Coverage Status](https://coveralls.io/repos/aantthony/javascript-cas/badge.png?branch=master)](https://coveralls.io/r/aantthony/javascript-cas?branch=master)
 
 ### Features
 - Parsing latex expressions efficiently
