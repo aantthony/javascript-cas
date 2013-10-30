@@ -10,7 +10,7 @@
   ],
   "scripts": {
     "test": "[[ -z $TRAVIS_JOB_ID ]] && ./node_modules/.bin/mocha --recursive || npm run travis",
-    "travis": "./node_modules/.bin/mocha --recursive && ./node_modules/.bin/jscoverage lib lib-cov && COVERAGE=1 ./node_modules/.bin/mocha --recursive -R mocha-lcov-reporter | ./node_modules/.bin/coveralls",
+    "travis": "./node_modules/.bin/jscoverage lib lib-cov && COVERAGE=1 ./node_modules/.bin/mocha --recursive -R mocha-lcov-reporter | ./node_modules/.bin/coveralls",
     "coverage": "./node_modules/.bin/jscoverage lib lib-cov && COVERAGE=1 ./node_modules/.bin/mocha --recursive -R html-cov > lib-cov/test.html && open lib-cov/test.html",
     "start": "node ./bin/javascript-cas",
     "predeploy": "grunt",
