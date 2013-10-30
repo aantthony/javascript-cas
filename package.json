@@ -9,8 +9,10 @@
     "aantthony <hi@af.id.au>"
   ],
   "scripts": {
+    "test": "[[ -z $TRAVIS_JOB_ID ]] && ./node_modules/.bin/mocha --recursive || npm run travis",
+    "travis": "./node_modules/.bin/mocha --recursive && ./node_modules/.bin/jscoverage lib lib-cov && COVERAGE=1 ./node_modules/.bin/mocha --recursive -R mocha-lcov-reporter | ./node_modules/.bin/coveralls",
+    "coverage": "./node_modules/.bin/jscoverage lib lib-cov && COVERAGE=1 ./node_modules/.bin/mocha --recursive -R html-cov > lib-cov/test.html && open lib-cov/test.html",
     "start": "node ./bin/javascript-cas",
-    "test": "./node_modules/.bin/mocha --recursive",
     "predeploy": "grunt",
     "postdeploy": "echo This will be run after deploying the app"
   },
@@ -39,7 +41,10 @@
     "grunt-contrib-jshint": "~0.4.3",
     "mocha": "~1.12.0",
     "should": "~1.2.2",
-    "sinon": "~1.7.3"
+    "sinon": "~1.7.3",
+    "mocha-lcov-reporter": "0.0.1",
+    "jscoverage": "~0.3.8",
+    "coveralls": "~2.3.0"
   },
   "bugs": {
     "url": "https://github.com/aantthony/javascript-cas/issues"
