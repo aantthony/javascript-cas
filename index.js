@@ -1,6 +1,11 @@
 'use strict';
 
-var M = require('./lib');
+var dir = './lib';
+if (process.env.COVERAGE){
+  dir = './lib-cov';
+}
+
+var M = require(dir);
 
 if (typeof window !== 'undefined') {
     var _M = window.M;
