@@ -45,6 +45,14 @@ describe('Confusing expression', function () {
             var expr = M('\\sec (0)');
             expr.should.be.an.instanceof(M.Expression.NumericalReal);
             expr.value.should.equal(1);
+        });
+    });
+
+    describe($('cosec(π / 2)'), function () {
+        it($('= 1'), function () {
+            var expr = M('\\cosec (\\pi / 2)');
+            expr.should.be.an.instanceof(M.Expression.NumericalReal);
+            expr.value.should.equal(1);
         })
     });
 
