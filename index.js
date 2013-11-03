@@ -1,7 +1,7 @@
 'use strict';
 
 var M = require('./lib');
-if (process.env.COVERAGE){
+if (process.env.JS_CAS_COVERAGE){
   var dir = './lib-cov';
   M = require(dir);
 }
