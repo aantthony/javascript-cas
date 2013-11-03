@@ -10,8 +10,8 @@
   ],
   "scripts": {
     "test": "[[ -z $TRAVIS_JOB_ID ]] && mocha --recursive || npm run travis",
-    "travis": "jsJS_CAS_COVERAGE lib lib-cov && JS_CAS_COVERAGE=1 mocha --recursive -R mocha-lcov-reporter | coveralls && mocha --recursive",
-    "JS_CAS_COVERAGE": "jsJS_CAS_COVERAGE lib lib-cov && JS_CAS_COVERAGE=1 mocha --recursive -R html-cov > lib-cov/test.html && open lib-cov/test.html",
+    "travis": "jscoverage lib lib-cov && JSCAS_COVERAGE=1 mocha --recursive -R mocha-lcov-reporter | coveralls && mocha --recursive",
+    "coverage": "jscoverage lib lib-cov && JSCAS_COVERAGE=1 mocha --recursive -R html-cov > lib-cov/test.html && open lib-cov/test.html",
     "start": "node ./bin/javascript-cas",
     "predeploy": "grunt",
     "postdeploy": "echo This will be run after deploying the app"
@@ -43,7 +43,7 @@
     "should": "~1.2.2",
     "sinon": "~1.7.3",
     "mocha-lcov-reporter": "0.0.1",
-    "jsJS_CAS_COVERAGE": "~0.3.8",
+    "jscoverage": "~0.3.8",
     "coveralls": "~2.3.0"
   },
   "bugs": {
