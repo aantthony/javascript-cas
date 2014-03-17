@@ -121,7 +121,12 @@ describe($('x \\in \\Rational'), function () {
             (r - (x.a/x.b)/(y.a/y.b) < 0.00001).should.be.true;
         });
     });
-
+    describe($('x ^ 5'), function () {
+        it('should compile to a fragment shader', function () {
+            var m = M('x^5');
+            m.s('x-shader/x-fragment');
+        });
+    });
     describe($('1 / (x / y)'), function () {
         var n = M('1 / (1234 / 4321)');
         it($('\\in \\Rational'), function () {
