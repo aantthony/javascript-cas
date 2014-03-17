@@ -56,7 +56,7 @@ describe('Confusing expression', function () {
         })
     });
 
-    describe($('sin^2(0)'), function () {
+    describe.skip($('sin^2(0)'), function () {
         it($('= 0'), function () {
             var expr = M('\\sin^2 (0)');
             expr.should.be.an.instanceof(M.Expression.NumericalReal);
@@ -64,7 +64,7 @@ describe('Confusing expression', function () {
         })
     });
 
-    describe($('sin^2(1)'), function () {
+    describe.skip($('sin^2(1)'), function () {
         it($('= 0'), function () {
             var expr = M('\\sin^2 (1)');
             expr.should.be.an.instanceof(M.Expression.NumericalReal);

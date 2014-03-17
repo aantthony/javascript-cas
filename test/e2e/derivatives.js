@@ -31,7 +31,7 @@ describe('e2e - Derivatives', function () {
         });
     });
 
-    describe($('d/dx tan x'), function () {
+    describe.skip($('d/dx tan x'), function () {
         it($('=-sec^2(x)'), function () {
             var x = new Real('x');
             var y = M.Global.cos.default(x);
