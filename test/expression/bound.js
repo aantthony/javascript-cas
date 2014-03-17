@@ -9,20 +9,24 @@ var should = require('should')
 
 describe('Variable binding', function () {
   describe('should set .bound.x for ', function () {
+    var x;
+    beforeEach(function () {
+      x = new Symbol('x');
+    });
     it('for x^2', function () {
-      var s = M('x^2', {x: M('x')});
+      var s = M('x^2', {x: x});
       should.exist(s.bound.x);
     });
     it('for e+x', function () {
-      var s = M('e+x', {x: M('x')});
+      var s = M('e+x', {x: x});
       should.exist(s.bound.x);
     });
     it('for e+x', function () {
-      var s = M('e*x', {x: M('x')});
+      var s = M('e*x', {x: x});
       should.exist(s.bound.x);
     });
     it('for e^x', function () {
-      var s = M('e^x', {x: M('x')});
+      var s = M('e^x', {x: x});
       should.exist(s.bound.x);
     });
   });

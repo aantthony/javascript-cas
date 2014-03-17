@@ -32,7 +32,8 @@
 "!="                  return '!='
 "&&"                  return '&&'
 _[^\(\{]              return '_SINGLE'
-\^[^\(\{]             return '^SINGLE'
+\^[0-9]               return '^SINGLEP'
+\^[^\(\{0-9]          return '^SINGLEA'
 "_{"                  return '_{'
 "^{"                  return 'POWER{'
 "!"                   return '!'
@@ -110,7 +111,8 @@ e
     | e '_SINGLE'                   {$$ = ['_', $1, {type: 'Single', primitive: yytext.substring(1)}];}
     | 'SQRT{' e '}'                 {$$ = ['sqrt', $2];}
     | 'FRAC{' e '}' '{' e '}'       {$$ = ['frac', $2, $5];}
-    | e '^SINGLE'                   {$$ = ['^', $1, {type: 'Single', primitive: yytext.substring(1)}];}
+    | e '^SINGLEA'                  {$$ = ['^', $1, yytext.substring(1)];}
+    | e '^SINGLEP'                  {$$ = ['^', $1, {type: 'Single', primitive: yytext.substring(1)}];}
     | '-' e %prec UMINUS            {$$ = ['@-', $2]}
     | e e %prec BDEFAULT            {$$ = ['default', $1, $2];}
     | '(' e ')'                     {$$ = $2}

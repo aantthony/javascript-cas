@@ -7,7 +7,10 @@ var should = require('should'),
 
 describe($('x \\in \\Integer'), function () {
     describe('Parser', function () {
-        var n = M('32322');
+        var n;
+        before(function () {
+            n = M('32322');
+        })
         it($('x \\in \\Integer'), function () {
             n.should.be.an.instanceof(Integer);
         });
@@ -28,7 +31,10 @@ describe($('x \\in \\Integer'), function () {
     describe($('x \\cdot y'), function () {
 
         describe('= 0', function () {
-            var zero = new Integer(0);
+            var zero;
+            before(function () {
+                zero = new Integer(0);
+            });
 
             it($('\\if x = 3'), function () {
                 var n = (new Integer(3))['*'](zero);

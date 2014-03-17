@@ -42,22 +42,30 @@ describe('e2e - Derivatives', function () {
     });
 
     describe($('d/dx x*x + 3'), function () {
-        match(M('\\frac{d}{dx} (x*x + 3)'), M('2x'), 'x');
+        it('should match', function () {
+            match(M('\\frac{d}{dx} (x*x + 3)'), M('2x'), 'x');
+        });
     });
 
     describe($('d/dx x^2'), function () {
-        var expr = M('x^2');
-        var d = expr.differentiate(expr.unbound.x);
+        it('should match', function () {
 
-        match(d, M('2x'), 'x');
+            var expr = M('x^2');
+            var d = expr.differentiate(expr.unbound.x);
+
+            match(d, M('2x'), 'x');
+        });
     });
 
     describe($('d/dx (-x)'), function () {
-        var x = new Real('x');
-        var expr = x['@-']();
-        var d = expr.differentiate(x);
+        it('should match', function () {
 
-        match(d, function () {return -1}, 'x');
+            var x = new Real('x');
+            var expr = x['@-']();
+            var d = expr.differentiate(x);
+
+            match(d, function () {return -1}, 'x');
+        });
     });
 
     describe($('d/dx sin (x * x)'), function () {

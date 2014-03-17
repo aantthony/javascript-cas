@@ -12,7 +12,10 @@ describe($('x \\in \\Rational'), function () {
         zero = new Rational(0, 1);
     });
     describe('Parser', function () {
-        var n = M('32.235');
+        var n;
+        before(function () {
+            n = M('32.235');
+        });
         it($('x \\in \\Rational'), function () {
             n.should.be.an.instanceof(Rational)
         });
@@ -128,7 +131,10 @@ describe($('x \\in \\Rational'), function () {
         });
     });
     describe($('1 / (x / y)'), function () {
-        var n = M('1 / (1234 / 4321)');
+        var n;
+        before(function () {
+            n = M('1 / (1234 / 4321)');
+        });
         it($('\\in \\Rational'), function () {
             n.should.be.an.instanceof(M.Expression.Rational);
         });
