@@ -68,6 +68,30 @@ describe('e2e - Derivatives', function () {
         });
     });
 
+    describe($('d/dx (1/x)'), function () {
+        it('should match -1/x^2', function () {
+            var x = new Real('x');
+            var y = new Integer(1)['/'](x);
+            match(y, function (x) { return 1 / x; }, 'x');
+            var dy = y.differentiate(x);
+            dy.should.be.an.instanceof(List.Real);
+            match(dy, M('-1 / (x^2)'), 'x');
+        });
+    });
+
+
+    describe($('d/dx (log x)'), function () {
+        it('should match', function () {
+
+            var x = new Real('x');
+            var y = M.Global.log.default(x);
+            match(y, Math.log, 'x');
+            var dy = y.differentiate(x);
+            dy.should.be.an.instanceof(List.Real);
+            match(dy, M('1 / x'), 'x');
+        });
+    });
+
     describe($('d/dx sin (x * x)'), function () {
         it($('= 2x \\cdot cos x^2'), function () {
             var x = new Real('x');
