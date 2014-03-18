@@ -92,6 +92,18 @@ describe('e2e - Derivatives', function () {
         });
     });
 
+    describe($('d/dx (tan x)'), function () {
+        it('should match', function () {
+
+            var x = new Real('x');
+            var y = M.Global.tan.default(x);
+            match(y, Math.tan, 'x');
+            var dy = y.differentiate(x);
+            dy.should.be.an.instanceof(List.Real);
+            match(dy, M('(\\sec x)^2'), 'x');
+        });
+    });
+
     describe($('d/dx sin (x * x)'), function () {
         it($('= 2x \\cdot cos x^2'), function () {
             var x = new Real('x');
