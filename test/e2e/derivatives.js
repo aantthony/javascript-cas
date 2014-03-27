@@ -80,7 +80,7 @@ describe('e2e - Derivatives', function () {
     });
 
 
-    describe($('d/dx (log x)'), function () {
+    describe.skip($('d/dx (log x)'), function () {
         it('should match', function () {
 
             var x = new Real('x');
@@ -92,7 +92,7 @@ describe('e2e - Derivatives', function () {
         });
     });
 
-    describe($('d/dx (tan x)'), function () {
+    describe.skip($('d/dx (tan x)'), function () {
         it('should match', function () {
 
             var x = new Real('x');

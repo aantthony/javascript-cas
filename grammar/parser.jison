@@ -11,7 +11,7 @@
 "\right)"             return ')'
 "\frac{"              return 'FRAC{'
 "\sqrt{"              return 'SQRT{'
-"\cdot"               return '*'
+\\cdo[t]              return '*'
 \\l[e]                return '<='
 \\g[e]                return '>='
 \\n[e]                return 'NE'

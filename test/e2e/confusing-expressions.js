@@ -30,6 +30,12 @@ describe('Confusing expression', function () {
             }, 'x');
         })
     });
+    describe($('2\\cdot3'), function () {
+        it($('= 6'), function () {
+            match(M('2 * 3'), Number.prototype.valueOf.bind(6));
+            match(M('2\\cdot3'), Number.prototype.valueOf.bind(6));
+        });
+    })
     describe($('d/dw (1)'), function () {
         it($('= 0'), function () {
             var expr = M('\\frac{d}{dx} (1)');
