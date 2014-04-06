@@ -22,11 +22,11 @@ describe('Confusing expression', function () {
             d.compile()().should.equal(-1);
         })
     });
-    describe($('y -(x*x-2)'), function () {
-        it($('= y - x^2 + 2'), function () {
-            var fnA = M('y - (x^2 - 2)').compile('x,y');
+    describe($('y -(x*x-3)'), function () {
+        it($('= y - x^2 + 3'), function () {
+            var fnA = M('y - (x^2 - 3)').compile('x,y');
             var fnB = function (x, y) {
-                return y - (x*x - 2);
+                return y - (x*x - 3);
             };
             for(var x = 0; x < 4; x++) {
                 for(var y = 0; y < 4; y++) {
