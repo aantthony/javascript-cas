@@ -6,6 +6,7 @@ exports = module.exports = function (str) {
         [/\\implies/g, '⇒'],
         [/\\Integer/g, 'ℤ'],
         [/\\Rational/g, 'ℚ'],
+        [/\\nabla/g, '∇'],
         [/\\cdot/g, '·'],
         [/\\List.Real/g, 'ℝ{*}'],
         [/\\Symbol.Real/g, 'ℝ{A}'],
