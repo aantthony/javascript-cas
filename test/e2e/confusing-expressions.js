@@ -48,6 +48,17 @@ describe('Confusing expression', function () {
             match(M('2 * 3'), Number.prototype.valueOf.bind(6));
             match(M('2\\cdot3'), Number.prototype.valueOf.bind(6));
         });
+    });
+    describe($('0.3'), function () {
+        it($('= 0.3'), function () {
+            match(M('0.3'), Number.prototype.valueOf.bind(0.3));
+        });
+        it($('x = 0.3 * x'), function () {
+            match(M('0.3x'), function (x) { return 0.3 * x; }, 'x');
+        });
+        it($('*x = 0.3 * x'), function () {
+            match(M('0.3*x'), function (x) { return 0.3 * x; }, 'x');
+        });
     })
     describe($('d/dw (1)'), function () {
         it($('= 0'), function () {
